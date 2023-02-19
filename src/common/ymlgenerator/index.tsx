@@ -35,11 +35,11 @@ export default function ymlGenerator(): Function {
   const KAFKA_BROKER: KafkaBrokerCfg = {
     image: 'confluentinc/cp-kafka',
     environment: {
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181',
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2182',
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:
         'PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT',
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT',
-      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: 'zookeeper:2181',
+      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: 'zookeeper:2182',
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1,
       CONFLUENT_METRICS_ENABLE: 'false',
       KAFKA_HEAP_OPTS: '-Xmx512M -Xms512M',
@@ -59,12 +59,12 @@ export default function ymlGenerator(): Function {
   const ZOOKEEPER: ZooKeeperCfg = {
     image: 'confluentinc/cp-zookeeper',
     environment: {
-      ZOOKEEPER_CLIENT_PORT: 2181,
+      ZOOKEEPER_CLIENT_PORT: 2182,
       ZOOKEEPER_TICK_TIME: 2000,
       ZOOKEEPER_INIT_LIMIT: 5,
       ZOOKEEPER_SYNC_LIMIT: 2,
     },
-    ports: ['2181:2181'],
+    ports: ['2182:2182'],
     container_name: 'zookeeper',
   };
 
@@ -167,7 +167,7 @@ export default function ymlGenerator(): Function {
       fs.ensureDirSync(path.resolve(downloadDir, 'jmx'));
       fs.ensureDirSync(path.resolve(downloadDir, 'prometheus'));
 
-      for (let i = 0; i < numOfClusters; i++) {
+      for (let i = 4; i < numOfClusters + 4; i++) {
         YAML.services[`jmx-kafka${1 + i}`] = {
           ...JMX,
           ports: [`${5556 + i}:5566`],
