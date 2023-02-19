@@ -188,12 +188,12 @@ export default function ymlGenerator(): Function {
             KAFKA_JMX_PORT: 9991 + i,
             KAFKA_ADVERTISED_LISTENERS: `PLAINTEXT://kafka${
               i + 1
-            }:29093,PLAINTEXT_HOST://localhost:909${i + 1}`,
+            }:29092,PLAINTEXT_HOST://localhost:909${i + 1}`,
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR:
               numOfClusters < 3 ? numOfClusters : 3,
             KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR:
               numOfClusters < 3 ? numOfClusters : 3,
-            CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `kafka${i + 1}:29093`,
+            CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `kafka${i + 1}:29092`,
           },
         };
 
