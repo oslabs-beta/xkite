@@ -1,9 +1,10 @@
 import yaml from 'js-yaml';
 import fs from 'fs-extra';
 import path from 'path';
+const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
 
-export default function ymlGenerator() {
-  const PROMCONFIG = {
+export default function ymlGenerator(): Function {
+  const PROMCONFIG: PROMConfig = {
     global: {
       scrape_interval: '26s',
       evaluation_interval: '15s',
@@ -22,7 +23,7 @@ export default function ymlGenerator() {
     ],
   };
 
-  const JMX = {
+  const JMX: JMXConfig = {
     image: 'bitnami/jmx-exporter:latest',
     command: ['5566', '/etc/myconfig.yml'],
     ports: [],
@@ -31,7 +32,7 @@ export default function ymlGenerator() {
     depends_on: [],
   };
 
-  const KAFKA_BROKER = {
+  const KAFKA_BROKER: KafkaBrokerCfg = {
     image: 'confluentinc/cp-kafka',
     environment: {
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181',
@@ -55,7 +56,7 @@ export default function ymlGenerator() {
     depends_on: ['zookeeper', 'postgres'],
   };
 
-  const ZOOKEPER = {
+  const ZOOKEEPER: ZooKeeperCfg = {
     image: 'confluentinc/cp-zookeeper',
     environment: {
       ZOOKEEPER_CLIENT_PORT: 2181,
@@ -67,16 +68,16 @@ export default function ymlGenerator() {
     container_name: 'zookeeper',
   };
 
-  const PROMETHEUS = {
+  const PROMETHEUS: PrometheusCfg = {
     image: 'prom/prometheus',
     ports: ['9099:9090'],
     volumes: [
-      '../download/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml',
+      `${downloadDir}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml`,
     ],
     container_name: 'prometheus',
   };
 
-  const GRAFANA = {
+  const GRAFANA: GrafanaCfg = {
     image: 'grafana/grafana-oss',
     ports: ['3050:3000'],
     environment: {
@@ -87,44 +88,59 @@ export default function ymlGenerator() {
       GF_SECURITY_ADMIN_PASSWORD: 'xkite',
     },
     volumes: [
-      '../download/grafana/provisioning:/etc/grafana/provisioning',
-      '../download/grafana/dashboards:/var/lib/grafana/dashboards',
+      `${downloadDir}/grafana/provisioning:/etc/grafana/provisioning`,
+      `${downloadDir}/grafana/dashboards:/var/lib/grafana/dashboards`,
     ],
     container_name: 'grafana',
     depends_on: ['prometheus'],
   };
 
-  const POSTGRES = {
+  const POSTGRES: PGConfig = {
     image: 'postgres',
     environment: {
       POSTGRES_PASSWORD: 'admin',
       POSTGRES_USER: 'admin',
       POSTGRES_DB: 'xkiteDB',
     },
+    ports: [],
     container_name: 'postgres',
   };
 
-  const JUPYTER = {
+  const JUPYTER: BaseCfg = {
     image: 'jupyterhub/jupyterhub',
     ports: ['8000:8000'],
     container_name: 'jupyterhub',
   };
 
-  const SPARK = {
+  const SPARK: BaseCfg = {
     image: 'bitnami/spark',
+    ports: [],
     container_name: 'spark',
   };
 
-  const YAML = {};
+  const YAML: YAMLConfig = { services: {} };
 
-  return (config) => {
+  return (config: KiteConfig): KiteSetup => {
     const { numOfClusters, dataSource, sink } = config;
-    const setup = { dbSetup: {}, kafkaSetup: { brokers: [], ssl: false } };
+    const setup: KiteSetup = {
+      dataSetup: {
+        dbSrc: '',
+        env: {
+          username: '',
+          password: '',
+          dbName: '',
+          URI: '',
+        },
+      },
+      kafkaSetup: {
+        brokers: [],
+        ssl: false,
+      },
+    };
     try {
-      YAML.services = {};
       if (dataSource === 'postgresql') {
         YAML.services.postgres = POSTGRES;
-        setup.dbSetup = {
+        setup.dataSetup = {
           dbSrc: dataSource,
           env: {
             password: POSTGRES.environment.POSTGRES_PASSWORD,
@@ -136,21 +152,20 @@ export default function ymlGenerator() {
       }
       if (sink === 'jupyter') YAML.services.jupyter = JUPYTER;
       if (sink === 'spark') YAML.services.spark = SPARK;
-      YAML.services.zookeeper = ZOOKEPER;
+      YAML.services.zookeeper = ZOOKEEPER;
       YAML.services.prometheus = PROMETHEUS;
       YAML.services.grafana = GRAFANA;
-
-      const jmxExporterConfig = yaml.load(
+      const jmxExporterConfig: any = yaml.load(
         fs.readFileSync(
-          path.join(__dirname, '../download/jmx/exporter/template.yml'),
+          path.resolve(downloadDir, 'jmx/exporter/template.yml'),
           'utf8'
         )
       );
 
       // Checks if directories download, prometheus and jmx exist, if not, then it creates all of them
-      fs.ensureDirSync(path.join(__dirname, '../download'));
-      fs.ensureDirSync(path.join(__dirname, '../download/jmx'));
-      fs.ensureDirSync(path.join(__dirname, '../download/prometheus'));
+      fs.ensureDirSync(downloadDir);
+      fs.ensureDirSync(path.resolve(downloadDir, 'jmx'));
+      fs.ensureDirSync(path.resolve(downloadDir, 'prometheus'));
 
       for (let i = 0; i < numOfClusters; i++) {
         YAML.services[`jmx-kafka${1 + i}`] = {
@@ -158,7 +173,7 @@ export default function ymlGenerator() {
           ports: [`${5556 + i}:5566`],
           container_name: `jmx-kafka${1 + i}`,
           volumes: [
-            `../download/jmx/jmxConfigKafka${1 + i}.yml:/etc/myconfig.yml`,
+            `${downloadDir}/jmx/jmxConfigKafka${1 + i}.yml:/etc/myconfig.yml`,
           ],
           depends_on: [`kafka${1 + i}`],
         };
@@ -190,25 +205,30 @@ export default function ymlGenerator() {
 
         jmxExporterConfig.hostPort = `kafka${1 + i}:999${1 + i}`;
         fs.writeFileSync(
-          path.join(__dirname, `../download/jmx/jmxConfigKafka${1 + i}.yml`),
+          path.resolve(
+            process.cwd(),
+            downloadDir,
+            `jmx/jmxConfigKafka${1 + i}.yml`
+          ),
           yaml.dump(jmxExporterConfig, { noRefs: true })
         );
       }
 
       fs.writeFileSync(
-        path.join(__dirname, '../download/docker-compose.yml'),
+        path.resolve(downloadDir, 'docker-compose.yml'),
         yaml.dump(YAML, { noRefs: true })
       );
 
       fs.writeFileSync(
-        path.join(__dirname, '../download/prometheus/prometheus.yml'),
+        path.resolve(downloadDir, 'prometheus/prometheus.yml'),
         yaml.dump(PROMCONFIG, { noRefs: true })
       );
 
       PROMCONFIG.scrape_configs[0].static_configs[0].targets = [];
-      return setup;
     } catch (error) {
-      return console.log(error);
+      console.log(error);
+    } finally {
+      return setup;
     }
   };
 }

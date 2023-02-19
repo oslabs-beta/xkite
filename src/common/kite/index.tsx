@@ -1,8 +1,12 @@
 import path from 'path';
+import fs from 'fs-extra';
 import compose from 'docker-compose';
+import type { IDockerComposeResult } from 'docker-compose/dist';
 import ymlGenerator from '../ymlgenerator';
 import zipper from 'zip-local';
-const defaultCfg = {
+const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
+
+const defaultCfg: KiteConfig = {
   numOfClusters: 2,
   dataSource: 'postgresql',
   sink: 'jupyter',
@@ -13,56 +17,81 @@ const defaultCfg = {
 // await kite.build()
 //
 
-module.exports = class Kite {
+export default class Kite {
+  config: KiteConfig;
+  configPath: string;
+  setup!: KiteSetup;
   /**
-   * constructor()
-   * @param {Object} config : takes the configuration
-   *                 for KITE standalone servers.
+   * @param {KiteConfig} config
+   * takes the configuration
+   * for KITE standalone servers
+   * and generates the YAML configuration
+   * file locally.
    */
-  constructor(config = defaultCfg) {
+  constructor(config: KiteConfig = defaultCfg) {
     this.config = JSON.parse(JSON.stringify(config));
+    this.configPath = path.join(downloadDir, 'docker-compose.yml');
     // launch configuration
     try {
-      this.setup = ymlGenerator(config);
+      const generate: Function = ymlGenerator();
+      this.setup = generate(this.config);
       zipper.sync
-        .zip(path.join(__dirname, './download/'))
+        .zip(downloadDir)
         .compress()
-        .save(path.join(__dirname, './download/pipeline.zip'));
+        .save(path.resolve(downloadDir, 'pipeline.zip'));
       // console.log('done zipping...');
     } catch (err) {
       console.log(`KITE failed to initialize: ${err}\nConfiguration ${config}`);
     }
   }
   /**
-   * build():
-   * @returns {Promise} from docker-compose
+   * @returns {Promise}
+   * Promise object from docker-compose
+   * up invokation
    */
-  async build() {
-    // console.log('building...');
+  deploy(): Promise<IDockerComposeResult> {
     return compose.upAll({
-      cwd: path.join(__dirname, './download/'),
+      cwd: downloadDir,
       log: true,
     });
   }
   /**
-   *
-   * @returns {Object} setup with the following formatting.
-   * {
-   * dataSetup: {
-   *  dbSrc: String,
-   *  env: {
-   *    username: String,
-   *    password: String,
-   *    dbName: String,
-   *    URI: String
-   *  },
-   * },
-   * kafkaSetup: {
-   *  brokers: Array[String],
-   *  ssl: Boolean,
-   * }}
+   * @returns {KiteSetup}
+   * setup to be used for connecting
+   * to a kafka instance and/or database.
    */
-  getSetup() {
+  getSetup(): KiteSetup {
     return this.setup;
   }
-};
+  /**
+   *
+   * @returns {KiteConfigFile}
+   * the header content and the
+   * file stream for transmission.
+   * Use case: const kite = new Kite();
+   * const configObj = kite.getConfig();
+   * res.writeHead(200, configObj.header);
+   * configObj.fileStream.pipe(res);
+   */
+  getConfig(): KiteConfigFile {
+    const stat = fs.statSync(this.configPath);
+    const header = {
+      'Content-Type': 'text/yml',
+      'Content-Length': stat.size,
+    };
+    const fileStream = fs.createReadStream(this.configPath);
+    return { header, fileStream };
+  }
+
+  /**
+   * @returns {Promise}
+   * Promise object from docker-compose
+   * down invokation
+   */
+  disconnect(): Promise<IDockerComposeResult> {
+    return compose.down({
+      cwd: downloadDir,
+      log: true,
+    });
+  }
+}
