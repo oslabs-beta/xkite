@@ -12,8 +12,13 @@ interface KafkaSetup {
 }
 
 interface KiteSetup {
-  dataSetup: YAMLDataSetup;
+  dataSetup?: YAMLDataSetup;
   kafkaSetup: KafkaSetup;
 }
 
 declare module 'zip-local';
+
+interface KiteConfigFile {
+  header?: any;
+  fileStream: fs.ReadStream;
+}

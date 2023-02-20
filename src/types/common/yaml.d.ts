@@ -34,22 +34,12 @@ interface PROMConfig {
     scrape_timeout: string;
   };
   rule_files: Array<null>;
-  scrape_configs: Array<ScrapeConfig>;
-}
-
-interface ScrapeConfig {
-  job_name: string;
-  static_configs: Array<StaticConfig>;
-}
-
-interface StaticConfig {
-  targets: Array<string>;
-}
-
-interface JMXConfig extends BaseCfg {
-  command: Array<string>;
-  volumes: Array<string>;
-  depends_on: Array<string>;
+  scrape_configs: [
+    {
+      job_name: string;
+      static_configs: [{ targets: Array<string> }];
+    }
+  ];
 }
 
 interface KafkaBrokerCfg extends BaseCfg {
@@ -68,8 +58,6 @@ interface KafkaBrokerCfg extends BaseCfg {
     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: number;
     CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: string;
   };
-  volumes: Array<string>;
-  depends_on: Array<string>;
 }
 
 interface ZooKeeperCfg extends BaseCfg {
@@ -81,10 +69,6 @@ interface ZooKeeperCfg extends BaseCfg {
   };
 }
 
-interface PrometheusCfg extends BaseCfg {
-  volumes: Array<string>;
-}
-
 interface GrafanaCfg extends BaseCfg {
   environment: {
     GF_PATHS_DATA: string;
@@ -93,8 +77,6 @@ interface GrafanaCfg extends BaseCfg {
     GF_SMTP_ENABLED: string;
     GF_SECURITY_ADMIN_PASSWORD: string;
   };
-  volumes: Array<string>;
-  depends_on: Array<string>;
 }
 
 interface PGConfig extends BaseCfg {
@@ -105,12 +87,11 @@ interface PGConfig extends BaseCfg {
   };
 }
 
-interface PrometheusCfg extends BaseCfg {
-  volumes: Array<string>;
-}
-
 interface BaseCfg {
+  command?: Array<string>;
   image: string;
   ports: Array<string>;
+  volumes?: Array<string>;
+  depends_on?: Array<string>;
   container_name: string;
 }
