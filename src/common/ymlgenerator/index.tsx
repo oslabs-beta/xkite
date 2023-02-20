@@ -23,7 +23,7 @@ export default function ymlGenerator(): Function {
     ],
   };
 
-  const JMX: JMXConfig = {
+  const JMX: BaseCfg = {
     image: 'bitnami/jmx-exporter:latest',
     command: ['5566', '/etc/myconfig.yml'],
     ports: [],
@@ -68,7 +68,7 @@ export default function ymlGenerator(): Function {
     container_name: 'zookeeper',
   };
 
-  const PROMETHEUS: PrometheusCfg = {
+  const PROMETHEUS: BaseCfg = {
     image: 'prom/prometheus',
     ports: ['9099:9090'],
     volumes: [
