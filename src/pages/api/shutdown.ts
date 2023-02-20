@@ -11,6 +11,6 @@ export default async function handler(
   res: NextApiResponse<Result>
 ) {
   const kite = new Kite();
-  await kite.disconnect();
+  kite.disconnect();
   res.status(200).json({ result: 'success' });
 }

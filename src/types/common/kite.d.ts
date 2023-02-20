@@ -22,3 +22,15 @@ interface KiteConfigFile {
   header?: any;
   fileStream: fs.ReadStream;
 }
+
+enum KiteState {
+  Init,
+  Configured,
+  Running,
+  Shutdown,
+}
+
+enum KiteServerState {
+  Disconnected,
+  Connected,
+}

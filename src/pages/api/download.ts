@@ -10,6 +10,7 @@ export default function handler(
 ) {
   const kite = new Kite();
   const configObj = kite.getConfig();
+  if (configObj instanceof Error) return res.status(500);
   res.writeHead(200, configObj.header);
   configObj.fileStream.pipe(res);
 }

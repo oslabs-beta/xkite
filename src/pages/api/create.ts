@@ -15,7 +15,7 @@ export default async function handler(
   console.log('constructing kite...');
   const kite = new Kite();
   console.log('deploying kite...');
-  await kite.deploy();
+  kite.deploy();
   const { dataSetup, kafkaSetup } = kite.getSetup();
   const topic = 'messages';
   const kafka = new Kafka({
