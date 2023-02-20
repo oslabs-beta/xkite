@@ -1,0 +1,6 @@
+
+{
+  "name": "common",
+  "version": "1.0.0",
+  "typings": "kite.d.ts"
+}
