@@ -168,26 +168,26 @@ export default function ymlGenerator(): Function {
       fs.ensureDirSync(path.resolve(downloadDir, 'prometheus'));
 
       for (let i = 4; i < numOfClusters + 4; i++) {
-        YAML.services[`jmx-kafka${1 + i}`] = {
+        YAML.services[`jmx-kafka${i - 3}`] = {
           ...JMX,
           ports: [`${5556 + i}:5566`],
-          container_name: `jmx-kafka${1 + i}`,
+          container_name: `jmx-kafka${i - 3}`,
           volumes: [
-            `${downloadDir}/jmx/jmxConfigKafka${1 + i}.yml:/etc/myconfig.yml`,
+            `${downloadDir}/jmx/jmxConfigKafka${i - 3}.yml:/etc/myconfig.yml`,
           ],
-          depends_on: [`kafka${1 + i}`],
+          depends_on: [`kafka${i - 3}`],
         };
 
-        YAML.services[`kafka${1 + i}`] = {
+        YAML.services[`kafka${i - 3}`] = {
           ...KAFKA_BROKER,
           ports: [`909${1 + i}:909${1 + i}`, `999${1 + i}:999${1 + i}`],
-          container_name: `kafka${1 + i}`,
+          container_name: `kafka${i - 3}`,
           environment: {
             ...KAFKA_BROKER.environment,
             KAFKA_BROKER_ID: 101 + i,
             KAFKA_JMX_PORT: 9991 + i,
             KAFKA_ADVERTISED_LISTENERS: `PLAINTEXT://kafka${
-              i + 1
+              i - 3
             }:29092,PLAINTEXT_HOST://localhost:909${i + 1}`,
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR:
               numOfClusters < 3 ? numOfClusters : 3,
@@ -200,15 +200,15 @@ export default function ymlGenerator(): Function {
         setup.kafkaSetup.brokers.push(`localhost:909${1 + i}`);
 
         PROMCONFIG.scrape_configs[0].static_configs[0].targets.push(
-          `jmx-kafka${1 + i}:5566`
+          `jmx-kafka${i - 3}:5566`
         );
 
-        jmxExporterConfig.hostPort = `kafka${1 + i}:999${1 + i}`;
+        jmxExporterConfig.hostPort = `kafka${i - 3}:999${1 + i}`;
         fs.writeFileSync(
           path.resolve(
             process.cwd(),
             downloadDir,
-            `jmx/jmxConfigKafka${1 + i}.yml`
+            `jmx/jmxConfigKafka${i - 3}.yml`
           ),
           yaml.dump(jmxExporterConfig, { noRefs: true })
         );
