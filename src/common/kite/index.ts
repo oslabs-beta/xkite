@@ -135,7 +135,20 @@ export default class Kite {
    */
   getConfig(): KiteConfigFile | Error {
     if (this.serverState === KiteServerState.Connected) {
-      this.getServerConfig();
+      const getServerConfig: Function = async () => {
+        try {
+          const resp = await fetch(`${this.server}/getConfig`, {
+            headers: { Accept: 'application/json' },
+          });
+          this.serverConfig = await resp.json();
+        } catch (err) {
+          console.log(`failed to get configFile from ${this.server}:\n${err}`);
+          this.serverConfig = new Error(
+            `failed to get configFile from ${this.server}`
+          );
+        }
+      };
+      getServerConfig();
       return this.serverConfig;
     } else {
       const stat = fs.statSync(this.configPath);
@@ -145,20 +158,6 @@ export default class Kite {
       };
       const fileStream = fs.createReadStream(this.configPath);
       return { header, fileStream };
-    }
-  }
-
-  async getServerConfig() {
-    try {
-      const resp = await fetch(`${this.server}/getConfig`, {
-        headers: { Accept: 'application/json' },
-      });
-      this.serverConfig = await resp.json();
-    } catch (err) {
-      console.log(`failed to get configFile from ${this.server}:\n${err}`);
-      this.serverConfig = new Error(
-        `failed to get configFile from ${this.server}`
-      );
     }
   }
 
