@@ -10,7 +10,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Result>
 ) {
-  const kite = new Kite();
-  kite.disconnect();
-  res.status(200).json({ result: 'success' });
+  if (req.method === 'DELETE') {
+    const kite = new Kite();
+    kite.disconnect();
+    res.status(200).json({ result: 'success' });
+  }
 }
