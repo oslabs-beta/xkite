@@ -37,6 +37,7 @@ export default class Kite {
   state: KiteState;
   server: string;
   serverState: KiteServerState;
+  serverConfig!: KiteConfigFile | Error;
   /**
    * @param {KiteConfig} config
    * takes the configuration
@@ -66,29 +67,32 @@ export default class Kite {
       })
       .finally(() => {
         // check localhost for setup
-        fetch(`${this.server}/getSetup`)
-          .then((res) => res.json())
-          .then((data) => {
-            this.setup = data;
-            this.state = KiteState.Configured;
-          })
-          .catch((err) => {
-            console.log(`error getting setup from ${this.server}:\n${err}`);
-            // create config + setup
-            try {
-              const generate: Function = ymlGenerator();
-              this.setup = generate(this.config);
-              zipper.sync
-                .zip(downloadDir)
-                .compress()
-                .save(path.resolve(downloadDir, 'pipeline.zip'));
+        if (this.serverState === KiteServerState.Connected) {
+          fetch(`${this.server}/getSetup`)
+            .then((res) => res.json())
+            .then((data) => {
+              this.setup = data;
               this.state = KiteState.Configured;
-            } catch (err) {
-              console.log(
-                `KITE failed to initialize: ${err}\nConfiguration ${config}`
-              );
-            }
-          });
+            })
+            .catch((err) => {
+              console.log(`error getting setup from ${this.server}:\n${err}`);
+            });
+        } else {
+          // create config + setup
+          try {
+            const generate: Function = ymlGenerator();
+            this.setup = generate(this.config);
+            zipper.sync
+              .zip(downloadDir)
+              .compress()
+              .save(path.resolve(downloadDir, 'pipeline.zip'));
+            this.state = KiteState.Configured;
+          } catch (err) {
+            console.log(
+              `KITE failed to initialize: ${err}\nConfiguration ${config}`
+            );
+          }
+        }
       });
   }
   /**
@@ -131,24 +135,31 @@ export default class Kite {
    */
   getConfig(): KiteConfigFile | Error {
     if (this.serverState === KiteServerState.Connected) {
-      fetch(`${this.server}/getConfigFile`, {
-        headers: { Accept: 'text/yml' },
-      })
-        .then((res) => {
-          fs.writeFileSync(this.configPath, res.toString());
-        })
-        .catch((err) => {
-          console.log(`failed to get configFile from ${this.server}:\n${err}`);
-          return new Error(`failed to get configFile from ${this.server}`);
-        });
+      this.getServerConfig();
+      return this.serverConfig;
+    } else {
+      const stat = fs.statSync(this.configPath);
+      const header = {
+        'Content-Type': 'text/yml',
+        'Content-Length': stat.size,
+      };
+      const fileStream = fs.createReadStream(this.configPath);
+      return { header, fileStream };
     }
-    const stat = fs.statSync(this.configPath);
-    const header = {
-      'Content-Type': 'text/yml',
-      'Content-Length': stat.size,
-    };
-    const fileStream = fs.createReadStream(this.configPath);
-    return { header, fileStream };
+  }
+
+  async getServerConfig() {
+    try {
+      const resp = await fetch(`${this.server}/getConfig`, {
+        headers: { Accept: 'application/json' },
+      });
+      this.serverConfig = await resp.json();
+    } catch (err) {
+      console.log(`failed to get configFile from ${this.server}:\n${err}`);
+      this.serverConfig = new Error(
+        `failed to get configFile from ${this.server}`
+      );
+    }
   }
 
   /**
@@ -174,7 +185,7 @@ export default class Kite {
   async disconnect() {
     try {
       if (this.serverState === KiteServerState.Connected) {
-        await fetch(`${this.server}/exit`, {
+        await fetch(`${this.server}/disconnect`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
