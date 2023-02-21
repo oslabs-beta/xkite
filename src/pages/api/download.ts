@@ -8,8 +8,7 @@ export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<File>
 ) {
-  const kite = new Kite();
-  const configObj = kite.getConfig();
+  const configObj = Kite.getConfig();
   if (configObj instanceof Error) return res.status(500);
   res.writeHead(200, configObj.header);
   configObj.fileStream.pipe(res);
