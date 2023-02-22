@@ -12,11 +12,14 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  console.log('constructing kite...');
-  const kite = new Kite();
+  console.log('configuring kite...');
+  // Kite.configure( // can be configured in server or local mode
+  //   // 'localhost:6661'
+  //   // { numOfClusters: 3, dataSource: 'postgresql', sink: 'jupyter' }
+  // );
   console.log('deploying kite...');
-  kite.deploy();
-  const { dataSetup, kafkaSetup } = kite.getSetup();
+  Kite.deploy();
+  const { dataSetup, kafkaSetup } = Kite.getSetup();
   const topic = 'messages';
   const kafka = new Kafka({
     clientId: 'chat-gui',
