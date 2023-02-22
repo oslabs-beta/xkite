@@ -18,11 +18,7 @@ export default async function handler(
     
     try {
         console.log('booting up monitoring app...');
-        const execSync = require('child_process').execSync;
-        //this boots up the springboot application on port 8080 (default port for springboot apps)
-        const output = await execSync(`cd src && cd common && cd springApp && mvn spring-boot:run`);
-        console.log(output);
-        //will require the frontend to respond with a redirect to http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=10s
+        //we won't need this since springboot app is already running in background - potentially redirect user or spawn new page
         return res.status(201).json({reply: "Successfully started springboot app"})
     } catch (err) {
       return res.status(500).json({ err: err });
