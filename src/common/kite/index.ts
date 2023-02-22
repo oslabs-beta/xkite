@@ -47,7 +47,7 @@ export default class Kite {
   setup!: KiteSetup;
   state!: KiteState;
   serverState!: KiteServerState;
-  serverConfig!: KiteConfigFile | Error;
+  configFile!: KiteConfigFile;
   /**
    * @param {KiteConfig} config
    * takes the configuration
@@ -62,7 +62,7 @@ export default class Kite {
    * the address of kite server instance
    * for remote or local setup.
    */
-  private constructor(arg?: any[]) {
+  private constructor(arg?: any) {
     if (arg === undefined) {
       this.configLocal(Kite.defaultCfg);
     } else {
@@ -71,7 +71,7 @@ export default class Kite {
         case 'string':
           this.configServer(arg);
           break;
-        case 'object':
+        default:
           this.configLocal(arg);
           break;
       }
@@ -79,33 +79,31 @@ export default class Kite {
   }
 
   /**
-   * @param {KiteConfig} config
-   * takes the configuration
-   * for KITE standalone servers
-   * and generates the YAML configuration
-   * file locally.
+   * Gets the remote server link configuration.
    * @param {string} server
    * the server string of a remote Kite
    * instance for connection.
-   * @param {any} arg
-   * either the configuration object or
-   * the address of kite server instance
-   * for remote or local setup.
    */
   private configServer(server: any) {
     this.server = server;
     this.state = KiteState.Init;
     this.serverState = KiteServerState.Disconnected;
-    Promise.all([fetch(`${server}/getConfig`), fetch(`${server}/getSetup`)])
+    Promise.all([
+      fetch(`${server}/getConfig`),
+      fetch(`${server}/getSetup`),
+      fetch(`${server}/getConfigFile`),
+    ])
       .then((resp) => resp.map((elem) => elem.json()))
       .then((results) => {
-        [this.config, this.setup] = [
+        [this.config, this.setup, this.configFile] = [
           <KiteConfig>(<unknown>results[0]),
           <KiteSetup>(<unknown>results[1]),
+          <KiteConfigFile>(<unknown>results[2]),
         ];
         this.state = KiteState.Configured;
         this.serverState = KiteServerState.Connected;
       })
+      .then((data) => {})
       .catch((err) => {
         console.log(`error fetching from ${this.server}:\n${err}`);
       });
@@ -117,13 +115,6 @@ export default class Kite {
    * for KITE standalone servers
    * and generates the YAML configuration
    * file locally.
-   * @param {string} server
-   * the server string of a remote Kite
-   * instance for connection.
-   * @param {any} arg
-   * either the configuration object or
-   * the address of kite server instance
-   * for remote or local setup.
    */
   private configLocal(config: any) {
     this.config = config;
@@ -131,12 +122,21 @@ export default class Kite {
     this.serverState = KiteServerState.Disconnected;
     // create config + setup
     try {
+      // generate the docker config
       const generate: Function = ymlGenerator();
       this.setup = generate(config);
+      // package the download
       zipper.sync
         .zip(Kite.downloadDir)
         .compress()
         .save(path.resolve(Kite.downloadDir, 'pipeline.zip'));
+      // store the config file
+      const header = {
+        'Content-Type': 'text/yml',
+        'Content-Length': fs.statSync(Kite.configPath).size,
+      };
+      const fileStream = fs.createReadStream(Kite.configPath);
+      this.configFile = { header, fileStream };
       this.state = KiteState.Configured;
     } catch (err) {
       console.log(`KITE failed to initialize: ${err}\nConfiguration ${config}`);
@@ -144,14 +144,6 @@ export default class Kite {
   }
 
   /**
-   * @param {KiteConfig} config
-   * takes the configuration
-   * for KITE standalone servers
-   * and generates the YAML configuration
-   * file locally.
-   * @param {string} server
-   * the server string of a remote Kite
-   * instance for connection.
    * @param {any} arg
    * either the configuration object or
    * the address of kite server instance
@@ -173,14 +165,6 @@ export default class Kite {
   }
 
   /**
-   * @param {KiteConfig} config
-   * takes the configuration
-   * for KITE standalone servers
-   * and generates the YAML configuration
-   * file locally.
-   * @param {string} server
-   * the server string of a remote Kite
-   * instance for connection.
    * @param {any} arg
    * either the configuration object or
    * the address of kite server instance
@@ -197,16 +181,8 @@ export default class Kite {
 
   /**
    * invokes docker-compose
-   * if kite server not active.
+   * locally or on remote server
    *
-   * @param {KiteConfig} config
-   * takes the configuration
-   * for KITE standalone servers
-   * and generates the YAML configuration
-   * file locally.
-   * @param {string} server
-   * the server string of a remote Kite
-   * instance for connection.
    * @param {any} arg
    * either the configuration object or
    * the address of kite server instance
@@ -216,8 +192,33 @@ export default class Kite {
   public static async deploy(arg?: any) {
     const kite = this.getInstance(arg);
     // if server active deployment happens there...
-    if (kite.serverState === KiteServerState.Connected) return;
+    if (kite.serverState === KiteServerState.Connected) {
+      await this.deployServer();
+    } else {
+      await this.deployLocal();
+      // insert call to monitor library here
+    }
+  }
 
+  /**
+   * requests the remote server
+   * to deploy docker.
+   */
+  private static async deployServer() {
+    const kite = this.getInstance();
+    try {
+      await fetch(`${kite.server}/deploy`);
+      kite.state = KiteState.Running;
+    } catch (err) {
+      console.log(`Kite deployment failed:\n${err}`);
+    }
+  }
+
+  /**
+   * deploys docker locally
+   */
+  private static async deployLocal() {
+    const kite = this.getInstance();
     try {
       await compose.upAll({
         cwd: Kite.downloadDir,
@@ -228,6 +229,7 @@ export default class Kite {
       console.log(`Kite deployment failed:\n${err}`);
     }
   }
+
   /**
    * @returns {KiteSetup}
    * setup to be used for connecting
@@ -236,10 +238,11 @@ export default class Kite {
   public static getSetup(): KiteSetup {
     return this.getInstance().setup;
   }
+
   /**
    * If connected to kite server, gets the config from the server.
    *
-   * @returns {KiteConfigFile | Error }
+   * @returns {KiteConfigFile}
    *
    * the header content and the
    * file stream for transmission.
@@ -248,39 +251,9 @@ export default class Kite {
    * res.writeHead(200, configObj.header);
    * configObj.fileStream.pipe(res);
    */
-  public static getConfig(): KiteConfigFile | Error {
+  public static getConfig(): KiteConfigFile {
     const kite = this.getInstance();
-    if (kite.serverState === KiteServerState.Connected) {
-      this.getConfigFromServer();
-    } else {
-      this.getConfigFromLocal();
-    }
-    return kite.serverConfig;
-  }
-
-  private static async getConfigFromServer() {
-    const kite = this.getInstance();
-    fetch(`${kite.server}/getConfig`, {
-      headers: { Accept: 'application/json' },
-    })
-      .then((resp) => resp.json())
-      .then((data) => (kite.serverConfig = data))
-      .catch((err) => {
-        console.log(`failed to get configFile from ${kite.server}:\n${err}`);
-        kite.serverConfig = new Error(
-          `failed to get configFile from ${kite.server}`
-        );
-      });
-  }
-
-  private static async getConfigFromLocal() {
-    const stat = fs.statSync(Kite.configPath);
-    const header = {
-      'Content-Type': 'text/yml',
-      'Content-Length': stat.size,
-    };
-    const fileStream = fs.createReadStream(Kite.configPath);
-    return { header, fileStream };
+    return kite.configFile;
   }
 
   /**
@@ -290,6 +263,7 @@ export default class Kite {
   public static getKiteState(): KiteState {
     return this.getInstance().state;
   }
+
   /**
    *
    * @returns state of Kite Server
@@ -297,6 +271,7 @@ export default class Kite {
   public static getKiteServerState(): KiteServerState {
     return this.getInstance().serverState;
   }
+
   /**
    * If the kite server isn't running
    * invokes the docker-compose
@@ -305,25 +280,44 @@ export default class Kite {
    */
   public static async disconnect() {
     const kite = this.getInstance();
+    if (kite.serverState === KiteServerState.Connected) {
+      await this.disconnectServer();
+      kite.serverState = KiteServerState.Disconnected; //should this be done?
+    } else {
+      await this.disconnectLocal();
+    }
+    kite.state = KiteState.Shutdown;
+  }
+
+  /**
+   * disconnects from the remote server instance
+   */
+  private static async disconnectServer() {
     try {
-      if (kite.serverState === KiteServerState.Connected) {
-        await fetch(`${kite.server}/disconnect`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({ disconnect: true }),
-        });
-      } else {
-        await compose.down({
-          cwd: Kite.downloadDir,
-          log: true,
-        });
-      }
-      kite.state = KiteState.Shutdown;
+      await fetch(`${this.getInstance().server}/disconnect`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ disconnect: true }),
+      });
     } catch (err) {
-      console.log(`Could not shutdown docker instances:\n${err}`);
+      console.log(`Could not shutdown docker instances on server:\n${err}`);
+    }
+  }
+
+  /**
+   * disconnects from the local instance
+   */
+  private static async disconnectLocal() {
+    try {
+      await compose.down({
+        cwd: Kite.downloadDir,
+        log: true,
+      });
+    } catch (err) {
+      console.log(`Could not shutdown docker instances on local:\n${err}`);
     }
   }
 }
