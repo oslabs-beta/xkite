@@ -2,12 +2,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Kite from '../../common/kite';
 
-type ConfigFile = KiteConfigFile;
-
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ConfigFile>
+  res: NextApiResponse
 ) {
-  const configFile = await Kite.getConfigFile();
-  res.status(200).json(configFile);
+  await Kite.disconnect();
+  return res.status(200).json({});
 }

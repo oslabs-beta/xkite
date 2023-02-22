@@ -13,13 +13,15 @@ export default async function handler(
   res: NextApiResponse<Data>
 ) {
   console.log('configuring kite...');
-  // Kite.configure( // can be configured in server or local mode
-  //   // 'localhost:6661'
-  //   // { numOfClusters: 3, dataSource: 'postgresql', sink: 'jupyter' }
-  // );
+  Kite.configure(
+    // can be configured in server or local mode
+    'http://localhost:3001' //very important to start with http://
+    //   // { numOfClusters: 3, dataSource: 'postgresql', sink: 'jupyter' }
+  );
   console.log('deploying kite...');
   Kite.deploy();
-  const { dataSetup, kafkaSetup } = Kite.getSetup();
+  // console.log(await Kite.getSetup());
+  const { dataSetup, kafkaSetup } = await Kite.getSetup();
   const topic = 'messages';
   const kafka = new Kafka({
     clientId: 'chat-gui',

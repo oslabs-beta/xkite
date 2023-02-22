@@ -1,6 +1,7 @@
 import yaml from 'js-yaml';
 import fs from 'fs-extra';
 import path from 'path';
+import { getIPAddress } from '../utilities';
 const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
 
 export default function ymlGenerator(): Function {
@@ -167,6 +168,8 @@ export default function ymlGenerator(): Function {
       fs.ensureDirSync(path.resolve(downloadDir, 'jmx'));
       fs.ensureDirSync(path.resolve(downloadDir, 'prometheus'));
 
+      const ipAddr = getIPAddress()();
+
       for (let i = 4; i < numOfClusters + 4; i++) {
         YAML.services[`jmx-kafka${i - 3}`] = {
           ...JMX,
@@ -197,7 +200,7 @@ export default function ymlGenerator(): Function {
           },
         };
 
-        setup.kafkaSetup.brokers.push(`localhost:909${1 + i}`);
+        setup.kafkaSetup.brokers.push(`${ipAddr}:909${1 + i}`);
 
         PROMCONFIG.scrape_configs[0].static_configs[0].targets.push(
           `jmx-kafka${i - 3}:5566`

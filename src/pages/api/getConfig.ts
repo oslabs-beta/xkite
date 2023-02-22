@@ -4,10 +4,10 @@ import Kite from '../../common/kite';
 
 type Config = KiteConfig;
 
-export default function handler(
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Config>
 ) {
-  const config = Kite.getConfig();
+  const config = await Kite.getConfig();
   res.status(200).json(config);
 }
