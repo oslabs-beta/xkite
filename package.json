@@ -1,13 +1,30 @@
 {
   "name": "xkite",
   "version": "0.1.0",
-  "private": true,
+  "description": "XKite is a web-based tool for creating, managing, and analyzing Kafka clusters. It is built on top of the Kafkajs library and uses Docker to create and manage the Kafka cluster.",
+  "author": "XKite Team- OpenSource Labs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oslabs-beta/xkite"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
+  "bin": {
+    "xkite": "bin/cli"
+  },
+  "keywords": [
+    "apache",
+    "kafka",
+    "kafkajs",
+    "docker",
+    "react",
+    "nextjs"
+  ],
   "dependencies": {
     "@next/font": "13.1.6",
     "@types/node": "18.14.0",
