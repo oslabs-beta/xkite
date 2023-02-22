@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs-extra';
-import compose, { mapPsOutput } from 'docker-compose';
+import compose from 'docker-compose';
 import ymlGenerator from '../ymlgenerator';
 import zipper from 'zip-local';
 
