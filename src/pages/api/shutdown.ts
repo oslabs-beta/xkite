@@ -3,7 +3,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import Kite from '../../common/kite';
 
 type Result = {
-  result: string;
+  result?: string;
+  error?: string;
 };
 
 export default async function handler(
@@ -11,8 +12,9 @@ export default async function handler(
   res: NextApiResponse<Result>
 ) {
   if (req.method === 'DELETE') {
-    const kite = new Kite();
-    kite.disconnect();
+    const kite = Kite.disconnect();
     res.status(200).json({ result: 'success' });
+  } else {
+    res.status(405).send({ error: 'Method Not Allowed' });
   }
 }

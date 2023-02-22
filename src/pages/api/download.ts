@@ -9,13 +9,13 @@ export default function handler(
   res: NextApiResponse<File>
 ) {
   if (req.method === 'GET') {
-    const kite = new Kite();
-    const configObj = kite.getConfig();
+    const configObj = Kite.getConfig();
     if (configObj instanceof Error) return res.status(500);
+    res.setHeader('Content-Type', 'application/x-yaml');
+    res.setHeader('Content-Disposition', 'attachment; filename=config.yaml');
     res.writeHead(200, configObj.header);
-    //TO DO: uncomment when connecting to UI this will download the file in yaml format
-    // res.setHeader('Content-Type', 'application/x-yaml');
-    // res.setHeader('Content-Disposition', 'attachment; filename=config.yaml');
     configObj.fileStream.pipe(res);
+  } else {
+    res.status(405).send('Method Not Allowed');
   }
 }
