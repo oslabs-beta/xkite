@@ -1,6 +1,7 @@
 import yaml from 'js-yaml';
 import fs from 'fs-extra';
 import path from 'path';
+import { getIPAddress } from '../utilities';
 const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
 
 export default function ymlGenerator(): Function {
@@ -167,6 +168,7 @@ export default function ymlGenerator(): Function {
       fs.ensureDirSync(path.resolve(downloadDir, 'jmx'));
       fs.ensureDirSync(path.resolve(downloadDir, 'prometheus'));
 
+      const ipAddr = getIPAddress()();      
       for (let i = 0; i < numOfClusters; i++) {
         YAML.services[`jmx-kafka${1 + i}`] = {
           ...JMX,
@@ -188,7 +190,7 @@ export default function ymlGenerator(): Function {
             KAFKA_JMX_PORT: 9991 + i,
             KAFKA_ADVERTISED_LISTENERS: `PLAINTEXT://kafka${
               1 + i
-            }:29092,PLAINTEXT_HOST://localhost:909${i + 1}`,
+            }:29092,PLAINTEXT_HOST://${ipAddr}:909${i + 1}`,
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR:
               numOfClusters < 3 ? numOfClusters : 3,
             KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR:
@@ -196,8 +198,8 @@ export default function ymlGenerator(): Function {
             CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `kafka${i + 1}:29092`,
           },
         };
-
-        setup.kafkaSetup.brokers.push(`localhost:909${1 + i}`);
+        // requires port forwarding on host computer
+        setup.kafkaSetup.brokers.push(`${ipAddr}:909${1 + i}`);
 
         PROMCONFIG.scrape_configs[0].static_configs[0].targets.push(
           `jmx-kafka${1 + i}:5566`
