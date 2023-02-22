@@ -242,6 +242,17 @@ export default class Kite {
   /**
    * If connected to kite server, gets the config from the server.
    *
+   * @returns {KiteConfig}
+   *
+   */
+  public static getConfig(): KiteConfig {
+    const kite = this.getInstance();
+    return kite.config;
+  }
+
+  /**
+   * If connected to kite server, gets the config from the server.
+   *
    * @returns {KiteConfigFile}
    *
    * the header content and the
@@ -251,7 +262,7 @@ export default class Kite {
    * res.writeHead(200, configObj.header);
    * configObj.fileStream.pipe(res);
    */
-  public static getConfig(): KiteConfigFile {
+  public static getConfigFile(): KiteConfigFile {
     const kite = this.getInstance();
     return kite.configFile;
   }

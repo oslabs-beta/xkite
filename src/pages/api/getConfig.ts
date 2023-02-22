@@ -2,14 +2,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Kite from '../../common/kite';
 
-type File = string;
+type Config = KiteConfig;
 
 export default function handler(
   req: NextApiRequest,
-  res: NextApiResponse<File>
+  res: NextApiResponse<Config>
 ) {
-  const configObj = Kite.getConfigFile();
-  if (configObj instanceof Error) return res.status(500);
-  res.writeHead(200, configObj.header);
-  configObj.fileStream.pipe(res);
+  const config = Kite.getConfig();
+  res.status(200).json(config);
 }
