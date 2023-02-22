@@ -9,9 +9,15 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<File>
 ) {
-  const configObj = await Kite.getConfigFile();
-  if (configObj instanceof Error) return res.status(500);
-  res.writeHead(200, configObj.header);
-  const s = new ReadableString(configObj.fileStream);
-  s.pipe(res);
+  if (req.method === 'GET') {
+    const configObj = await Kite.getConfigFile();
+    if (configObj instanceof Error) return res.status(500);
+    res.setHeader('Content-Type', 'application/x-yaml');
+    res.setHeader('Content-Disposition', 'attachment; filename=config.yaml');
+    res.writeHead(200, configObj.header);
+    const s = new ReadableString(configObj.fileStream);
+    s.pipe(res);
+  } else {
+    res.status(405).send('Method Not Allowed');
+  }
 }
