@@ -8,8 +8,14 @@ export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<File>
 ) {
-  const configObj = Kite.getConfig();
-  if (configObj instanceof Error) return res.status(500);
-  res.writeHead(200, configObj.header);
-  configObj.fileStream.pipe(res);
+  if (req.method === 'GET') {
+    const configObj = Kite.getConfig();
+    if (configObj instanceof Error) return res.status(500);
+    res.setHeader('Content-Type', 'application/x-yaml');
+    res.setHeader('Content-Disposition', 'attachment; filename=config.yaml');
+    res.writeHead(200, configObj.header);
+    configObj.fileStream.pipe(res);
+  } else {
+    res.status(405).send('Method Not Allowed');
+  }
 }
