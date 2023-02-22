@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs-extra';
-import compose from 'docker-compose';
+import compose, { mapPsOutput } from 'docker-compose';
 import ymlGenerator from '../ymlgenerator';
 import zipper from 'zip-local';
 
@@ -95,6 +95,7 @@ export default class Kite {
     ])
       .then((resp) => resp.map((elem) => elem.json()))
       .then((results) => {
+        console.log(results);
         [this.config, this.setup, this.configFile] = [
           <KiteConfig>(<unknown>results[0]),
           <KiteSetup>(<unknown>results[1]),
