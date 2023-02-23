@@ -1,99 +1,139 @@
-import { Form, Button } from 'react-bootstrap';
-import { useState } from 'react';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import FormGroup from 'react-bootstrap/FormGroup';
+import Row from 'react-bootstrap/Row';
+import Container from 'react-bootstrap/Container';
 
-interface KiteConfigurationRequest {
-  numberOfClusters: number;
-  numberOfBrokers: number;
-  dataSource: string;
-  dataSink: string;
-}
-
-const defaultKiteConfigurationRequest: KiteConfigurationRequest = {
-  numberOfClusters: 1,
-  numberOfBrokers: 3,
-  dataSource: 'postgresql',
-  dataSink: 'jupyter',
-};
+import { SyntheticEvent, useState } from 'react';
+import { defaultConfig } from '@/common/defaults/defaultConfig';
 
 export default function ConfigurationForm() {
-  const [kiteConfigurationRequest, setKiteConfigurationRequest] = useState(
-    defaultKiteConfigurationRequest
-  );
+  const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultConfig);
 
-  function updateKiteConfigurationRequest(
+  function updateKiteConfigRequest(
     // Prevent numeric values from going below 1
-    update: Partial<KiteConfigurationRequest>
+    update: Partial<KiteConfig>
   ) {
     const value = Object.values(update)[0];
     if (typeof value === 'number' && value <= 0) return;
 
-    setKiteConfigurationRequest((currentKiteConfigurationRequest) => {
+    setKiteConfigRequest((currentKiteConfigRequest) => {
       return {
-        ...currentKiteConfigurationRequest,
+        ...currentKiteConfigRequest,
         ...update,
       };
     });
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    // TODO: Send the request to the backend
-    console.log(kiteConfigurationRequest);
-    setKiteConfigurationRequest(defaultKiteConfigurationRequest);
+  function submitHandler(event: SyntheticEvent) {
+    event.preventDefault();
+    console.log('sending configuration…');
+    console.log(defaultConfig);
+
+    fetch('/api/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(kiteConfigRequest),
+    })
+      .then((response) => {
+        console.dir(response);
+        // setKiteConfigRequest(defaultConfig);
+      })
+      .catch((error) => {
+        console.error(error.message);
+      });
+  }
+
+  function exportConfigHandler(event: SyntheticEvent) {
+    console.log('Configuration exporting is not implemented yet');
+  }
+
+  function disconnectHandler(event: SyntheticEvent) {
+    console.log('Disconnection…');
+    fetch('/api/shutdown', {
+      method: 'DELETE',
+    })
+      .then((response) => console.log(response))
+      .catch((error) => console.error(error));
   }
 
   return (
-    <Form onSubmit={handleSubmit} className='row'>
-      <Form.Group className='mb-3 col-6' controlId='numberOfClusters'>
-        <Form.Label>Number of Clusters</Form.Label>
-        <Form.Control
-          type='number'
-          // placeholder='How many clusters?'
-          onChange={(e) => {
-            const numberOfClusters = +e.target.value;
-            updateKiteConfigurationRequest({ numberOfClusters });
-          }}
-          value={kiteConfigurationRequest.numberOfClusters.toString()}
-        />
-      </Form.Group>
-      <Form.Group className='mb-3 col-6' controlId='numberOfBrokers'>
-        <Form.Label>Number of Brokers</Form.Label>
-        <Form.Control
-          type='number'
-          placeholder='Password'
-          onChange={(e) => {
-            const numberOfBrokers = +e.target.value;
-            updateKiteConfigurationRequest({ numberOfBrokers });
-          }}
-          value={kiteConfigurationRequest.numberOfBrokers}
-        />
-      </Form.Group>
-      <Form.Group className='mb-3' controlId='formBasicPassword'>
-        <Form.Label>Data Source</Form.Label>
-        <Form.Control
-          type='text'
-          placeholder='Data Source'
-          onChange={(e) =>
-            updateKiteConfigurationRequest({ dataSource: e.target.value })
-          }
-          value={kiteConfigurationRequest.dataSource}
-        />
-      </Form.Group>
-      <Form.Group className='mb-3' controlId='dataSink'>
-        <Form.Label>Data Sink</Form.Label>
-        <Form.Control
-          type='text'
-          placeholder='Data Sink'
-          onChange={(e) =>
-            updateKiteConfigurationRequest({ dataSink: e.target.value })
-          }
-          value={kiteConfigurationRequest.dataSink}
-        />
-      </Form.Group>
-
-      <Button variant='primary' type='submit'>
-        Submit
-      </Button>
-    </Form>
+    <Container>
+      <Form className='mb-3' onSubmit={submitHandler}>
+        <Row className='align-items-end'>
+          <Form.Group className='col-2' controlId='numberOfClusters'>
+            <Form.Label>Clusters</Form.Label>
+            <Form.Control
+              type='number'
+              // placeholder='How many clusters?'
+              onChange={(e) => {
+                const numberOfClusters = +e.target.value;
+                updateKiteConfigRequest({ numOfClusters: numberOfClusters });
+              }}
+              value={kiteConfigRequest.numOfClusters.toString()}
+            />
+          </Form.Group>
+          {/*<Form.Group className='mb-3 col-6' controlId='numberOfBrokers'>*/}
+          {/*  <Form.Label>Number of Brokers</Form.Label>*/}
+          {/*  <Form.Control*/}
+          {/*    type='number'*/}
+          {/*    placeholder='Password'*/}
+          {/*    onChange={(e) => {*/}
+          {/*      const numberOfBrokers = +e.target.value;*/}
+          {/*      updateKiteConfigRequest({ numberOfBrokers });*/}
+          {/*    }}*/}
+          {/*    value={kiteConfigRequest.numberOfBrokers}*/}
+          {/*  />*/}
+          {/*</Form.Group>*/}
+          {/*TODO: Convert to a selection drop down*/}
+          <Form.Group className='col-4' controlId='dataSource'>
+            <Form.Label>Data Source</Form.Label>
+            <Form.Control
+              type='text'
+              placeholder='Data Source'
+              onChange={(e) =>
+                updateKiteConfigRequest({ dataSource: e.target.value })
+              }
+              value={kiteConfigRequest.dataSource}
+            />
+          </Form.Group>
+          <Form.Group className='col-4' controlId='sink'>
+            <Form.Label>Data Sink</Form.Label>
+            <Form.Control
+              type='text'
+              placeholder='Data Sink'
+              onChange={(e) =>
+                updateKiteConfigRequest({ sink: e.target.value })
+              }
+              value={kiteConfigRequest.sink}
+            />
+          </Form.Group>
+          <FormGroup className='col-2 '>
+            <Button variant='primary' type='submit'>
+              Submit
+            </Button>
+          </FormGroup>
+        </Row>
+      </Form>
+      <Row className={'gx-1 gy-1'}>
+        <Button
+          variant='secondary'
+          onClick={exportConfigHandler}
+          // disabled
+        >
+          Export Config
+        </Button>
+        <Button
+          variant='danger'
+          onClick={disconnectHandler}
+          // disabled
+        >
+          Disconnect
+        </Button>
+        {/*</Col>*/}
+      </Row>
+    </Container>
   );
 }
