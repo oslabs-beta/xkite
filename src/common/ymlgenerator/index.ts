@@ -50,6 +50,9 @@ export default function ymlGenerator(): Function {
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1,
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1,
       CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: '',
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true',
+      KAFKA_DELETE_TOPIC_ENABLE: 'true',
+      KAFKA_CREATE_TOPICS: 'topic-test:1:1',
     },
     ports: [],
     volumes: [],
@@ -170,8 +173,7 @@ export default function ymlGenerator(): Function {
       fs.ensureDirSync(path.resolve(downloadDir, 'prometheus'));
       const ipAddr = 'localhost'; //getIPAddress()();
 
-      const numOfZKs =
-        (kafka.zookeepers?.size ?? 1) > 1 ? kafka.zookeepers?.size ?? 1 : 1;
+      const numOfZKs = kafka.zookeepers.size > 1 ? kafka.zookeepers.size : 1;
       // get server list
       const servers = (() => {
         let zkServer = '';
@@ -188,15 +190,19 @@ export default function ymlGenerator(): Function {
       for (let i = 0; i < numOfZKs; i++) {
         const n = i + 1;
         const name = `zookeeper${n}`;
+        let cport = `${n}2181`;
+        if (kafka.zookeepers.client_ports !== undefined) {
+          cport = String(kafka.zookeepers.client_ports[i]);
+        }
         YAML.services[name] = {
           ...ZOOKEEPER,
           environment: {
             ...ZOOKEEPER.environment,
             ZOOKEEPER_SERVER_ID: n,
-            ZOOKEEPER_CLIENT_PORT: `${n}2181`,
+            ZOOKEEPER_CLIENT_PORT: cport,
             ZOOKEEPER_SERVERS: servers.zkServer,
           },
-          ports: [`${n}2182:2181`],
+          ports: [`${cport}:2181`],
           container_name: name,
         };
         dependencies.push(name);

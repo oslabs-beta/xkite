@@ -5,10 +5,12 @@ interface KiteConfig {
     brokers: {
       size: number;
       replicas?: number; // must be less than size
+      ports?: number[]; // [25483, 65534, ...]
     };
-    zookeepers?: {
+    zookeepers: {
       size: number;
-      replicas?: number; // must be less than size
+      client_ports?: number[]; // [25483, 65534, ...]
+      server_ports?: number[];
     };
   };
   dataSource: string;
