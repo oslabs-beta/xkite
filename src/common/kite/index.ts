@@ -4,13 +4,6 @@ import compose from 'docker-compose';
 import ymlGenerator from '../ymlgenerator';
 import zipper from 'zip-local';
 
-// const defaultServer = 'localhost:6661';
-
-// simple prog for CLI:
-// const kite = new Kite({numOfCluster:arg[2], dataSource:arg[3], sink:arg[4]})
-// kite.deploy()
-//
-
 enum KiteState {
   Init,
   Configured,
@@ -22,10 +15,6 @@ enum KiteServerState {
   Disconnected,
   Connected,
 }
-
-// export abstract class KiteInstances {
-//   public static
-// }
 
 export default class Kite {
   private static instance: Kite; //make a singleton
@@ -40,7 +29,6 @@ export default class Kite {
     dataSource: 'postgresql',
     sink: 'jupyter',
   };
-
   // parameter types
   config!: Promise<KiteConfig> | KiteConfig;
   server?: string;
@@ -57,17 +45,16 @@ export default class Kite {
    * @param {string} server
    * the server string of a remote Kite
    * instance for connection.
-   * @param {any} arg
+   * @param {string | KiteConfig} arg
    * either the configuration object or
    * the address of kite server instance
    * for remote or local setup.
    */
-  private constructor(arg?: any) {
+  private constructor(arg?: string | KiteConfig) {
     if (arg === undefined) {
       this.configLocal(Kite.defaultCfg);
     } else {
-      const type = typeof arg;
-      switch (type) {
+      switch (typeof arg) {
         case 'string':
           this.configServer(arg);
           break;
@@ -84,7 +71,7 @@ export default class Kite {
    * the server string of a remote Kite
    * instance for connection.
    */
-  private async configServer(server: any) {
+  private async configServer(server: string) {
     this.server = server;
     this.state = KiteState.Init;
     this.serverState = KiteServerState.Disconnected;
@@ -112,7 +99,7 @@ export default class Kite {
    * and generates the YAML configuration
    * file locally.
    */
-  private configLocal(config: any) {
+  private configLocal(config: KiteConfig) {
     this.config = config;
     this.state = KiteState.Init;
     this.serverState = KiteServerState.Disconnected;
@@ -142,12 +129,12 @@ export default class Kite {
   }
 
   /**
-   * @param {any} arg
+   * @param {string | KiteConfig} arg
    * either the configuration object or
    * the address of kite server instance
    * for remote or local setup.
    */
-  public static configure(arg: any) {
+  public static configure(arg: string | KiteConfig) {
     if (!Kite.instance) {
       Kite.instance = new Kite(arg);
     } else {
@@ -170,7 +157,7 @@ export default class Kite {
    * @returns
    * the singleton version of Kite
    */
-  public static getInstance(arg?: any): Kite {
+  public static getInstance(arg?: string | KiteConfig): Kite {
     if (!Kite.instance) {
       Kite.instance = new Kite(arg);
     }
