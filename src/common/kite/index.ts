@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import compose from 'docker-compose';
 import ymlGenerator from '../ymlgenerator';
 import zipper from 'zip-local';
+import Monitor from '../monitor/monitor';
 
 // const defaultServer = 'localhost:6661';
 
@@ -194,7 +195,7 @@ export default class Kite {
       await this.deployServer();
     } else {
       await this.deployLocal();
-      // insert call to monitor library here
+      Monitor.initiate();
     }
   }
 

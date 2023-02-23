@@ -1,14 +1,32 @@
 {
   "name": "xkite",
   "version": "0.1.0",
-  "private": true,
+  "description": "XKite is a web-based tool for creating, managing, and analyzing Kafka clusters. It is built on top of the Kafkajs library and uses Docker to create and manage the Kafka cluster.",
+  "author": "XKite Team- OpenSource Labs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oslabs-beta/xkite"
+  },
   "scripts": {
     "spring": "mvn -f ./src/common/springApp/pom.xml spring-boot:run",
-    "dev": "concurrently \"next dev\" \"npm run spring\"",
+    "dev:6662": "next dev -p 6662",
+    "dev": "concurrently \"npm run dev:6662\" \"next dev\" \"npm run spring\" \"open http://localhost:3000\" \"open http://localhost:6662/display\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
+  "bin": {
+    "xkite": "bin/cli"
+  },
+  "keywords": [
+    "apache",
+    "kafka",
+    "kafkajs",
+    "docker",
+    "react",
+    "nextjs"
+  ],
   "dependencies": {
     "@next/font": "13.1.6",
     "@types/node": "18.14.0",
@@ -16,6 +34,7 @@
     "@types/react-dom": "18.0.11",
     "bootstrap": "^5.2.3",
     "concurrently": "^7.6.0",
+    "eslint": "8.34.0",
     "eslint-config-next": "13.1.6",
     "next": "13.1.6",
     "react": "18.2.0",
