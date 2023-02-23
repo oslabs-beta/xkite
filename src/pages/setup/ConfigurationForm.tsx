@@ -43,8 +43,8 @@ export default function ConfigurationForm() {
   }
 
   return (
-    <Form onSubmit={handleSubmit} className='my-4'>
-      <Form.Group className='mb-3' controlId='numberOfClusters'>
+    <Form onSubmit={handleSubmit} className='row'>
+      <Form.Group className='mb-3 col-6' controlId='numberOfClusters'>
         <Form.Label>Number of Clusters</Form.Label>
         <Form.Control
           type='number'
@@ -56,7 +56,7 @@ export default function ConfigurationForm() {
           value={kiteConfigurationRequest.numberOfClusters.toString()}
         />
       </Form.Group>
-      <Form.Group className='mb-3' controlId='numberOfBrokers'>
+      <Form.Group className='mb-3 col-6' controlId='numberOfBrokers'>
         <Form.Label>Number of Brokers</Form.Label>
         <Form.Control
           type='number'

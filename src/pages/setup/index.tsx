@@ -5,7 +5,7 @@ export default function SetupPage() {
   return (
     <>
       <Container>
-        <h1 className={'mb-3'}>Configure Your Kafka Cluster(s)</h1>
+        <h1 className={'my-4'}>Configure Your Kafka Cluster(s)</h1>
         <ConfigurationForm />
       </Container>
     </>
