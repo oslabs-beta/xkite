@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev\" \"mvn -f ./src/common/springApp/pom.xml spring-boot:run\"",
+    "spring": "mvn -f ./src/common/springApp/pom.xml spring-boot:run",
+    "dev": "concurrently \"next dev\" \"npm run spring\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
