@@ -25,7 +25,15 @@ export default class Kite {
   static configPath: string = path.join(Kite.downloadDir, 'docker-compose.yml');
 
   static defaultCfg: KiteConfig = {
-    numOfClusters: 2,
+    kafka: {
+      brokers: {
+        size: 2,
+        replicas: 2,
+      },
+      zookeepers: {
+        size: 2,
+      },
+    },
     dataSource: 'postgresql',
     sink: 'jupyter',
   };

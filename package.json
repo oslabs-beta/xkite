@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "concurrently \"next dev\" \"mvn -f ./src/common/springApp/pom.xml spring-boot:run\"",
+    "next-dev": "next dev",
+    "mvn-dev": "mvn -f ./src/common/springApp/pom.xml spring-boot:run",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

@@ -1,7 +1,16 @@
 // types/kite.d.ts
 
 interface KiteConfig {
-  numOfClusters: number;
+  kafka: {
+    brokers: {
+      size: number;
+      replicas?: number; // must be less than size
+    };
+    zookeepers?: {
+      size: number;
+      replicas?: number; // must be less than size
+    };
+  };
   dataSource: string;
   sink: string;
 }
