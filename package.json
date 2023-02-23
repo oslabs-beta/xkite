@@ -9,7 +9,8 @@
     "url": "https://github.com/oslabs-beta/xkite"
   },
   "scripts": {
-    "dev": "concurrently \"next dev\" \"mvn -f ./src/common/springApp/pom.xml spring-boot:run\"",
+    "dev:6662": "next dev -p 6662",
+    "dev": "concurrently \"npm run dev:6662\" \"next dev\" \"mvn -f ./src/common/springApp/pom.xml spring-boot:run\" \"open http://localhost:3000\" \"open http://localhost:6662/display\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
