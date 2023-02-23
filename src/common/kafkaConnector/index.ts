@@ -116,6 +116,18 @@ export default class KafkaConnector {
 
   /**
    *
+   * disconnects the producer from the kafka instance
+   */
+  public async disconnectProducer() {
+    try {
+      await this.producer.disconnect();
+    } catch (error) {
+      console.log('Error disconnecting producer: ', error);
+    }
+  }
+
+  /**
+   *
    * @param {string} groupId
    * @param {string} topic
    * @param {boolean} fromBeginning
@@ -147,6 +159,21 @@ export default class KafkaConnector {
       return consumer;
     } catch (error) {
       console.log('Error creating consumer: ', error);
+    }
+  }
+
+  /**
+   *
+   * @param {Consumer} consumer
+   *
+   * disconnects a consumer from the kafka instance
+   *
+   */
+  public async disconnectConsumer(consumer: Consumer) {
+    try {
+      await consumer.disconnect();
+    } catch (error) {
+      console.log('Error disconnecting consumer: ', error);
     }
   }
 }
