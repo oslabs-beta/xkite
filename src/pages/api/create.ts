@@ -11,11 +11,8 @@ type Data = {
 //const kiteHost = process.env.KITE_HOST || 'localhost:6661'; //if we want to proceed with env variables
 const kiteHost = 'localhost:6661';
 
-const defaultConfig = {
-  numOfClusters: 1,
-  dataSource: 'postgresql',
-  sink: 'jupyter',
-};
+// default to two clusters... not configurable for MVP
+import { defaultConfig } from '@/common/defaults/defaultConfig';
 
 export default async function handler(
   req: NextApiRequest,
