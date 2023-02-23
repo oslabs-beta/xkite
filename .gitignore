@@ -199,5 +199,5 @@ src/common/kite/download/pipeline.zip
 # Java generated files
 src/common/springApp/target
 
-# VSCODE
-.vscode/
+# vscode
+.vscode
