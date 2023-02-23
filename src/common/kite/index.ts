@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import compose from 'docker-compose';
 import ymlGenerator from '../ymlgenerator';
 import zipper from 'zip-local';
+import Monitor from '../monitor/monitor';
 
 // const defaultServer = 'localhost:6661';
 
@@ -42,12 +43,12 @@ export default class Kite {
   };
 
   // parameter types
-  config!: KiteConfig;
+  config!: Promise<KiteConfig> | KiteConfig;
   server?: string;
-  setup!: KiteSetup;
+  setup!: Promise<KiteSetup> | KiteSetup;
   state!: KiteState;
   serverState!: KiteServerState;
-  configFile!: KiteConfigFile;
+  configFile!: Promise<KiteConfigFile> | KiteConfigFile;
   /**
    * @param {KiteConfig} config
    * takes the configuration
@@ -84,29 +85,25 @@ export default class Kite {
    * the server string of a remote Kite
    * instance for connection.
    */
-  private configServer(server: any) {
+  private async configServer(server: any) {
     this.server = server;
     this.state = KiteState.Init;
     this.serverState = KiteServerState.Disconnected;
-    Promise.all([
-      fetch(`${server}/getConfig`),
-      fetch(`${server}/getSetup`),
-      fetch(`${server}/getConfigFile`),
-    ])
-      .then((resp) => resp.map((elem) => elem.json()))
-      .then((results) => {
-        [this.config, this.setup, this.configFile] = [
-          <KiteConfig>(<unknown>results[0]),
-          <KiteSetup>(<unknown>results[1]),
-          <KiteConfigFile>(<unknown>results[2]),
-        ];
-        this.state = KiteState.Configured;
-        this.serverState = KiteServerState.Connected;
-      })
-      .then((data) => {})
-      .catch((err) => {
-        console.log(`error fetching from ${this.server}:\n${err}`);
-      });
+
+    try {
+      this.serverState = KiteServerState.Connected;
+      const res = [
+        fetch(`${server}/api/getConfig`),
+        fetch(`${server}/api/getSetup`),
+        fetch(`${server}/api/getConfigFile`),
+      ];
+      [this.config, this.setup, this.configFile] = res.map(async (r) =>
+        (await r).json()
+      );
+    } catch (err) {
+      this.serverState = KiteServerState.Disconnected;
+      console.error(`error fetching from ${this.server}/api/:\n${err}`);
+    }
   }
 
   /**
@@ -135,11 +132,13 @@ export default class Kite {
         'Content-Type': 'text/yml',
         'Content-Length': fs.statSync(Kite.configPath).size,
       };
-      const fileStream = fs.createReadStream(Kite.configPath);
+      const fileStream = fs.readFileSync(Kite.configPath, 'utf-8');
       this.configFile = { header, fileStream };
       this.state = KiteState.Configured;
     } catch (err) {
-      console.log(`KITE failed to initialize: ${err}\nConfiguration ${config}`);
+      console.error(
+        `KITE failed to initialize: ${err}\nConfiguration ${config}`
+      );
     }
   }
 
@@ -196,7 +195,7 @@ export default class Kite {
       await this.deployServer();
     } else {
       await this.deployLocal();
-      // insert call to monitor library here
+      Monitor.initiate();
     }
   }
 
@@ -207,10 +206,10 @@ export default class Kite {
   private static async deployServer() {
     const kite = this.getInstance();
     try {
-      await fetch(`${kite.server}/deploy`);
+      await fetch(`${kite.server}/api/deploy`);
       kite.state = KiteState.Running;
     } catch (err) {
-      console.log(`Kite deployment failed:\n${err}`);
+      console.error(`Kite deployment failed:\n${err}`);
     }
   }
 
@@ -226,7 +225,7 @@ export default class Kite {
       });
       kite.state = KiteState.Running;
     } catch (err) {
-      console.log(`Kite deployment failed:\n${err}`);
+      console.error(`Kite deployment failed:\n${err}`);
     }
   }
 
@@ -235,8 +234,18 @@ export default class Kite {
    * setup to be used for connecting
    * to a kafka instance and/or database.
    */
-  public static getSetup(): KiteSetup {
-    return this.getInstance().setup;
+  public static getSetup(): Promise<KiteSetup> {
+    return new Promise((res) => res(this.getInstance().setup));
+  }
+
+  /**
+   * If connected to kite server, gets the config from the server.
+   *
+   * @returns {KiteConfig}
+   *
+   */
+  public static getConfig(): Promise<KiteConfig> {
+    return new Promise((res) => res(this.getInstance().config));
   }
 
   /**
@@ -251,9 +260,8 @@ export default class Kite {
    * res.writeHead(200, configObj.header);
    * configObj.fileStream.pipe(res);
    */
-  public static getConfig(): KiteConfigFile {
-    const kite = this.getInstance();
-    return kite.configFile;
+  public static getConfigFile(): Promise<KiteConfigFile> {
+    return new Promise((res) => res(this.getInstance().configFile));
   }
 
   /**
@@ -278,13 +286,13 @@ export default class Kite {
    * down method directly. Otherwise
    * makes a request to shutdown remotely.
    */
-  public static async disconnect() {
+  public static async disconnect(): Promise<any> {
     const kite = this.getInstance();
     if (kite.serverState === KiteServerState.Connected) {
-      await this.disconnectServer();
       kite.serverState = KiteServerState.Disconnected; //should this be done?
+      this.disconnectServer();
     } else {
-      await this.disconnectLocal();
+      this.disconnectLocal();
     }
     kite.state = KiteState.Shutdown;
   }
@@ -294,7 +302,7 @@ export default class Kite {
    */
   private static async disconnectServer() {
     try {
-      await fetch(`${this.getInstance().server}/disconnect`, {
+      await fetch(`${this.getInstance().server}/api/disconnect`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -303,7 +311,7 @@ export default class Kite {
         body: JSON.stringify({ disconnect: true }),
       });
     } catch (err) {
-      console.log(`Could not shutdown docker instances on server:\n${err}`);
+      console.error(`Could not shutdown docker instances on server:\n${err}`);
     }
   }
 
@@ -317,7 +325,7 @@ export default class Kite {
         log: true,
       });
     } catch (err) {
-      console.log(`Could not shutdown docker instances on local:\n${err}`);
+      console.error(`Could not shutdown docker instances on local:\n${err}`);
     }
   }
 }
