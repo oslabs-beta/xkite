@@ -177,8 +177,8 @@ export default function ymlGenerator(): Function {
         let zkServer = '';
         let zkClients = '';
         for (let i = 0; i < numOfZKs; i++) {
-          zkServer += `localhost:${i + 2}2888:${i + 2}3888;`;
-          zkClients += `localhost:${i + 2}2181,`;
+          zkServer += `zookeeper${i + 1}:${i + 1}2888:${i + 1}3888;`;
+          zkClients += `zookeeper${i + 1}:${i + 1}2181,`;
         }
         zkServer = zkServer.slice(0, -1);
         zkClients = zkClients.slice(0, -1);
@@ -187,16 +187,16 @@ export default function ymlGenerator(): Function {
       // construct zookeepers
       for (let i = 0; i < numOfZKs; i++) {
         const n = i + 1;
-        const name = `zookeeper-${n}`;
+        const name = `zookeeper${n}`;
         YAML.services[name] = {
           ...ZOOKEEPER,
           environment: {
             ...ZOOKEEPER.environment,
             ZOOKEEPER_SERVER_ID: n,
-            ZOOKEEPER_CLIENT_PORT: `${n}2182`,
+            ZOOKEEPER_CLIENT_PORT: `${n}2181`,
             ZOOKEEPER_SERVERS: servers.zkServer,
           },
-          ports: [`${n}2182:${n}2182`],
+          ports: [`${n}2182:2181`],
           container_name: name,
         };
         dependencies.push(name);
