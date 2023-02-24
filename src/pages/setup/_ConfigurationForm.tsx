@@ -5,10 +5,10 @@ import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
 
 import { SyntheticEvent, useState } from 'react';
-import Kite from '@/common/kite';
+import defaultCfg from '@/common/kite/constants';
 
 export default function ConfigurationForm() {
-  const [kiteConfigRequest, setKiteConfigRequest] = useState(Kite.defaultCfg);
+  const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultCfg);
 
   function updateKiteConfigRequest(
     // Prevent numeric values from going below 1
@@ -28,7 +28,7 @@ export default function ConfigurationForm() {
   function submitHandler(event: SyntheticEvent) {
     event.preventDefault();
     console.log('sending configuration…');
-    console.log(Kite.defaultCfg);
+    console.log(defaultCfg);
 
     fetch('/api/create', {
       method: 'POST',

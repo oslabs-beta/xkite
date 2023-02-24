@@ -4,6 +4,7 @@ import compose from 'docker-compose';
 import ymlGenerator from '../ymlgenerator';
 import zipper from 'zip-local';
 import Monitor from '../monitor/monitor';
+import defaultCfg from './constants';
 
 enum KiteState {
   Init,
@@ -25,19 +26,7 @@ export default class Kite {
   );
   static configPath: string = path.join(Kite.downloadDir, 'docker-compose.yml');
 
-  public static defaultCfg: KiteConfig = {
-    kafka: {
-      brokers: {
-        size: 2,
-        replicas: 2,
-      },
-      zookeepers: {
-        size: 2,
-      },
-    },
-    dataSource: 'postgresql',
-    sink: 'jupyter',
-  };
+  public static defaultCfg: KiteConfig = defaultCfg;
   // parameter types
   config!: Promise<KiteConfig> | KiteConfig;
   server?: string;

@@ -1,7 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Kite from '../../common/kite';
-import fs from 'fs-extra';
 import ReadableString from '../../common/utilities';
 type File = string;
 
