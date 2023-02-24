@@ -6,6 +6,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  await Kite.disconnect();
-  return res.status(200).json({});
+  if (req.method === 'DELETE') {
+    await Kite.disconnect();
+    return res.status(200).json({});
+  } else {
+    res.status(405).send('Method Not Allowed');
+  }
 }

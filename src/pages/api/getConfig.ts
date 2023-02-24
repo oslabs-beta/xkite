@@ -6,8 +6,13 @@ type Config = KiteConfig;
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Config>
+  res: NextApiResponse<Config| string>
 ) {
-  const config = await Kite.getConfig();
-  res.status(200).json(config);
+  if (req.method === 'GET') {
+    const config = await Kite.getConfig();
+    res.status(200).json(config);
+  } else {
+    res.status(405).send('Method Not Allowed');
+  }
+
 }

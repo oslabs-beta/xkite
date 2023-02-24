@@ -6,8 +6,12 @@ type Setup = KiteSetup;
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Setup>
+  res: NextApiResponse<Setup | string>
 ) {
-  const setup = await Kite.getSetup();
-  res.status(200).json(setup);
+  if (req.method === 'GET') {
+    const setup = await Kite.getSetup();
+    res.status(200).json(setup);
+  } else {
+    res.status(405).send('Method Not Allowed');
+  }
 }
