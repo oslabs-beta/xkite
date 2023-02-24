@@ -25,7 +25,7 @@ export default class Kite {
   );
   static configPath: string = path.join(Kite.downloadDir, 'docker-compose.yml');
 
-  static defaultCfg: KiteConfig = {
+  public static defaultCfg: KiteConfig = {
     kafka: {
       brokers: {
         size: 2,

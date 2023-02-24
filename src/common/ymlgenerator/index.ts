@@ -138,6 +138,7 @@ export default function ymlGenerator(): Function {
         },
       },
       kafkaSetup: {
+        clientId: '',
         brokers: [],
         ssl: false,
       },
@@ -160,101 +161,15 @@ export default function ymlGenerator(): Function {
       if (sink === 'spark') YAML.services.spark = SPARK;
       YAML.services.prometheus = PROMETHEUS;
       YAML.services.grafana = GRAFANA;
-      const jmxExporterConfig: any = yaml.load(
-        fs.readFileSync(
-          path.resolve(downloadDir, 'jmx/exporter/template.yml'),
-          'utf8'
-        )
-      );
 
       // Checks if directories download, prometheus and jmx exist, if not, then it creates all of them
       fs.ensureDirSync(downloadDir);
       fs.ensureDirSync(path.resolve(downloadDir, 'jmx'));
       fs.ensureDirSync(path.resolve(downloadDir, 'prometheus'));
-      const ipAddr = 'localhost'; //getIPAddress()();
+      // const ipAddr = 'localhost'; //getIPAddress()();
 
-      const numOfZKs = kafka.zookeepers.size > 1 ? kafka.zookeepers.size : 1;
-      // get server list
-      const servers = (() => {
-        let zkServer = '';
-        let zkClients = '';
-        for (let i = 0; i < numOfZKs; i++) {
-          zkServer += `zookeeper${i + 1}:${i + 1}2888:${i + 1}3888;`;
-          zkClients += `zookeeper${i + 1}:${i + 1}2181,`;
-        }
-        zkServer = zkServer.slice(0, -1);
-        zkClients = zkClients.slice(0, -1);
-        return { zkServer, zkClients };
-      })();
-      // construct zookeepers
-      for (let i = 0; i < numOfZKs; i++) {
-        const n = i + 1;
-        const name = `zookeeper${n}`;
-        let cport = `${n}2181`;
-        if (kafka.zookeepers.client_ports !== undefined) {
-          cport = String(kafka.zookeepers.client_ports[i]);
-        }
-        YAML.services[name] = {
-          ...ZOOKEEPER,
-          environment: {
-            ...ZOOKEEPER.environment,
-            ZOOKEEPER_SERVER_ID: n,
-            ZOOKEEPER_CLIENT_PORT: cport,
-            ZOOKEEPER_SERVERS: servers.zkServer,
-          },
-          ports: [`${cport}:2181`],
-          container_name: name,
-        };
-        dependencies.push(name);
-      }
-
-      for (let i = 0; i < kafka.brokers.size; i++) {
-        const n = i + 1;
-        YAML.services[`jmx-kafka${n}`] = {
-          ...JMX,
-          ports: [`${5556 + i}:5566`],
-          container_name: `jmx-kafka${n}`,
-          volumes: [
-            `${downloadDir}/jmx/jmxConfigKafka${n}.yml:/etc/myconfig.yml`,
-          ],
-          depends_on: [`kafka${n}`],
-        };
-
-        YAML.services[`kafka${n}`] = {
-          ...KAFKA_BROKER,
-          ports: [`909${n}:909${n}`, `999${n}:999${n}`],
-          container_name: `kafka${n}`,
-          environment: {
-            ...KAFKA_BROKER.environment,
-            KAFKA_BROKER_ID: 101 + i,
-            KAFKA_JMX_PORT: 9991 + i,
-            KAFKA_ADVERTISED_LISTENERS: `PLAINTEXT://kafka${n}:29092,PLAINTEXT_HOST://${ipAddr}:909${n}`,
-            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: kafka.brokers.replicas ?? 1,
-            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR:
-              kafka.brokers.replicas ?? 1,
-            CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `kafka${n}:29092`,
-            KAFKA_ZOOKEEPER_CONNECT: servers.zkClients,
-            CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: servers.zkClients,
-          },
-          depends_on: dependencies,
-        };
-        // requires port forwarding on host computer
-        setup.kafkaSetup.brokers.push(`${ipAddr}:909${n}`);
-
-        PROMCONFIG.scrape_configs[0].static_configs[0].targets.push(
-          `jmx-kafka${n}:5566`
-        );
-
-        jmxExporterConfig.hostPort = `kafka${n}:999${n}`;
-        fs.writeFileSync(
-          path.resolve(
-            process.cwd(),
-            downloadDir,
-            `jmx/jmxConfigKafka${n}.yml`
-          ),
-          yaml.dump(jmxExporterConfig, { noRefs: true })
-        );
-      }
+      const servers = createZooKeepers(kafka, dependencies);
+      createBrokers(kafka, dependencies, servers, setup);
 
       fs.writeFileSync(
         path.resolve(downloadDir, 'docker-compose.yml'),
@@ -273,4 +188,111 @@ export default function ymlGenerator(): Function {
       return setup;
     }
   };
+
+  function createZooKeepers(kafka: KiteKafkaCfg, deps: string[]) {
+    const numOfZKs = kafka.zookeepers.size > 1 ? kafka.zookeepers.size : 1;
+    // get server list
+    const servers = (() => {
+      let zkServer = '';
+      let zkClients = '';
+      const cport = 2181;
+      const name = (x: number) => `zookeeper${x}`;
+      const sPort = (x: number) => `${x}2888:${x}3888;`;
+
+      for (let i = 0; i < numOfZKs; i++) {
+        zkServer += `${name(i + 1)}:`;
+        if (kafka.zookeepers.server_ports !== undefined)
+          zkServer += kafka.zookeepers.server_ports[i] + ';';
+        else zkServer += `${sPort(i + 1)}`;
+
+        zkClients += `${name(i + 1)}:`;
+        if (kafka.zookeepers.client_ports !== undefined)
+          zkClients += kafka.zookeepers.client_ports[i] + ',';
+        else zkClients += `${i + 1}${cport},`;
+      }
+      zkServer = zkServer.slice(0, -1);
+      zkClients = zkClients.slice(0, -1);
+      return { zkServer, zkClients };
+    })();
+    // construct zookeepers
+    for (let i = 0; i < numOfZKs; i++) {
+      const n = i + 1;
+      const name = `zookeeper${n}`;
+      let cport = `${n}2181`;
+      if (kafka.zookeepers.client_ports !== undefined) {
+        cport = String(kafka.zookeepers.client_ports[i]);
+      }
+
+      YAML.services[name] = {
+        ...ZOOKEEPER,
+        environment: {
+          ...ZOOKEEPER.environment,
+          ZOOKEEPER_SERVER_ID: n,
+          ZOOKEEPER_CLIENT_PORT: cport,
+          ZOOKEEPER_SERVERS: servers.zkServer,
+        },
+        ports: [`${cport}:2181`],
+        container_name: name,
+      };
+      deps.push(name);
+    }
+    return servers;
+  }
+
+  function createBrokers(
+    kafka: KiteKafkaCfg,
+    deps: string[],
+    servers: { zkServer: string; zkClients: string },
+    setup: KiteSetup
+  ) {
+    const jmxExporterConfig: any = yaml.load(
+      fs.readFileSync(
+        path.resolve(downloadDir, 'jmx/exporter/template.yml'),
+        'utf8'
+      )
+    );
+    for (let i = 0; i < kafka.brokers.size; i++) {
+      const n = i + 1;
+      YAML.services[`jmx-kafka${n}`] = {
+        ...JMX,
+        ports: [`${5556 + i}:5566`],
+        container_name: `jmx-kafka${n}`,
+        volumes: [
+          `${downloadDir}/jmx/jmxConfigKafka${n}.yml:/etc/myconfig.yml`,
+        ],
+        depends_on: [`kafka${n}`],
+      };
+
+      YAML.services[`kafka${n}`] = {
+        ...KAFKA_BROKER,
+        ports: [`909${n}:909${n}`, `999${n}:999${n}`],
+        container_name: `kafka${n}`,
+        environment: {
+          ...KAFKA_BROKER.environment,
+          KAFKA_BROKER_ID: 101 + i,
+          KAFKA_JMX_PORT: 9991 + i,
+          KAFKA_ADVERTISED_LISTENERS: `PLAINTEXT://kafka${n}:29092,PLAINTEXT_HOST://localhost:909${n}`,
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: kafka.brokers.replicas ?? 1,
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR:
+            kafka.brokers.replicas ?? 1,
+          CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `kafka${n}:29092`,
+          KAFKA_ZOOKEEPER_CONNECT: servers.zkClients,
+          CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: servers.zkClients,
+        },
+        depends_on: deps,
+      };
+      // requires port forwarding on host computer
+      setup.kafkaSetup.brokers.push(`localhost:909${n}`);
+
+      PROMCONFIG.scrape_configs[0].static_configs[0].targets.push(
+        `jmx-kafka${n}:5566`
+      );
+
+      jmxExporterConfig.hostPort = `kafka${n}:999${n}`;
+      fs.writeFileSync(
+        path.resolve(process.cwd(), downloadDir, `jmx/jmxConfigKafka${n}.yml`),
+        yaml.dump(jmxExporterConfig, { noRefs: true })
+      );
+    }
+  }
 }

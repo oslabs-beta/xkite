@@ -11,20 +11,6 @@ type Data = {
 //const kiteHost = process.env.KITE_HOST || 'localhost:6661'; //if we want to proceed with env variables
 const kiteHost = 'localhost:6661';
 
-const defaultConfig: KiteConfig = {
-  kafka: {
-    brokers: {
-      size: 2,
-      replicas: 2,
-    },
-    zookeepers: {
-      size: 2,
-    },
-  },
-  dataSource: 'postgresql',
-  sink: 'jupyter',
-};
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
@@ -32,8 +18,8 @@ export default async function handler(
   if (req.method === 'POST') {
     console.log('configuring kite...');
     const config: KiteConfig = req.body
-      ? { ...defaultConfig, ...req.body }
-      : defaultConfig;
+      ? { ...Kite.defaultCfg, ...req.body }
+      : Kite.defaultCfg;
     console.log('config is: ', config);
     // Kite.configure(kiteHost);
     Kite.configure(config);
@@ -46,8 +32,8 @@ export default async function handler(
     console.log(kafkaSetup);
     const topic = 'messages';
     const kafka = new Kafka({
-      clientId: 'chat-gui',
       ...kafkaSetup,
+      clientId: 'chat-gui',
     });
     console.log('initiating kafka admin...');
     const admin = kafka.admin();

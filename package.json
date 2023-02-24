@@ -10,9 +10,9 @@
   },
   "scripts": {
     "next-dev": "next dev",
-    "mvn-dev": "mvn -f ./src/common/springApp/pom.xml spring-boot:run",
+    "spring": "mvn -f ./src/common/springApp/pom.xml spring-boot:run",
     "dev:6662": "next dev -p 6662",
-    "dev": "concurrently \"npm run dev:6662\" \"next dev\" \"npm run dev-mvn" \"open http://localhost:3000\" \"open http://localhost:6662/display\"",
+    "dev": "concurrently \"npm run dev:6662\" \"next dev\" \"npm run spring\" \"open http://localhost:3000\" \"open http://localhost:6662/display\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

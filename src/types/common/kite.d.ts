@@ -1,25 +1,22 @@
 // types/kite.d.ts
 
 interface KiteConfig {
-  kafka: {
-    brokers: {
-      size: number;
-      replicas?: number; // must be less than size
-      ports?: number[]; // [25483, 65534, ...]
-    };
-    zookeepers: {
-      size: number;
-      client_ports?: number[]; // [25483, 65534, ...]
-      server_ports?: number[];
-    };
-  };
+  kafka: KiteKafkaCfg
   dataSource: string;
   sink: string;
 }
 
-interface KafkaSetup {
-  brokers: Array<string>;
-  ssl: boolean;
+interface KiteKafkaCfg {
+  brokers: {
+    size: number;
+    replicas?: number; // must be less than size
+    ports?: number[]; // [25483, 65534, ...]
+  };
+  zookeepers: {
+    size: number;
+    client_ports?: number[]; // [25483, 65534, ...]
+    server_ports?: string[]; // ['212:23', '4532:4523', ...]
+  };
 }
 
 interface KiteSetup {
