@@ -20,7 +20,7 @@ export default function ConfigurationForm() {
     setKiteConfigRequest((currentKiteConfigRequest) => {
       return {
         ...currentKiteConfigRequest,
-        ...update,
+        ...update
       };
     });
   }
@@ -33,9 +33,9 @@ export default function ConfigurationForm() {
     fetch('/api/create', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify(kiteConfigRequest),
+      body: JSON.stringify(kiteConfigRequest)
     })
       .then((response) => {
         console.dir(response);
@@ -50,10 +50,10 @@ export default function ConfigurationForm() {
     console.log('Configuration exporting is not implemented yet');
   }
 
-  function disconnectHandler(event: SyntheticEvent) {
+  function shutdownHandler(event: SyntheticEvent) {
     console.log('Disconnection…');
     fetch('/api/shutdown', {
-      method: 'DELETE',
+      method: 'DELETE'
     })
       .then((response) => console.log(response))
       .catch((error) => console.error(error));
@@ -127,10 +127,10 @@ export default function ConfigurationForm() {
         </Button>
         <Button
           variant='danger'
-          onClick={disconnectHandler}
+          onClick={shutdownHandler}
           // disabled
         >
-          Disconnect
+          Shutdown
         </Button>
         {/*</Col>*/}
       </Row>
