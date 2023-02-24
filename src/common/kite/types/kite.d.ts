@@ -1,4 +1,4 @@
-// types/kite.d.ts
+// types/common/kite.d.ts
 
 interface KiteConfig {
   kafka: KiteKafkaCfg;

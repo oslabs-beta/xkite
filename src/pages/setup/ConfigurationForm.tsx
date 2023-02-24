@@ -5,10 +5,10 @@ import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
 
 import { SyntheticEvent, useState } from 'react';
-import { defaultConfig } from '@/common/defaults/defaultConfig';
+import Kite from '@/common/kite';
 
 export default function ConfigurationForm() {
-  const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultConfig);
+  const [kiteConfigRequest, setKiteConfigRequest] = useState(Kite.defaultCfg);
 
   function updateKiteConfigRequest(
     // Prevent numeric values from going below 1
@@ -17,9 +17,9 @@ export default function ConfigurationForm() {
     const value = Object.values(update)[0];
     if (typeof value === 'number' && value <= 0) return;
 
-    setKiteConfigRequest((currentKiteConfigRequest) => {
+    setKiteConfigRequest(() => {
       return {
-        ...currentKiteConfigRequest,
+        ...kiteConfigRequest,
         ...update,
       };
     });
@@ -28,7 +28,7 @@ export default function ConfigurationForm() {
   function submitHandler(event: SyntheticEvent) {
     event.preventDefault();
     console.log('sending configuration…');
-    console.log(defaultConfig);
+    console.log(Kite.defaultCfg);
 
     fetch('/api/create', {
       method: 'POST',
@@ -63,16 +63,25 @@ export default function ConfigurationForm() {
     <Container>
       <Form className='mb-3' onSubmit={submitHandler}>
         <Row className='align-items-end'>
-          <Form.Group className='col-2' controlId='numberOfClusters'>
+          <Form.Group className='col-2' controlId='kafka.broker.size'>
             <Form.Label>Clusters</Form.Label>
             <Form.Control
               type='number'
-              // placeholder='How many clusters?'
+              // placeholder='How many kafka brokers?'
               onChange={(e) => {
-                const numberOfClusters = +e.target.value;
-                updateKiteConfigRequest({ numOfClusters: numberOfClusters });
+                const size = +e.target.value;
+                const update = {
+                  kafka: {
+                    ...kiteConfigRequest.kafka,
+                    brokers: {
+                      ...kiteConfigRequest.kafka.brokers,
+                      size,
+                    },
+                  },
+                };
+                updateKiteConfigRequest(update);
               }}
-              value={kiteConfigRequest.numOfClusters.toString()}
+              value={kiteConfigRequest.kafka.brokers.size.toString()}
             />
           </Form.Group>
           {/*<Form.Group className='mb-3 col-6' controlId='numberOfBrokers'>*/}
