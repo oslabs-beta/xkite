@@ -122,6 +122,25 @@ export default function ymlGenerator(): Function {
     container_name: 'spark',
   };
 
+  const SPRING: SpringCfg = {
+    image: 'eclipse-temurin:19-jre-alpine',
+    ports: ['8080:8080'],
+    environment: {
+      JAVA_OPTS: '',
+      SPRING_CONFIG_LOCATION: '/etc/myconfig.yml',
+      'SPRING_KAFKA_BOOTSTRAP-SERVERS': 'kafka1:29091',
+      'SPRING_KAFKA_CONSUMER_BOOTSTRAP-SERVERS': 'kafka1:29091',
+      'SPRING_KAFKA_PRODUCER_BOOTSTRAP-SERVERS': 'kafka1:29091',
+    },
+    command: 'java -jar /app.jar',
+    volumes: [
+      `${downloadDir}/spring/app.jar:/app.jar`,
+      `${downloadDir}/spring/application.yml:/etc/myconfig.yml`,
+    ],
+    container_name: 'spring',
+    depends_on: ['kafka1'],
+  };
+
   const YAML: YAMLConfig = { services: {} };
 
   return (config: KiteConfig): KiteSetup => {
@@ -251,6 +270,9 @@ export default function ymlGenerator(): Function {
         'utf8'
       )
     );
+
+    const bootstrapServers = [];
+    const springDeps = [];
     for (let i = 0; i < kafka.brokers.size; i++) {
       const n = i + 1;
       YAML.services[`jmx-kafka${n}`] = {
@@ -262,27 +284,35 @@ export default function ymlGenerator(): Function {
         ],
         depends_on: [`kafka${n}`],
       };
-
-      YAML.services[`kafka${n}`] = {
+      let ports: string[] = [`909${n}:909${n}`, `999${n}:999${n}`];
+      if (kafka.brokers.ports !== undefined)
+        ports = kafka.brokers.ports[i].split(',') ?? [kafka.brokers.ports[i]];
+      const mainPort = ports[0].split(':')[0];
+      const name = `kafka${n}`;
+      springDeps.push(name);
+      const metricsPort = kafka.brokers.metrics_port ?? 29092;
+      bootstrapServers.push(`${name}:${mainPort}`);
+      const jmxPort = kafka.jmx?.port[i] ?? 9991 + i;
+      YAML.services[name] = {
         ...KAFKA_BROKER,
-        ports: [`909${n}:909${n}`, `999${n}:999${n}`],
-        container_name: `kafka${n}`,
+        ports,
+        container_name: name,
         environment: {
           ...KAFKA_BROKER.environment,
           KAFKA_BROKER_ID: 101 + i,
-          KAFKA_JMX_PORT: 9991 + i,
-          KAFKA_ADVERTISED_LISTENERS: `PLAINTEXT://kafka${n}:29092,PLAINTEXT_HOST://localhost:909${n}`,
+          KAFKA_JMX_PORT: jmxPort,
+          KAFKA_ADVERTISED_LISTENERS: `PLAINTEXT://${name}:${metricsPort},PLAINTEXT_HOST://localhost:${mainPort}`,
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: kafka.brokers.replicas ?? 1,
           KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR:
             kafka.brokers.replicas ?? 1,
-          CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `kafka${n}:29092`,
+          CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `${name}:${metricsPort}`,
           KAFKA_ZOOKEEPER_CONNECT: servers.zkClients,
           CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: servers.zkClients,
         },
         depends_on: deps,
       };
       // requires port forwarding on host computer
-      setup.kafkaSetup.brokers.push(`localhost:909${n}`);
+      setup.kafkaSetup.brokers.push(`localhost:${mainPort}`);
 
       PROMCONFIG.scrape_configs[0].static_configs[0].targets.push(
         `jmx-kafka${n}:5566`
@@ -294,5 +324,16 @@ export default function ymlGenerator(): Function {
         yaml.dump(jmxExporterConfig, { noRefs: true })
       );
     }
+    YAML.services.spring = {
+      ...SPRING,
+      // ports: ['8080:8080'],
+      environment: {
+        ...SPRING.environment,
+        'SPRING_KAFKA_BOOTSTRAP-SERVERS': bootstrapServers.join(','),
+        'SPRING_KAFKA_CONSUMER_BOOTSTRAP-SERVERS': bootstrapServers.join(','),
+        'SPRING_KAFKA_PRODUCER_BOOTSTRAP-SERVERS': bootstrapServers.join(','),
+      },
+      depends_on: springDeps,
+    };
   }
 }

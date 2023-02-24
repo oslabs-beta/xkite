@@ -90,6 +90,17 @@ interface PGConfig extends BaseCfg {
   };
 }
 
+interface SpringCfg extends BaseCfg {
+  command: string;
+  environment: {
+    JAVA_OPTS: string;
+    SPRING_CONFIG_LOCATION: string;
+    'SPRING_KAFKA_BOOTSTRAP-SERVERS': string;
+    'SPRING_KAFKA_CONSUMER_BOOTSTRAP-SERVERS': string;
+    'SPRING_KAFKA_PRODUCER_BOOTSTRAP-SERVERS': string;
+  };
+}
+
 interface BaseCfg {
   command?: Array<string>;
   image: string;
