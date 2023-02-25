@@ -51,6 +51,18 @@ export default function ConfigurationForm() {
     console.log('Configuration exporting is not implemented yet');
   }
 
+<<<<<<< HEAD:src/pages/components/_ConfigurationForm.tsx
+=======
+  function disconnectHandler(event: SyntheticEvent) {
+    console.log('Disconnection…');
+    fetch('/api/kite/shutdown', {
+      method: 'DELETE',
+    })
+      .then((response) => console.log(response))
+      .catch((error) => console.error(error));
+  }
+
+>>>>>>> dev:src/pages/setup/_ConfigurationForm.tsx
   return (
     <Container>
       <Form className='mb-3' onSubmit={submitHandler}>

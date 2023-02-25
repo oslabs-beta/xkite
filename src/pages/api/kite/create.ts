@@ -1,14 +1,11 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Kite from '@/common/kite';
-// import { Kafka } from 'kafkajs';
 
 type Data = {
   reply?: string;
   err?: unknown;
 };
 
-//const kiteHost = process.env.KITE_HOST || 'localhost:6661'; //if we want to proceed with env variables
 const kiteHost = 'localhost:6661';
 
 export default async function handler(
@@ -21,44 +18,10 @@ export default async function handler(
       ? { ...Kite.defaultCfg, ...req.body }
       : Kite.defaultCfg;
     console.log('config is: ', JSON.stringify(config));
-    // Kite.configure(kiteHost);
     Kite.configure(config);
-    //const kite = new Kite(config);
     console.log('deploying kite...');
     Kite.deploy();
 
-    //LEAVE THE BELOW CODE FOR BEDUGGING PURPOSES FOR NOW
-    // const { kafkaSetup } = await Kite.getSetup();
-    // console.log(kafkaSetup);
-    // const topic = 'messages';
-    // const kafka = new Kafka({
-    //   ...kafkaSetup,
-    //   clientId: 'chat-gui',
-    // });
-    // console.log('initiating kafka admin...');
-    // const admin = kafka.admin();
-    // try {
-    //   console.log(`connect to kafka...`);
-    //   await admin.connect();
-    //   // create topic
-    //   console.log(`creating topic...`);
-    //   const resp = await admin.createTopics({
-    //     // validateOnly: <boolean>,
-    //     waitForLeaders: false,
-    //     // timeout: <Number>,
-    //     topics: [
-    //       {
-    //         topic,
-    //         numPartitions: 3,
-    //         replicationFactor: kafkaSetup.brokers.length, // less than number of brokers..
-    //       },
-    //     ],
-    //   });
-    //   console.log(`Created topics...${JSON.stringify(resp)}`);
-    //   await admin.disconnect();
-    // } catch (err) {
-    //   return res.status(500).json({ err: err });
-    // }
     res.status(200).json({ reply: 'success' });
     //TO DO: uncomment when you connecting to the front-end
     // res.redirect('/display');
