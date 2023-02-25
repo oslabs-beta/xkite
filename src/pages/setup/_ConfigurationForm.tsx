@@ -10,12 +10,16 @@ import defaultCfg from '@/common/kite/constants';
 export default function ConfigurationForm() {
   const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultCfg);
 
-  function updateKiteConfigRequest(
+  function updateKiteConfigRequest(update: Partial<KiteConfig>) {
     // Prevent numeric values from going below 1
-    update: Partial<KiteConfig>
-  ) {
-    const value = Object.values(update)[0];
-    if (typeof value === 'number' && value <= 0) return;
+    if (update.kafka) {
+      if (
+        update.kafka.brokers.size <= 0 ||
+        // update.kafka.brokers.replicas <= 0 || possibly undefined
+        update.kafka.zookeepers.size <= 0
+      )
+        return;
+    }
 
     setKiteConfigRequest(() => {
       return {
@@ -64,7 +68,7 @@ export default function ConfigurationForm() {
       <Form className='mb-3' onSubmit={submitHandler}>
         <Row className='align-items-end'>
           <Form.Group className='col-2' controlId='kafka.broker.size'>
-            <Form.Label>Clusters</Form.Label>
+            <Form.Label>Brokers</Form.Label>
             <Form.Control
               type='number'
               // placeholder='How many kafka brokers?'
