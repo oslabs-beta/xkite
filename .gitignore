@@ -196,5 +196,8 @@ src/common/kite/download/prometheus/*.yml
 src/common/kite/download/docker-compose.yml
 src/common/kite/download/pipeline.zip
 
-**/*/inputFiles.lst
-src/common/springApp/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
+# Java generated files
+src/common/springApp/target
+
+# vscode
+.vscode

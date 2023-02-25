@@ -1,7 +1,7 @@
 import yaml from 'js-yaml';
 import fs from 'fs-extra';
 import path from 'path';
-import { getIPAddress } from '../utilities';
+import { getIPAddress } from '@/common/utilities';
 const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
 
 export default function ymlGenerator(): Function {
@@ -26,7 +26,7 @@ export default function ymlGenerator(): Function {
 
   const JMX: BaseCfg = {
     image: 'bitnami/jmx-exporter:latest',
-    command: ['5566', '/etc/myconfig.yml'],
+    command: ['5566', '/etc/myconfig.yml'], //don't delete... this is magic
     ports: [],
     volumes: [],
     container_name: '',
@@ -47,9 +47,12 @@ export default function ymlGenerator(): Function {
       KAFKA_BROKER_ID: 101,
       KAFKA_JMX_PORT: 9991,
       KAFKA_ADVERTISED_LISTENERS: '',
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2,
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2,
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1,
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1,
       CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: '',
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true',
+      KAFKA_DELETE_TOPIC_ENABLE: 'true',
+      KAFKA_CREATE_TOPICS: 'topic-test:1:1',
     },
     ports: [],
     volumes: [],
@@ -73,7 +76,10 @@ export default function ymlGenerator(): Function {
     image: 'prom/prometheus',
     ports: ['9099:9090'],
     volumes: [
-      `${downloadDir}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml`,
+      `${path.join(
+        downloadDir,
+        'prometheus/prometheus.yml'
+      )}:/etc/prometheus/prometheus.yml`,
     ],
     container_name: 'prometheus',
   };
@@ -89,8 +95,14 @@ export default function ymlGenerator(): Function {
       GF_SECURITY_ADMIN_PASSWORD: 'xkite',
     },
     volumes: [
-      `${downloadDir}/grafana/provisioning:/etc/grafana/provisioning`,
-      `${downloadDir}/grafana/dashboards:/var/lib/grafana/dashboards`,
+      `${path.join(
+        downloadDir,
+        'grafana/provisioning'
+      )}:/etc/grafana/provisioning`,
+      `${path.join(
+        downloadDir,
+        'grafana/dashboards'
+      )}:/var/lib/grafana/dashboards`,
     ],
     container_name: 'grafana',
     depends_on: ['prometheus'],
@@ -119,10 +131,31 @@ export default function ymlGenerator(): Function {
     container_name: 'spark',
   };
 
+  const SPRING: SpringCfg = {
+    image: 'eclipse-temurin:19-jre-alpine',
+    ports: ['8080:8080'],
+    environment: {
+      JAVA_OPTS: '',
+      SPRING_CONFIG_LOCATION: '/etc/myconfig.yml',
+      'SPRING_KAFKA_BOOTSTRAP-SERVERS': 'kafka1:29091',
+      'SPRING_KAFKA_CONSUMER_BOOTSTRAP-SERVERS': 'kafka1:29091',
+      'SPRING_KAFKA_PRODUCER_BOOTSTRAP-SERVERS': 'kafka1:29091',
+    },
+    command: 'java -jar /app.jar',
+    volumes: [
+      `${path.join(downloadDir, 'spring/app.jar')}:/app.jar`,
+      `${path.join(downloadDir, 'spring/application.yml')}:/etc/myconfig.yml`,
+    ],
+    container_name: 'spring',
+    depends_on: ['kafka1'],
+  };
+
   const YAML: YAMLConfig = { services: {} };
 
   return (config: KiteConfig): KiteSetup => {
-    const { numOfClusters, dataSource, sink } = config;
+    console.log('creating Kite Config yml...');
+    const { kafka, dataSource, sink } = config;
+    const dependencies = [];
     const setup: KiteSetup = {
       dataSetup: {
         dbSrc: '',
@@ -134,6 +167,7 @@ export default function ymlGenerator(): Function {
         },
       },
       kafkaSetup: {
+        clientId: '',
         brokers: [],
         ssl: false,
       },
@@ -150,71 +184,21 @@ export default function ymlGenerator(): Function {
             URI: '',
           },
         };
+        dependencies.push('postgres');
       }
       if (sink === 'jupyter') YAML.services.jupyter = JUPYTER;
       if (sink === 'spark') YAML.services.spark = SPARK;
-      YAML.services.zookeeper = ZOOKEEPER;
       YAML.services.prometheus = PROMETHEUS;
       YAML.services.grafana = GRAFANA;
-      const jmxExporterConfig: any = yaml.load(
-        fs.readFileSync(
-          path.resolve(downloadDir, 'jmx/exporter/template.yml'),
-          'utf8'
-        )
-      );
 
       // Checks if directories download, prometheus and jmx exist, if not, then it creates all of them
       fs.ensureDirSync(downloadDir);
       fs.ensureDirSync(path.resolve(downloadDir, 'jmx'));
       fs.ensureDirSync(path.resolve(downloadDir, 'prometheus'));
+      // const ipAddr = 'localhost'; //getIPAddress()();
 
-      const ipAddr = getIPAddress()();      
-      for (let i = 0; i < numOfClusters; i++) {
-        YAML.services[`jmx-kafka${1 + i}`] = {
-          ...JMX,
-          ports: [`${5556 + i}:5566`],
-          container_name: `jmx-kafka${1 + i}`,
-          volumes: [
-            `${downloadDir}/jmx/jmxConfigKafka${1 + i}.yml:/etc/myconfig.yml`,
-          ],
-          depends_on: [`kafka${1 + i}`],
-        };
-
-        YAML.services[`kafka${1 + i}`] = {
-          ...KAFKA_BROKER,
-          ports: [`909${1 + i}:909${1 + i}`, `999${1 + i}:999${1 + i}`],
-          container_name: `kafka${1 + i}`,
-          environment: {
-            ...KAFKA_BROKER.environment,
-            KAFKA_BROKER_ID: 101 + i,
-            KAFKA_JMX_PORT: 9991 + i,
-            KAFKA_ADVERTISED_LISTENERS: `PLAINTEXT://kafka${
-              1 + i
-            }:29092,PLAINTEXT_HOST://${ipAddr}:909${i + 1}`,
-            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR:
-              numOfClusters < 3 ? numOfClusters : 3,
-            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR:
-              numOfClusters < 3 ? numOfClusters : 3,
-            CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `kafka${i + 1}:29092`,
-          },
-        };
-        // requires port forwarding on host computer
-        setup.kafkaSetup.brokers.push(`${ipAddr}:909${1 + i}`);
-
-        PROMCONFIG.scrape_configs[0].static_configs[0].targets.push(
-          `jmx-kafka${1 + i}:5566`
-        );
-
-        jmxExporterConfig.hostPort = `kafka${1 + i}:999${1 + i}`;
-        fs.writeFileSync(
-          path.resolve(
-            process.cwd(),
-            downloadDir,
-            `jmx/jmxConfigKafka${1 + i}.yml`
-          ),
-          yaml.dump(jmxExporterConfig, { noRefs: true })
-        );
-      }
+      const servers = createZooKeepers(kafka, dependencies);
+      createBrokers(kafka, dependencies, servers, setup);
 
       fs.writeFileSync(
         path.resolve(downloadDir, 'docker-compose.yml'),
@@ -233,4 +217,158 @@ export default function ymlGenerator(): Function {
       return setup;
     }
   };
+
+  function createZooKeepers(kafka: KiteKafkaCfg, deps: string[]) {
+    console.log('creating zookeepers...');
+    const numOfZKs = kafka.zookeepers.size > 1 ? kafka.zookeepers.size : 1;
+    // get server list
+    const servers = (() => {
+      let zkServer = '';
+      let zkClients = '';
+      const cport = 2181;
+      const name = (x: number) => `zookeeper${x}`;
+      const sPort = (x: number) => `${x}2888:${x}3888;`;
+
+      for (let i = 0; i < numOfZKs; i++) {
+        zkServer += `${name(i + 1)}:`;
+        if (kafka.zookeepers.server_ports !== undefined)
+          zkServer += kafka.zookeepers.server_ports[i] + ';';
+        else zkServer += `${sPort(i + 1)}`;
+
+        zkClients += `${name(i + 1)}:`;
+        if (kafka.zookeepers.client_ports !== undefined)
+          zkClients += kafka.zookeepers.client_ports[i] + ',';
+        else zkClients += `${i + 1}${cport},`;
+      }
+      zkServer = zkServer.slice(0, -1);
+      zkClients = zkClients.slice(0, -1);
+      return { zkServer, zkClients };
+    })();
+    // construct zookeepers
+    for (let i = 0; i < numOfZKs; i++) {
+      const n = i + 1;
+      const name = `zookeeper${n}`;
+      let cport = `${n}2181`;
+      if (kafka.zookeepers.client_ports !== undefined) {
+        cport = String(kafka.zookeepers.client_ports[i]);
+      }
+
+      YAML.services[name] = {
+        ...ZOOKEEPER,
+        environment: {
+          ...ZOOKEEPER.environment,
+          ZOOKEEPER_SERVER_ID: n,
+          ZOOKEEPER_CLIENT_PORT: cport,
+          ZOOKEEPER_SERVERS: servers.zkServer,
+        },
+        ports: [`${cport}:2181`],
+        container_name: name,
+      };
+      deps.push(name);
+    }
+    return servers;
+  }
+
+  function createBrokers(
+    kafka: KiteKafkaCfg,
+    deps: string[],
+    servers: { zkServer: string; zkClients: string },
+    setup: KiteSetup
+  ) {
+    console.log('creating brokers...');
+    const jmxExporterConfig: any = yaml.load(
+      fs.readFileSync(
+        path.resolve(downloadDir, 'jmx/exporter/template.yml'),
+        'utf8'
+      )
+    );
+
+    const bootstrapServers = [];
+    const springDeps = [];
+    for (let i = 0; i < kafka.brokers.size; i++) {
+      const n = i + 1;
+      // JMX Config:
+      let jmxPort = 5555 + n;
+      const jmxName = `jmx-kafka${n}`;
+      if (kafka.jmx !== undefined) jmxPort = kafka.jmx.port[i];
+      // update YAML service
+      YAML.services[jmxName] = {
+        ...JMX,
+        // command: [
+        //   // `cp ${path.join(downloadDir, `jmx/jmxConfigKafka${n}.yml`)}`,
+        //   // '/etc/myconfig.yml',
+        // ],
+        ports: [`${jmxPort}:5566`],
+        container_name: jmxName,
+        volumes: [
+          `${path.join(
+            downloadDir,
+            `/jmx/jmxConfigKafka${n}.yml`
+          )}:/etc/myconfig.yml`,
+        ],
+        depends_on: [`kafka${n}`],
+      };
+      // Kafka Config:
+      const brokerName = `kafka${n}`;
+      // broker ports
+      let ports: string[] = [`909${n}:909${n}`, `999${n}:999${n}`];
+      if (kafka.brokers.ports !== undefined)
+        ports = kafka.brokers.ports[i].split(',') ?? [kafka.brokers.ports[i]];
+      const mainPort = ports[0].split(':')[0];
+      // metrics reporter port
+      const metricsPort: number = kafka.brokers.metrics_port ?? 29092;
+      bootstrapServers.push(`${brokerName}:${mainPort}`);
+      // jmx host port
+      let jmxHostPort = 9990 + n;
+      if (kafka.brokers.jmx_port !== undefined)
+        jmxHostPort = kafka.brokers.jmx_port[i];
+      // broker id
+      let brokerID = 101 + i;
+      if (kafka.brokers.id !== undefined) brokerID = kafka.brokers.id[i];
+      // update YAML service
+      YAML.services[brokerName] = {
+        ...KAFKA_BROKER,
+        ports,
+        container_name: brokerName,
+        environment: {
+          ...KAFKA_BROKER.environment,
+          KAFKA_BROKER_ID: brokerID,
+          KAFKA_JMX_PORT: jmxHostPort,
+          KAFKA_ADVERTISED_LISTENERS: `PLAINTEXT://${brokerName}:${metricsPort},PLAINTEXT_HOST://localhost:${mainPort}`,
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: kafka.brokers.replicas ?? 1,
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR:
+            kafka.brokers.replicas ?? 1,
+          CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `${brokerName}:${metricsPort}`,
+          KAFKA_ZOOKEEPER_CONNECT: servers.zkClients,
+          CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: servers.zkClients,
+        },
+        depends_on: deps,
+      };
+      // requires port forwarding on host computer
+      setup.kafkaSetup.brokers.push(`localhost:${mainPort}`);
+
+      PROMCONFIG.scrape_configs[0].static_configs[0].targets.push(
+        `${jmxName}:5566`
+      );
+
+      jmxExporterConfig.hostPort = `kafka${n}:${jmxHostPort}`;
+      fs.writeFileSync(
+        path.resolve(downloadDir, `jmx/jmxConfigKafka${n}.yml`),
+        yaml.dump(jmxExporterConfig, { noRefs: true })
+      );
+      // build dependencies
+      springDeps.push(brokerName);
+    }
+    YAML.services.spring = {
+      ...SPRING,
+      // ports: ['8080:8080'],
+      environment: {
+        ...SPRING.environment,
+        'SPRING_KAFKA_BOOTSTRAP-SERVERS': bootstrapServers.join(','),
+        'SPRING_KAFKA_CONSUMER_BOOTSTRAP-SERVERS': bootstrapServers.join(','),
+        'SPRING_KAFKA_PRODUCER_BOOTSTRAP-SERVERS': bootstrapServers.join(','),
+      },
+      depends_on: springDeps,
+    };
+  }
 }
