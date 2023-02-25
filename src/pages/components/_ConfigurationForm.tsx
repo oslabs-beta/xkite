@@ -6,6 +6,7 @@ import Container from 'react-bootstrap/Container';
 
 import { SyntheticEvent, useState } from 'react';
 import defaultCfg from '@/common/kite/constants';
+import ShutDownBtn from './_ShutdownBtn';
 
 export default function ConfigurationForm() {
   const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultCfg);
@@ -48,15 +49,6 @@ export default function ConfigurationForm() {
 
   function exportConfigHandler(event: SyntheticEvent) {
     console.log('Configuration exporting is not implemented yet');
-  }
-
-  function disconnectHandler(event: SyntheticEvent) {
-    console.log('Disconnection…');
-    fetch('/api/shutdown', {
-      method: 'DELETE',
-    })
-      .then((response) => console.log(response))
-      .catch((error) => console.error(error));
   }
 
   return (
@@ -134,13 +126,7 @@ export default function ConfigurationForm() {
         >
           Export Config
         </Button>
-        <Button
-          variant='danger'
-          onClick={disconnectHandler}
-          // disabled
-        >
-          Disconnect
-        </Button>
+        <ShutDownBtn />
         {/*</Col>*/}
       </Row>
     </Container>
