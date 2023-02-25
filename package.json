@@ -12,8 +12,9 @@
     "spring": "mvn -f ./src/common/springApp/pom.xml spring-boot:run",
     "build-spring": "mvn -f ./src/common/springApp clean package && mv ./src/common/springApp/target/*.jar ./src/common/kite/download/spring/app.jar",
     "next-dev": "next dev",
-    "dev:6662": "next dev -p 6662",
-    "dev": "concurrently \"npm run dev:6662\" \"next dev\" \"open http://localhost:3000\" \"open http://localhost:6662/display\"",
+    "port:6662": "next dev -p 6662",
+    "port:6661": "next dev -p 6661",
+    "dev": "concurrently \"npm run port:6662\" \"npm run port:6661\" \"open http://localhost:6661\" \"open http://localhost:6662/display\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

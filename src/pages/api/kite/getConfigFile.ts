@@ -6,8 +6,12 @@ type ConfigFile = KiteConfigFile;
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ConfigFile>
+  res: NextApiResponse<ConfigFile| string>
 ) {
+  if (req.method === 'GET') {
   const configFile = await Kite.getConfigFile();
   res.status(200).json(configFile);
+  }else {
+    res.status(405).send('Method Not Allowed');
+  }
 }
