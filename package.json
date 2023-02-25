@@ -10,6 +10,7 @@
   },
   "scripts": {
     "dev": "concurrently \"next dev\" \"mvn -f ./src/common/springApp/pom.xml spring-boot:run\"",
+    "dev2": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
