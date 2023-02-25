@@ -13,12 +13,13 @@ export default function ConfigurationForm() {
   function updateKiteConfigRequest(update: Partial<KiteConfig>) {
     // Prevent numeric values from going below 1
     if (update.kafka) {
-      if (
-        update.kafka.brokers.size <= 0 ||
-        // update.kafka.brokers.replicas <= 0 || possibly undefined
-        update.kafka.zookeepers.size <= 0
-      )
-        return;
+      const values = [
+        ...Object.values(update.kafka.brokers),
+        ...Object.values(update.kafka.zookeepers),
+      ];
+      for (const value of values) {
+        if (typeof value === 'number' && value <= 0) return;
+      }
     }
 
     setKiteConfigRequest(() => {
