@@ -2,7 +2,7 @@ import http from 'http';
 import { renderToString } from 'react-dom/server';
 import { createElement } from 'react';
 
-import DisplayPage from '../display';
+import DisplayPage from '@/common/display';
 
 const port2 = 6662;
 

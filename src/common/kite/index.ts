@@ -1,9 +1,9 @@
 import path from 'path';
 import fs from 'fs-extra';
 import compose from 'docker-compose';
-import ymlGenerator from '../ymlgenerator';
+import ymlGenerator from '@/common/ymlgenerator';
 import zipper from 'zip-local';
-import Monitor from '../monitor/monitor';
+import Monitor from '@/common/monitor/monitor';
 import defaultCfg from './constants';
 
 enum KiteState {
@@ -77,9 +77,9 @@ export default class Kite {
     try {
       this.serverState = KiteServerState.Connected;
       const res = [
-        fetch(`${server}/api/getConfig`),
-        fetch(`${server}/api/getSetup`),
-        fetch(`${server}/api/getConfigFile`),
+        fetch(`${server}/api/kite/getConfig`),
+        fetch(`${server}/api/kite/getSetup`),
+        fetch(`${server}/api/kite/getConfigFile`),
       ];
       [this.config, this.setup, this.configFile] = res.map(async (r) =>
         (await r).json()
@@ -190,7 +190,7 @@ export default class Kite {
   private static async deployServer() {
     const kite = this.getInstance();
     try {
-      await fetch(`${kite.server}/api/deploy`);
+      await fetch(`${kite.server}/api/kite/deploy`);
       kite.state = KiteState.Running;
     } catch (err) {
       console.error(`Kite deployment failed:\n${err}`);
@@ -286,7 +286,7 @@ export default class Kite {
    */
   private static async disconnectServer() {
     try {
-      await fetch(`${this.getInstance().server}/api/disconnect`, {
+      await fetch(`${this.getInstance().server}/api/kite/disconnect`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

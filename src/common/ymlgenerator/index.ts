@@ -1,7 +1,7 @@
 import yaml from 'js-yaml';
 import fs from 'fs-extra';
 import path from 'path';
-import { getIPAddress } from '../utilities';
+import { getIPAddress } from '@/common/utilities';
 const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
 
 export default function ymlGenerator(): Function {

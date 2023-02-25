@@ -1,13 +1,13 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Kite from '../../common/kite';
+import Kite from '@/common/kite';
 
-type Setup = KiteSetup;
+type Config = KiteConfig;
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Setup>
+  res: NextApiResponse<Config>
 ) {
-  const setup = await Kite.getSetup();
-  res.status(200).json(setup);
+  const config = await Kite.getConfig();
+  res.status(200).json(config);
 }

@@ -30,7 +30,7 @@ export default function ConfigurationForm() {
     console.log('sending configuration…');
     console.log(defaultCfg);
 
-    fetch('/api/create', {
+    fetch('/api/kite/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
