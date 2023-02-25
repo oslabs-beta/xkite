@@ -6,6 +6,15 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
     producer:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+management:
+  endpoints:
+    web.exposure.include: '*'
+  endpoint:
+    shutdown.enabled: true
+endpoints:
+  shutdown.enabled: true

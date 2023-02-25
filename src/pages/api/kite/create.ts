@@ -20,7 +20,7 @@ export default async function handler(
     const config: KiteConfig = req.body
       ? { ...Kite.defaultCfg, ...req.body }
       : Kite.defaultCfg;
-    console.log('config is: ', config);
+    console.log('config is: ', JSON.stringify(config));
     // Kite.configure(kiteHost);
     Kite.configure(config);
     //const kite = new Kite(config);
