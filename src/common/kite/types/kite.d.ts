@@ -2,8 +2,37 @@
 
 interface KiteConfig {
   kafka: KiteKafkaCfg;
-  dataSource: string;
-  sink: string;
+  db?: dbCfg;
+  sink?: sinkCfg;
+  grafana?: grafanaCfg;
+  prometheus?: prometheusCfg;
+}
+
+interface dbCfg {
+  dataSource: 'postgresql' | 'ksql';
+  port?: number;
+  postgresql?: {
+    username: string;
+    password: string;
+    dbname: string;
+  };
+  ksql?: {
+    schema_port: number;
+  };
+}
+
+interface sinkCfg {
+  name: 'jupyter' | 'spark';
+}
+
+interface grafanaCfg {
+  port: number;
+}
+
+interface prometheusCfg {
+  port: number;
+  scrape_interval: number; //seconds
+  evaluation_interval: number; //seconds
 }
 
 interface KiteKafkaCfg {
@@ -11,32 +40,44 @@ interface KiteKafkaCfg {
     size: number;
     id?: number[]; // [101, 102,...]
     replicas?: number; // must be less than size
-    ports?: string[]; // ["25483:1734", "29482:65534", ...]
+    ports?: number[]; // ["1734", "8888", ...]
     metrics_port?: number;
     jmx_port?: number[]; // broker interface with jmx
   };
   zookeepers: {
     size: number;
-    client_ports?: number[]; // [25483, 65534, ...]
-    server_ports?: string[]; // ['212:23', '4532:4523', ...]
+    client_ports?: number[]; // [25483, 65534, ...] //external
+    server_ports?: number[]; // [2134, 2845, ...] //external
+    election_ports?: number[]; // internal goes along with server port these must be unique
   };
   jmx?: {
-    // must be as many as brokers.
-    port: number[]; //host port to interface with 5556
+    port: number; // internal main port on jmx
+    if_ports: number[]; // external host port to interface with port
   };
   spring?: {
-    port: number; //host port to interface with 8080
+    port: number; // external host port to interface with 8080
   };
 }
 
 interface KiteSetup {
-  dataSetup?: YAMLDataSetup;
+  dataSetup?: dbCfg;
   kafkaSetup: KafkaSetup;
 }
-
-declare module 'zip-local';
 
 interface KiteConfigFile {
   header?: any;
   fileStream: fs.ReadStream;
+}
+
+interface Kite {
+  defaultCfg: KiteConfig;
+  configure: (arg?: string | KiteConfig) => void;
+  deploy: (arg?: any) => void;
+  getSetup: () => Promise<KiteSetup | undefined>;
+  getConfig: () => Promise<KiteConfig | undefined>;
+  getConfigFile: () => Promise<KiteConfigFile | undefined>;
+  getKiteState: () => KiteState;
+  getKiteServerState: () => KiteServerState;
+  disconnect: () => Promise<any>;
+  shutdown: () => Promise<any>;
 }
