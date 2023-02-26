@@ -86,7 +86,7 @@ export default function ConfigurationForm() {
                 };
                 updateKiteConfigRequest(update);
               }}
-              value={kiteConfigRequest.kafka.brokers.size.toString()}
+              value={kiteConfigRequest.kafka.brokers.size}
             />
           </Form.Group>
           {/*<Form.Group className='mb-3 col-6' controlId='numberOfBrokers'>*/}
@@ -104,39 +104,44 @@ export default function ConfigurationForm() {
           {/*TODO: Convert to a selection drop down*/}
           <Form.Group className='col-4' controlId='dataSource'>
             <Form.Label>Data Source</Form.Label>
-            <Form.Control
-              type='text'
-              placeholder='Data Source'
+            <Form.Select
+              aria-label='Data Source'
               onChange={(e) => {
+                // Can't find any other way to make TypeScript happy
                 if (
-                  !(
-                    e.target.value === 'postgresql' || e.target.value === 'ksql'
-                  )
+                  e.target.value === 'postgresql' ||
+                  e.target.value === 'ksql'
                 )
-                  throw TypeError(`Invalid Data Source ${e.target.value}`);
-                else
-                  return updateKiteConfigRequest({
-                    db: { dataSource: e.target.value },
+                  updateKiteConfigRequest({
+                    db: {
+                      dataSource: e.target.value,
+                    },
                   });
               }}
               value={kiteConfigRequest.db?.dataSource}
-            />
+            >
+              <option value='postgresql'>PostgreSQL</option>
+              <option value='ksql'>KSQL</option>
+            </Form.Select>
           </Form.Group>
           <Form.Group className='col-4' controlId='sink'>
             <Form.Label>Data Sink</Form.Label>
-            <Form.Control
-              type='text'
-              placeholder='Data Sink'
+            <Form.Select
+              aria-label='Data Sink'
               onChange={(e) => {
-                if (
-                  !(e.target.value === 'jupyter' || e.target.value === 'spark')
-                )
-                  throw TypeError(`Invalid Data Sink ${e.target.value}`);
-
-                updateKiteConfigRequest({ sink: { name: e.target.value } });
+                // Can't find any other way to make TypeScript happy
+                if (e.target.value === 'jupyter' || e.target.value === 'spark')
+                  updateKiteConfigRequest({
+                    sink: {
+                      name: e.target.value,
+                    },
+                  });
               }}
               value={kiteConfigRequest.sink?.name}
-            />
+            >
+              <option value='jupyter'>Jupyter</option>
+              <option value='spark'>Spark</option>
+            </Form.Select>
           </Form.Group>
           <FormGroup className='col-2 '>
             <Button variant='primary' type='submit'>
