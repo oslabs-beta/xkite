@@ -10,7 +10,7 @@ interface KiteConfig {
 
 interface dbCfg {
   dataSource: 'postgresql' | 'ksql';
-  port: number;
+  port?: number;
   postgresql?: {
     username: string;
     password: string;
@@ -60,13 +60,24 @@ interface KiteKafkaCfg {
 }
 
 interface KiteSetup {
-  dataSetup?: PGConfig | KSQLConfig | undefined;
+  dataSetup?: dbCfg;
   kafkaSetup: KafkaSetup;
 }
-
-declare module 'zip-local';
 
 interface KiteConfigFile {
   header?: any;
   fileStream: fs.ReadStream;
+}
+
+interface Kite {
+  defaultCfg: KiteConfig;
+  configure: (arg?: string | KiteConfig) => void;
+  deploy: (arg?: any) => void;
+  getSetup: () => Promise<KiteSetup | undefined>;
+  getConfig: () => Promise<KiteConfig | undefined>;
+  getConfigFile: () => Promise<KiteConfigFile | undefined>;
+  getKiteState: () => KiteState;
+  getKiteServerState: () => KiteServerState;
+  disconnect: () => Promise<any>;
+  shutdown: () => Promise<any>;
 }

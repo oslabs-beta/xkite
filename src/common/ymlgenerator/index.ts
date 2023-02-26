@@ -1,221 +1,44 @@
 import yaml from 'js-yaml';
 import fs from 'fs-extra';
 import path from 'path';
-const network = 'localhost'; //change to 0.0.0.0 to expose ports globally
-const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
+import {
+  YAML,
+  SPRING,
+  SPARK,
+  JUPYTER,
+  KSQL_SCHEMA,
+  KSQL,
+  POSTGRES,
+  GRAFANA,
+  PROMETHEUS,
+  ZOOKEEPER,
+  KAFKA_BROKER,
+  JMX,
+  PROMCONFIG,
+  downloadDir,
+  network,
+} from './constants';
 
-export default function ymlGenerator(): Function {
-  const PROMCONFIG: PROMConfig = {
-    global: {
-      scrape_interval: '26s',
-      evaluation_interval: '15s',
-      scrape_timeout: '25s',
-    },
-    rule_files: [null],
-    scrape_configs: [
-      {
-        job_name: 'xkite',
-        static_configs: [
-          {
-            targets: [],
-          },
-        ],
-      },
-    ],
-  };
-
-  const JMX: JMXConfg = {
-    image: 'bitnami/jmx-exporter:latest',
-    environment: { SERVICE_PORT: 5556 },
-    ports: [],
-    volumes: [],
-    container_name: '',
-    depends_on: [],
-  };
-
-  const KAFKA_BROKER: KafkaBrokerCfg = {
-    image: 'confluentinc/cp-kafka',
-    environment: {
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2182',
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:
-        'PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT',
-      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT',
-      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: 'zookeeper:2182',
-      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1,
-      CONFLUENT_METRICS_ENABLE: 'false',
-      KAFKA_HEAP_OPTS: '-Xmx512M -Xms512M',
-      KAFKA_BROKER_ID: 101,
-      KAFKA_JMX_PORT: 9991,
-      KAFKA_ADVERTISED_LISTENERS: '',
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1,
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1,
-      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: '',
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true',
-      KAFKA_DELETE_TOPIC_ENABLE: 'true',
-      KAFKA_CREATE_TOPICS: 'topic-test:1:1',
-    },
-    ports: [],
-    volumes: [],
-    container_name: '',
-    depends_on: ['zookeeper', 'postgres'],
-  };
-
-  const ZOOKEEPER: ZooKeeperCfg = {
-    image: 'confluentinc/cp-zookeeper',
-    environment: {
-      ZOOKEEPER_CLIENT_PORT: 2182,
-      ZOOKEEPER_TICK_TIME: 2000,
-      ZOOKEEPER_INIT_LIMIT: 5,
-      ZOOKEEPER_SYNC_LIMIT: 2,
-      ZOOKEEPER_SERVERS: '',
-    },
-    ports: ['2182:2182'],
-    container_name: 'zookeeper',
-  };
-
-  const PROMETHEUS: PrometheusConfig = {
-    image: 'prom/prometheus',
-    ports: ['9099:9090'],
-    volumes: [
-      `${path.join(
-        downloadDir,
-        'prometheus/prometheus.yml'
-      )}:/etc/prometheus/prometheus.yml`,
-    ],
-    container_name: 'prometheus',
-  };
-
-  const GRAFANA: GrafanaCfg = {
-    image: 'grafana/grafana-oss',
-    ports: ['3050:3000'],
-    environment: {
-      GF_PATHS_DATA: '/var/lib/grafana',
-      GF_SECURITY_ALLOW_EMBEDDING: 'true',
-      GF_AUTH_ANONYMOUS_ENABLED: 'true',
-      GF_SMTP_ENABLED: 'true',
-      GF_SECURITY_ADMIN_PASSWORD: 'xkite',
-    },
-    volumes: [
-      'provisioning:/etc/grafana/provisioning',
-      'dashboards:/var/lib/grafana/dashboards',
-    ],
-    container_name: 'grafana',
-    depends_on: ['prometheus'],
-  };
-
-  const POSTGRES: PGConfig = {
-    image: 'postgres',
-    restart: 'unless-stopped',
-    environment: {
-      POSTGRES_PASSWORD: 'admin',
-      POSTGRES_USER: 'admin',
-      POSTGRES_DB: 'xkiteDB',
-      PGDATA: '/data/postgres',
-    },
-    volumes: ['postgresql:/var/lib/postgresql/data'],
-    ports: ['5432:5432'],
-    container_name: 'postgresql',
-  };
-
-  const KSQL: KSQLConfig = {
-    image: 'confluentinc/ksqldb-server',
-    environment: {
-      KSQL_BOOTSTRAP_SERVERS: '', //kafka1:9092,kafka2:9093, ...
-      KSQL_LISTENERS: '',
-      KSQL_KSQL_OUTPUT_TOPIC_NAME_PREFIX: 'ksql_',
-      // KSQL_KSQL_SERVICE_ID: 'default_',
-      KSQL_KSQL_SCHEMA_REGISTRY_URL: 'http://schema-registry:8085',
-      KSQL_KSQL_SINK_REPLICAS: 1, //ex: 3, should be # of brokers
-      KSQL_KSQL_STREAMS_REPLICATION_FACTOR: 1, //ex: 3, should be # of brokers
-      KSQL_KSQL_INTERNAL_TOPIC_REPLICAS: 1, //ex: 3, should be # of brokers
-      KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true',
-      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: 'true',
-      KSQL_STREAMS_AUTO_OFFSET_RESET: 'latest',
-      KSQL_STREAMS_PRODUCER_CONFLUENT_BATCH_EXPIRY_MS: 9223372036854775807,
-      KSQL_STREAMS_PRODUCER_MAX_BLOCK_MS: 9223372036854775807,
-      KSQL_STREAMS_PRODUCER_RETRIES: 2147483647,
-      KSQL_STREAMS_PRODUCER_REQUEST_TIMEOUT_MS: 300000,
-    },
-    ports: [],
-    container_name: 'ksql',
-    depends_on: ['kafka'],
-  };
-
-  // # Schema Registry
-  const KSQL_SCHEMA: KSQLSchemaCfg = {
-    image: 'confluentinc/cp-schema-registry',
-    restart: 'always',
-    depends_on: [],
-    environment: {
-      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: '',
-      SCHEMA_REGISTRY_HOST_NAME: 'schema-registry',
-      SCHEMA_REGISTRY_LISTENERS: `${network}:8085`,
-    },
-    ports: ['8085:8085'],
-    container_name: 'ksql-schema',
-  };
-
-  const JUPYTER: BaseCfg = {
-    image: 'jupyterhub/jupyterhub',
-    ports: ['8000:8000'],
-    container_name: 'jupyterhub',
-  };
-
-  const SPARK: BaseCfg = {
-    image: 'bitnami/spark',
-    ports: [],
-    container_name: 'spark',
-  };
-
-  const SPRING: SpringCfg = {
-    image: 'eclipse-temurin:19-jre-alpine',
-    ports: ['8080:8080'],
-    environment: {
-      JAVA_OPTS: '',
-      SPRING_CONFIG_LOCATION: '/etc/myconfig.yml',
-      'SPRING_KAFKA_BOOTSTRAP-SERVERS': 'kafka1:29091',
-      'SPRING_KAFKA_CONSUMER_BOOTSTRAP-SERVERS': 'kafka1:29091',
-      'SPRING_KAFKA_PRODUCER_BOOTSTRAP-SERVERS': 'kafka1:29091',
-    },
-    command: 'java -jar /app.jar',
-    volumes: [
-      `${path.join(downloadDir, 'spring/app.jar')}:/app.jar`,
-      `${path.join(downloadDir, 'spring/application.yml')}:/etc/myconfig.yml`,
-    ],
-    container_name: 'spring',
-    depends_on: ['kafka1'],
-  };
-
-  const YAML: YAMLConfig = {
-    services: {},
-    volumes: {
-      dashboards: {
-        driver: 'local',
-        driver_opts: {
-          o: 'bind',
-          type: 'none',
-          device: `${path.join(downloadDir, 'grafana/dashboards')}`,
-        },
-      },
-      provisioning: {
-        driver: 'local',
-        driver_opts: {
-          o: 'bind',
-          type: 'none',
-          device: `${path.join(downloadDir, 'grafana/provisioning')}`,
-        },
-      },
-    },
-  };
-  const dependencies: string[] = [];
-  const setup: KiteSetup = {
-    kafkaSetup: {
-      clientId: '',
-      brokers: [],
-      ssl: false,
-    },
-  };
-
+const dependencies: string[] = [];
+const setup: KiteSetup = {
+  kafkaSetup: {
+    clientId: '',
+    brokers: [],
+    ssl: false,
+  },
+};
+/**
+ * creates the pertinent yml configuration for docker
+ * based on the input config
+ * @returns a yaml generator function
+ */
+const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
+  /**
+   * creates the pertinent yml configuration for docker
+   * based on the input config
+   * @param config
+   * @returns KiteSetup for use in Kite instance.
+   */
   return (config: KiteConfig): KiteSetup => {
     console.log('creating Kite Config yml...');
     const { kafka, db, sink, grafana, prometheus } = config;
@@ -223,6 +46,7 @@ export default function ymlGenerator(): Function {
     try {
       // database
       setup.dataSetup = createDB(db);
+      console.log(`dataSetup= ${JSON.stringify(setup.dataSetup)}`);
       // sink
       if (sink?.name === 'jupyter') YAML.services.jupyter = JUPYTER;
       if (sink?.name === 'spark') YAML.services.spark = SPARK;
@@ -271,8 +95,14 @@ export default function ymlGenerator(): Function {
     }
   };
 
-  function createDB(db?: dbCfg): PGConfig | KSQLConfig | undefined {
-    if (db === undefined) return;
+  /**
+   * creates either a PSQL or KSQL database containers
+   * based on the db config passed in.
+   * @param db
+   * @returns the database configuration if one is
+   * configured from the yamlGeneration.
+   */
+  function createDB(db?: dbCfg): dbCfg | undefined {
     if (db?.dataSource === 'postgresql') {
       dependencies.push(db.dataSource);
       YAML.services.postgresql = {
@@ -291,13 +121,13 @@ export default function ymlGenerator(): Function {
           driver: 'local',
         },
       };
-      return YAML.services.postgresql;
     } else if (db?.dataSource === 'ksql') {
       YAML.services.ksql = {
         ...KSQL,
         ports: [`${db.port}:8088`],
         environment: {
           ...KSQL.environment,
+          KSQL_LISTENERS: `http://${network}:${db.port}`,
           KSQL_KSQL_SCHEMA_REGISTRY_URL: `http://schema-registry:${
             db.ksql?.schema_port ?? 8085
           }`,
@@ -307,11 +137,25 @@ export default function ymlGenerator(): Function {
         ...KSQL_SCHEMA,
         ports: [`${db.ksql?.schema_port ?? 8085}:8085`],
       };
-      return YAML.services.ksql;
     }
+    return db;
   }
 
-  function createZooKeepers(kafka: KiteKafkaCfg) {
+  /**
+   * Creates the zookeeper configurations
+   * and updates ksql config which relies
+   * on the zookeeper.
+   *
+   * @param kafka
+   * @returns object which contains the
+   * zookeeper server and client ports
+   * for use in other setups reliant on
+   * zookeeper (kafka).
+   */
+  function createZooKeepers(kafka: KiteKafkaCfg): {
+    zkServer: string;
+    zkClients: string;
+  } {
     console.log('creating zookeepers...');
     const numOfZKs = kafka.zookeepers.size > 1 ? kafka.zookeepers.size : 1;
     // get server list
@@ -377,6 +221,15 @@ export default function ymlGenerator(): Function {
     return servers;
   }
 
+  /**
+   * Create docker configs for broker related images
+   * updates the ksql and spring containers which
+   * depend on the kafka brokers.
+   * Creates the kafka and JMX configurations.
+   * @param kafka
+   * @param servers
+   *
+   */
   function createBrokers(
     kafka: KiteKafkaCfg,
     servers: { zkServer: string; zkClients: string }
@@ -467,17 +320,12 @@ export default function ymlGenerator(): Function {
       );
       // build dependencies
       springDeps.push(brokerName);
+
+      // set kqsl bootstrap servers
+      if (YAML.services.ksql !== undefined)
+        YAML.services.ksql.environment.KSQL_BOOTSTRAP_SERVERS += `${brokerName}:29192,`;
     }
-    // set kqsl bootstrap servers
-    if (YAML.services.ksql !== undefined) {
-      YAML.services.ksql = {
-        ...YAML.services.ksql,
-        environment: {
-          ...YAML.services.ksql.environment,
-          KSQL_BOOTSTRAP_SERVERS: bootstrapServers.join(','),
-        },
-      };
-    }
+
     YAML.services.spring = {
       ...SPRING,
       ports: [`${kafka.spring?.port ?? 8080}:8080`],
@@ -490,4 +338,6 @@ export default function ymlGenerator(): Function {
       depends_on: springDeps,
     };
   }
-}
+};
+
+export default ymlGenerator;

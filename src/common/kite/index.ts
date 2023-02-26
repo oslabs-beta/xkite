@@ -1,95 +1,113 @@
+import { createSlice, configureStore } from '@reduxjs/toolkit';
+
 import path from 'path';
 import fs from 'fs-extra';
 import compose from 'docker-compose';
 import ymlGenerator from '@/common/ymlgenerator';
-import zipper from 'zip-local';
+const zipper = require('zip-local');
 import Monitor from '@/common/monitor/monitor';
+import { KiteState, KiteServerState } from '@/common/kite/constants';
 import defaultCfg from './constants';
+const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
+const configPath = path.join(downloadDir, 'docker-compose.yml');
 
-enum KiteState {
-  Init,
-  Configured,
-  Running,
-  Shutdown,
-}
+const kiteSlice = createSlice({
+  name: 'kite',
+  initialState: {
+    packageBuild: false, //change to make pipeline.zip
+    config: {}, //Promise<KiteConfig> | KiteConfig
+    server: 'localhost:6661',
+    setup: {}, //Promise<KiteSetup> | KiteSetup;
+    state: KiteState.Init,
+    serverState: KiteServerState.Disconnected,
+    configFile: {}, //Promise<KiteConfigFile> | KiteConfigFile;
+  },
+  reducers: {
+    setPackageBuild: (state, action) => {
+      state.packageBuild = action.payload;
+    },
+    setConfig: (state, action) => {
+      console.log(
+        `setting state: ${state.config} = ${JSON.stringify(action.payload)}`
+      );
+      state.config = Object.assign(action.payload);
+    },
+    setServer: (state, action) => {
+      console.log(
+        `setting state: ${state.server} = ${JSON.stringify(action.payload)}`
+      );
+      state.server = action.payload;
+    },
+    setSetup: (state, action) => {
+      console.log(
+        `setting state: ${state.setup} = ${JSON.stringify(action.payload)}`
+      );
+      state.setup = Object.assign(action.payload);
+    },
+    setState: (state, action) => {
+      console.log(
+        `setting state: ${state.state} = ${JSON.stringify(action.payload)}`
+      );
+      state.state = action.payload;
+    },
+    setServerState: (state, action) => {
+      console.log(
+        `setting state: ${state.serverState} = ${JSON.stringify(
+          action.payload
+        )}`
+      );
+      state.serverState = action.payload;
+    },
+    setConfigFile: (state, action) => {
+      console.log(
+        `setting state: ${state.configFile} = ${JSON.stringify(action.payload)}`
+      );
+      state.configFile = Object.assign(action.payload);
+    },
+  },
+});
 
-enum KiteServerState {
-  Disconnected,
-  Connected,
-}
+const {
+  setPackageBuild,
+  setConfig,
+  setServer,
+  setSetup,
+  setState,
+  setServerState,
+  setConfigFile,
+} = kiteSlice.actions;
 
-export default class Kite {
-  private static instance: Kite; //make a singleton
-  static downloadDir: string = path.join(
-    process.cwd(),
-    'src/common/kite/download'
-  );
-  static configPath: string = path.join(Kite.downloadDir, 'docker-compose.yml');
+const store = configureStore({
+  reducer: kiteSlice.reducer,
+});
 
-  public static defaultCfg: KiteConfig = defaultCfg;
-  public static packageBuild = false; //change to make pipeline.zip
-  // parameter types
-  config!: Promise<KiteConfig> | KiteConfig;
-  server?: string;
-  setup!: Promise<KiteSetup> | KiteSetup;
-  state!: KiteState;
-  serverState!: KiteServerState;
-  configFile!: Promise<KiteConfigFile> | KiteConfigFile;
-  /**
-   * @param {KiteConfig} config
-   * takes the configuration
-   * for KITE standalone servers
-   * and generates the YAML configuration
-   * file locally.
-   * @param {string} server
-   * the server string of a remote Kite
-   * instance for connection.
-   * @param {string | KiteConfig} arg
-   * either the configuration object or
-   * the address of kite server instance
-   * for remote or local setup.
-   */
-  private constructor(arg?: string | KiteConfig) {
-    if (arg === undefined) {
-      this.configLocal(Kite.defaultCfg);
-    } else {
-      switch (typeof arg) {
-        case 'string':
-          this.configServer(arg);
-          break;
-        default:
-          this.configLocal(arg);
-          break;
-      }
-    }
-  }
-
+const Kite = {
+  //Private Variable / Methods:
+  defaultCfg,
+  //
   /**
    * Gets the remote server link configuration.
    * @param {string} server
    * the server string of a remote Kite
    * instance for connection.
    */
-  private async configServer(server: string) {
-    this.server = server;
-    this.state = KiteState.Init;
-    this.serverState = KiteServerState.Disconnected;
-
+  configServer: async function (server: string) {
+    store.dispatch(setState(KiteState.Init));
+    store.dispatch(setServerState(KiteServerState.Disconnected));
     try {
-      this.serverState = KiteServerState.Connected;
       const res = [
         fetch(`${server}/api/kite/getConfig`),
         fetch(`${server}/api/kite/getSetup`),
         fetch(`${server}/api/kite/getConfigFile`),
       ];
-      [this.config, this.setup, this.configFile] = res.map(async (r) =>
-        (await r).json()
-      );
+      store.dispatch(setConfig((await res[0]).json()));
+      store.dispatch(setSetup((await res[1]).json()));
+      store.dispatch(setConfigFile((await res[2]).json()));
+      store.dispatch(setServerState(KiteServerState.Connected));
     } catch (err) {
-      this.serverState = KiteServerState.Disconnected;
-      console.error(`error fetching from ${this.server}/api/:\n${err}`);
+      console.error(`error fetching from ${server}/api/:\n${err}`);
     }
-  }
+  },
 
   /**
    * @param {KiteConfig} config
@@ -98,37 +116,133 @@ export default class Kite {
    * and generates the YAML configuration
    * file locally.
    */
-  private configLocal(config: KiteConfig) {
-    this.config = config;
-    this.state = KiteState.Init;
-    this.serverState = KiteServerState.Disconnected;
+  configLocal: function (config: KiteConfig) {
+    store.dispatch(setState(KiteState.Init));
+    store.dispatch(setServerState(KiteServerState.Disconnected));
     // create config + setup
     try {
       // generate the docker config
       const generate: Function = ymlGenerator();
-      this.setup = generate(config);
+      const { packageBuild } = store.getState();
+      store.dispatch(setConfig(config));
+      store.dispatch(setSetup(generate(config)));
       // package the download, comment out or make optional fro time optimization
-      if (Kite.packageBuild === true) {
+      if (packageBuild) {
         zipper.sync
-          .zip(Kite.downloadDir)
+          .zip(downloadDir)
           .compress()
-          .save(path.resolve(Kite.downloadDir, 'pipeline.zip'));
+          .save(path.resolve(downloadDir, 'pipeline.zip'));
       }
       // store the config file
       const header = {
         'Content-Type': 'text/yml',
-        'Content-Length': fs.statSync(Kite.configPath).size,
+        'Content-Length': fs.statSync(configPath).size,
       };
-      const fileStream = fs.readFileSync(Kite.configPath, 'utf-8');
-      this.configFile = { header, fileStream };
-      this.state = KiteState.Configured;
+      const fileStream = fs.readFileSync(configPath, 'utf-8');
+      store.dispatch(setConfigFile({ header, fileStream }));
+      store.dispatch(setState(KiteState.Configured));
       console.log('yaml configuration complete...');
     } catch (err) {
       console.error(
         `KITE failed to initialize: ${err}\nConfiguration ${config}`
       );
     }
-  }
+  },
+
+  /**
+   * requests the remote server
+   * to deploy docker.
+   */
+  deployServer: async function () {
+    try {
+      const { server } = store.getState();
+      await fetch(`${server}/api/kite/deploy`);
+      store.dispatch(setState(KiteState.Running));
+    } catch (err) {
+      console.error(`Kite deployment failed:\n${JSON.stringify(err)}`);
+    }
+  },
+
+  /**
+   * deploys docker locally
+   */
+  deployLocal: async function () {
+    try {
+      console.log('deploying docker containers...');
+      await compose.upAll({
+        cwd: downloadDir,
+        log: true,
+        callback: (chunk: Buffer) => {
+          //progress report
+          console.log('job in progress: ', chunk.toString());
+        },
+      });
+      store.dispatch(setState(KiteState.Running));
+      console.log('docker deployment successful');
+    } catch (err) {
+      console.error(`Kite deployment failed:\n${JSON.stringify(err)}`);
+    }
+  },
+
+  shutdownServer: async function () {
+    try {
+      const { server } = store.getState();
+      await fetch(`${server}/api/kite/shutdown`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ disconnect: true }),
+      });
+    } catch (err) {
+      console.error(`Could not shutdown docker instances on server:\n${err}`);
+    }
+  },
+
+  shutdownLocal: async function () {
+    try {
+      await compose.down({
+        cwd: downloadDir,
+        log: true,
+        commandOptions: ['--remove-orphans', '--volumes'], //force stop and delete volumes.
+      });
+    } catch (err) {
+      console.error(`Could not shutdown docker instances on local:\n${err}`);
+    }
+  },
+  /**
+   * disconnects from the remote server instance
+   */
+  disconnectServer: async function () {
+    try {
+      const { server } = store.getState();
+      await fetch(`${server}/api/kite/disconnect`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ disconnect: true }),
+      });
+    } catch (err) {
+      console.error(`Could not disconnect docker instances on server:\n${err}`);
+    }
+  },
+
+  /**
+   * disconnects from the local instance
+   */
+  disconnectLocal: async function () {
+    try {
+      await compose.kill({
+        cwd: downloadDir,
+        log: true,
+      });
+    } catch (err) {
+      console.error(`Could not disconnect docker instances on local:\n${err}`);
+    }
+  },
 
   /**
    * @param {string | KiteConfig} arg
@@ -136,35 +250,20 @@ export default class Kite {
    * the address of kite server instance
    * for remote or local setup.
    */
-  public static configure(arg: string | KiteConfig) {
-    if (!Kite.instance) {
-      Kite.instance = new Kite(arg);
+  configure: function (arg?: string | KiteConfig) {
+    if (arg === undefined) {
+      Kite.configLocal(defaultCfg);
     } else {
       switch (typeof arg) {
         case 'string':
-          Kite.instance.configServer(arg);
+          Kite.configServer(arg);
           break;
         default:
-          Kite.instance.configLocal(arg);
+          Kite.configLocal(arg);
           break;
       }
     }
-  }
-
-  /**
-   * @param {any} arg
-   * either the configuration object or
-   * the address of kite server instance
-   * for remote or local setup.
-   * @returns
-   * the singleton version of Kite
-   */
-  public static getInstance(arg?: string | KiteConfig): Kite {
-    if (!Kite.instance) {
-      Kite.instance = new Kite(arg);
-    }
-    return Kite.instance;
-  }
+  },
 
   /**
    * invokes docker-compose
@@ -176,57 +275,26 @@ export default class Kite {
    * for remote or local setup.
    *
    */
-  public static async deploy(arg?: any) {
-    const kite = Kite.getInstance(arg);
+  deploy: async function (arg?: any) {
     // if server active deployment happens there...
-    if (kite.serverState === KiteServerState.Connected) {
-      await this.deployServer();
+    const { serverState } = store.getState();
+    if (serverState === KiteServerState.Connected) {
+      await Kite.deployServer();
     } else {
-      await this.deployLocal();
+      await Kite.deployLocal();
       Monitor.initiate();
     }
-  }
-
-  /**
-   * requests the remote server
-   * to deploy docker.
-   */
-  private static async deployServer() {
-    const kite = Kite.getInstance();
-    try {
-      await fetch(`${kite.server}/api/kite/deploy`);
-      kite.state = KiteState.Running;
-    } catch (err) {
-      console.error(`Kite deployment failed:\n${err}`);
-    }
-  }
-
-  /**
-   * deploys docker locally
-   */
-  private static async deployLocal() {
-    const kite = Kite.getInstance();
-    try {
-      console.log('deploying docker containers...');
-      await compose.upAll({
-        cwd: Kite.downloadDir,
-        log: true,
-      });
-      kite.state = KiteState.Running;
-      console.log('docker deployment successful');
-    } catch (err) {
-      console.error(`Kite deployment failed:\n${err}`);
-    }
-  }
+  },
 
   /**
    * @returns {KiteSetup}
    * setup to be used for connecting
    * to a kafka instance and/or database.
    */
-  public static getSetup(): Promise<KiteSetup> {
-    return new Promise((res) => res(Kite.getInstance().setup));
-  }
+  getSetup: function (): any {
+    const { setup } = store.getState();
+    return setup;
+  },
 
   /**
    * If connected to kite server, gets the config from the server.
@@ -234,9 +302,10 @@ export default class Kite {
    * @returns {KiteConfig}
    *
    */
-  public static getConfig(): Promise<KiteConfig> {
-    return new Promise((res) => res(Kite.getInstance().config));
-  }
+  getConfig: function (): any {
+    const { config } = store.getState();
+    return config;
+  },
 
   /**
    * If connected to kite server, gets the config from the server.
@@ -246,29 +315,32 @@ export default class Kite {
    * the header content and the
    * file stream for transmission.
    * Use case: const kite = new Kite();
-   * const configObj = kite.getConfig();
+   * const configObj = getConfig();
    * res.writeHead(200, configObj.header);
    * configObj.fileStream.pipe(res);
    */
-  public static getConfigFile(): Promise<KiteConfigFile> {
-    return new Promise((res) => res(Kite.getInstance().configFile));
-  }
+  getConfigFile: function (): any {
+    const { configFile } = store.getState();
+    return configFile;
+  },
 
   /**
    *
    * @returns state of the Kite Application
    */
-  public static getKiteState(): KiteState {
-    return Kite.getInstance().state;
-  }
+  getKiteState: function (): KiteState {
+    const { state } = store.getState();
+    return state;
+  },
 
   /**
    *
    * @returns state of Kite Server
    */
-  public static getKiteServerState(): KiteServerState {
-    return Kite.getInstance().serverState;
-  }
+  getKiteServerState: function (): KiteServerState {
+    const { serverState } = store.getState();
+    return serverState;
+  },
 
   /**
    * If the kite server isn't running
@@ -276,48 +348,16 @@ export default class Kite {
    * down method directly. Otherwise
    * makes a request to shutdown remotely.
    */
-  public static async disconnect(): Promise<any> {
-    const kite = Kite.getInstance();
-    if (kite.serverState === KiteServerState.Connected) {
-      kite.serverState = KiteServerState.Disconnected; //should this be done?
-      this.disconnectServer();
+  disconnect: async function (): Promise<any> {
+    const { serverState } = store.getState();
+    if (serverState === KiteServerState.Connected) {
+      store.dispatch(setServerState(KiteServerState.Disconnected));
+      Kite.disconnectServer();
     } else {
-      this.disconnectLocal();
+      Kite.disconnectLocal();
     }
-    kite.state = KiteState.Shutdown;
-  }
-
-  /**
-   * disconnects from the remote server instance
-   */
-  private static async disconnectServer() {
-    try {
-      await fetch(`${Kite.getInstance().server}/api/kite/disconnect`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({ disconnect: true }),
-      });
-    } catch (err) {
-      console.error(`Could not disconnect docker instances on server:\n${err}`);
-    }
-  }
-
-  /**
-   * disconnects from the local instance
-   */
-  private static async disconnectLocal() {
-    try {
-      await compose.kill({
-        cwd: Kite.downloadDir,
-        log: true,
-      });
-    } catch (err) {
-      console.error(`Could not disconnect docker instances on local:\n${err}`);
-    }
-  }
+    store.dispatch(setState(KiteState.Shutdown));
+  },
 
   /**
    * If the kite server isn't running
@@ -325,41 +365,16 @@ export default class Kite {
    * down method directly. Otherwise
    * makes a request to shutdown remotely.
    */
-  public static async shutdown(): Promise<any> {
-    const kite = Kite.getInstance();
-    if (kite.serverState === KiteServerState.Connected) {
-      kite.serverState = KiteServerState.Disconnected; //should this be done?
-      this.shutdownServer();
+  shutdown: async function (): Promise<any> {
+    const { serverState } = store.getState();
+    if (serverState === KiteServerState.Connected) {
+      store.dispatch(setServerState(KiteServerState.Disconnected));
+      Kite.shutdownServer();
     } else {
-      this.shutdownLocal();
+      Kite.shutdownLocal();
     }
-    kite.state = KiteState.Shutdown;
-  }
+    store.dispatch(setState(KiteState.Shutdown));
+  },
+};
 
-  private static async shutdownServer() {
-    try {
-      await fetch(`${Kite.getInstance().server}/api/kite/shutdown`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({ disconnect: true }),
-      });
-    } catch (err) {
-      console.error(`Could not shutdown docker instances on server:\n${err}`);
-    }
-  }
-
-  private static async shutdownLocal() {
-    try {
-      await compose.down({
-        cwd: Kite.downloadDir,
-        log: true,
-        commandOptions: ['--remove-orphans', '--volumes'], //force stop and delete volumes.
-      });
-    } catch (err) {
-      console.error(`Could not shutdown docker instances on local:\n${err}`);
-    }
-  }
-}
+export default Kite;
