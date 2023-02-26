@@ -27,6 +27,7 @@ export default class Kite {
   static configPath: string = path.join(Kite.downloadDir, 'docker-compose.yml');
 
   public static defaultCfg: KiteConfig = defaultCfg;
+  public static packageBuild = false; //change to make pipeline.zip
   // parameter types
   config!: Promise<KiteConfig> | KiteConfig;
   server?: string;
@@ -107,10 +108,12 @@ export default class Kite {
       const generate: Function = ymlGenerator();
       this.setup = generate(config);
       // package the download, comment out or make optional fro time optimization
-      zipper.sync
-        .zip(Kite.downloadDir)
-        .compress()
-        .save(path.resolve(Kite.downloadDir, 'pipeline.zip'));
+      if (Kite.packageBuild === true) {
+        zipper.sync
+          .zip(Kite.downloadDir)
+          .compress()
+          .save(path.resolve(Kite.downloadDir, 'pipeline.zip'));
+      }
       // store the config file
       const header = {
         'Content-Type': 'text/yml',
@@ -307,7 +310,7 @@ export default class Kite {
    */
   private static async disconnectLocal() {
     try {
-      await compose.stop({
+      await compose.kill({
         cwd: Kite.downloadDir,
         log: true,
       });
@@ -353,6 +356,7 @@ export default class Kite {
       await compose.down({
         cwd: Kite.downloadDir,
         log: true,
+        commandOptions: ['--remove-orphans', '--volumes'], //force stop and delete volumes.
       });
     } catch (err) {
       console.error(`Could not shutdown docker instances on local:\n${err}`);
