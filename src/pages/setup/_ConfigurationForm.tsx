@@ -52,7 +52,7 @@ export default function ConfigurationForm() {
 
   function disconnectHandler(event: SyntheticEvent) {
     console.log('Disconnection…');
-    fetch('/api/shutdown', {
+    fetch('/api/kite/shutdown', {
       method: 'DELETE',
     })
       .then((response) => console.log(response))
