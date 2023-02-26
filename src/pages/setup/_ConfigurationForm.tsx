@@ -3,6 +3,7 @@ import Button from 'react-bootstrap/Button';
 import FormGroup from 'react-bootstrap/FormGroup';
 import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
+import Accordion from 'react-bootstrap/Accordion';
 
 import { SyntheticEvent, useState } from 'react';
 import defaultCfg from '@/common/kite/constants';
@@ -89,19 +90,6 @@ export default function ConfigurationForm() {
               value={kiteConfigRequest.kafka.brokers.size}
             />
           </Form.Group>
-          {/*<Form.Group className='mb-3 col-6' controlId='numberOfBrokers'>*/}
-          {/*  <Form.Label>Number of Brokers</Form.Label>*/}
-          {/*  <Form.Control*/}
-          {/*    type='number'*/}
-          {/*    placeholder='Password'*/}
-          {/*    onChange={(e) => {*/}
-          {/*      const numberOfBrokers = +e.target.value;*/}
-          {/*      updateKiteConfigRequest({ numberOfBrokers });*/}
-          {/*    }}*/}
-          {/*    value={kiteConfigRequest.numberOfBrokers}*/}
-          {/*  />*/}
-          {/*</Form.Group>*/}
-          {/*TODO: Convert to a selection drop down*/}
           <Form.Group className='col-4' controlId='dataSource'>
             <Form.Label>Data Source</Form.Label>
             <Form.Select
@@ -148,6 +136,12 @@ export default function ConfigurationForm() {
               Submit
             </Button>
           </FormGroup>
+          <Accordion className='mt-3'>
+            <Accordion.Item eventKey='0'>
+              <Accordion.Header>Advanced Settings</Accordion.Header>
+              <Accordion.Body></Accordion.Body>
+            </Accordion.Item>
+          </Accordion>{' '}
         </Row>
       </Form>
       <Row className={'gx-1 gy-1'}>
