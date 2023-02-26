@@ -8,8 +8,23 @@ const defaultCfg: KiteConfig = {
       size: 2,
     },
   },
-  dataSource: 'postgresql',
-  sink: 'jupyter',
+  db: {
+    dataSource: 'postgresql',
+    port: 5432,
+  },
+  sink: { name: 'jupyter' },
 };
+
+export enum KiteState {
+  Init = 'Init',
+  Configured = 'Configured',
+  Running = 'Running',
+  Shutdown = 'Shutdown',
+}
+
+export enum KiteServerState {
+  Disconnected = 'Disconnected',
+  Connected = 'Connected',
+}
 
 export default defaultCfg;

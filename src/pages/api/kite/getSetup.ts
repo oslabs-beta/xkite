@@ -9,8 +9,14 @@ export default async function handler(
   res: NextApiResponse<Setup | string>
 ) {
   if (req.method === 'GET') {
-    const setup = await Kite.getSetup();
-    res.status(200).json(setup);
+    try {
+      const setup = await Kite.getSetup();
+      if (!setup) throw Error('Setup not defined!');
+      res.status(200).json(setup);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send('Internal Server Error /api/kite/getSetup');
+    }
   } else {
     res.status(405).send('Method Not Allowed');
   }

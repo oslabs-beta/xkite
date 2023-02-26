@@ -3,7 +3,8 @@ const { spawn } = require('child_process');
 
 export default class Monitor {
   public static initiate() {
-    const child = spawn('open', ['http://localhost:6662/display']);
+    const port: number = parseInt(process.env.PORT2!, 10) || 6662;
+    const child = spawn('open', [`http://localhost:${port}/display`]);
     child.on('error', (err: any) => {
       console.error('Failed to open localhost:', err);
     });

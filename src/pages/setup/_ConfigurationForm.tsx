@@ -57,7 +57,7 @@ export default function ConfigurationForm() {
 
   function disconnectHandler(event: SyntheticEvent) {
     console.log('Disconnection…');
-    fetch('/api/shutdown', {
+    fetch('/api/kite/shutdown', {
       method: 'DELETE',
     })
       .then((response) => console.log(response))
@@ -107,10 +107,19 @@ export default function ConfigurationForm() {
             <Form.Control
               type='text'
               placeholder='Data Source'
-              onChange={(e) =>
-                updateKiteConfigRequest({ dataSource: e.target.value })
-              }
-              value={kiteConfigRequest.dataSource}
+              onChange={(e) => {
+                if (
+                  !(
+                    e.target.value === 'postgresql' || e.target.value === 'ksql'
+                  )
+                )
+                  throw TypeError(`Invalid Data Source ${e.target.value}`);
+                else
+                  return updateKiteConfigRequest({
+                    db: { dataSource: e.target.value },
+                  });
+              }}
+              value={kiteConfigRequest.db?.dataSource}
             />
           </Form.Group>
           <Form.Group className='col-4' controlId='sink'>
@@ -118,10 +127,15 @@ export default function ConfigurationForm() {
             <Form.Control
               type='text'
               placeholder='Data Sink'
-              onChange={(e) =>
-                updateKiteConfigRequest({ sink: e.target.value })
-              }
-              value={kiteConfigRequest.sink}
+              onChange={(e) => {
+                if (
+                  !(e.target.value === 'jupyter' || e.target.value === 'spark')
+                )
+                  throw TypeError(`Invalid Data Sink ${e.target.value}`);
+
+                updateKiteConfigRequest({ sink: { name: e.target.value } });
+              }}
+              value={kiteConfigRequest.sink?.name}
             />
           </Form.Group>
           <FormGroup className='col-2 '>
