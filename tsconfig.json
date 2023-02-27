@@ -8,6 +8,9 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
+    "noImplicitAny": true,
+    "removeComments": true,
+    "sourceMap": true,
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -15,7 +18,7 @@
     "jsx": "preserve",
     "incremental": true,
     "baseUrl": ".",
-    "typeRoots": ["./src/types", "node_modules/@types"],
+    "typeRoots": ["./src/common/types", "node_modules/@types"],
     "paths": {
       "@/*": ["./src/*"]
     }

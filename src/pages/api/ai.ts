@@ -13,7 +13,6 @@ export default async function handler(
     res: NextApiResponseServerIO
   ) {
     try {
-        setTimeout(async () => {
             //get AI user
             const aiUserResponse = await openai.createCompletion({
                 model: 'text-davinci-003',
@@ -58,7 +57,6 @@ export default async function handler(
                 };
             //use socket server, same strategy as chat api call
             res?.socket?.server?.io?.emit("message", message);
-          }, Math.random() * 10000 + 40000);
     } catch (err) {
         return res.status(405).send({ reply: 'Method Not Allowed' });
     }

@@ -79,6 +79,9 @@ export default function Chat() {
           console.log(err);
         }
       };
+      setTimeout(async () => {
+        await fetch('/api/ai');
+      }, Math.random() * 10000 + 40000);
   
       fetchAndSetSenderId();
       fetchAllMessages();

@@ -9,8 +9,12 @@
     "url": "https://github.com/oslabs-beta/xkite"
   },
   "scripts": {
-    "dev": "concurrently \"next dev\" \"mvn -f ./src/common/springApp/pom.xml spring-boot:run\"",
-    "dev2": "next dev",
+    "spring": "mvn -f ./src/common/springApp/pom.xml spring-boot:run",
+    "build-spring": "mvn -f ./src/common/springApp clean package && mv ./src/common/springApp/target/*.jar ./src/common/kite/download/spring/app.jar",
+    "next-dev": "next dev",
+    "port:6662": "next dev -p 6662",
+    "port:6661": "next dev -p 6661",
+    "dev": "concurrently \"npm run port:6662\" \"npm run port:6661\" \"open http://localhost:6661\" \"open http://localhost:6662/display\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -27,30 +31,45 @@
     "nextjs"
   ],
   "dependencies": {
-    "@next/font": "13.1.6",
+    "openai": "^3.1.0",
+    "pg": "^8.9.0",
+    "@next/font": "13.0.6",
     "@types/node": "18.14.0",
     "@types/react": "18.0.28",
     "@types/react-dom": "18.0.11",
     "bootstrap": "^5.2.3",
     "concurrently": "^7.6.0",
     "eslint": "8.34.0",
-    "eslint-config-next": "13.1.6",
-    "next": "13.1.6",
+    "eslint-config-next": "13.0.6",
+    "next": "13.0.6",
     "react": "18.2.0",
     "react-bootstrap": "^2.7.2",
     "react-dom": "18.2.0",
-    "typescript": "4.9.5"
+    "typescript": "4.9.5",
+    "socket.io": "^3.1.2",
+    "socket.io-client": "^3.1.2"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.1",
     "@types/js-yaml": "^4.0.5",
     "@types/kafkajs": "^1.9.0",
     "@types/react-bootstrap": "^0.32.32",
+    "child_process": "^1.0.2",
     "docker-compose": "^0.23.19",
+    "eslint": "^8.34.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "@types/socket.io-client": "^1.4.35",
     "fs-extra": "^11.1.0",
     "js-yaml": "^4.1.0",
     "kafkajs": "^2.2.3",
+    "prettier": "^2.8.4",
+    "prettier-eslint": "^15.0.1",
     "sass": "^1.58.3",
     "zip-local": "^0.3.5"
+  },
+  "browser": {
+    "child_process": false,
+    "fs": false
   }
 }

@@ -1,7 +1,10 @@
 import { NextApiRequest } from "next";
 import { NextApiResponseServerIO } from "src/types/io";
 const { db } = require('./pg.ts');
+import Kite from '@/common/kite';
+import KafkaConnector from '@/common/kafkaConnector';
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default async (req: NextApiRequest, res: NextApiResponseServerIO) => {
   if (req.method === "POST") {
     // get message
@@ -16,6 +19,11 @@ export default async (req: NextApiRequest, res: NextApiResponseServerIO) => {
       const data2 = await db.query(query2, [sender_id]);
       const username = data2.rows[0].username;
       const fullMessage = { message, sender_id, message_id, time, username, avatar };
+
+      const kafkaSetup: KafkaSetup = await Kite.getKafkaSetup();
+      const connect = new KafkaConnector(kafkaSetup);
+      const messageString = {timestamp: time, message}
+      connect.sendMessage('jsonTopic', [message]);
       // dispatch to channel "message"
       res?.socket?.server?.io?.emit("message", fullMessage);
       res.status(201).json(fullMessage);
