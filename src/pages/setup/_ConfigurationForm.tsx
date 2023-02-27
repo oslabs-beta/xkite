@@ -22,6 +22,22 @@ export default function ConfigurationForm() {
     });
   }
 
+  async function isPortOpen(port: number): Promise<boolean> {
+    const { isOpen } = await fetch('/api/checkPort', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ port }),
+    })
+      .then((response) => response.json())
+      .catch((error) => {
+        console.error(error.message);
+      });
+
+    return isOpen;
+  }
+
   function submitHandler(event: SyntheticEvent) {
     event.preventDefault();
 
@@ -71,6 +87,7 @@ export default function ConfigurationForm() {
         brokerIndex={brokerNumber}
         updateKiteConfigRequest={updateKiteConfigRequest}
         kiteConfigRequest={kiteConfigRequest}
+        isPortOpen={isPortOpen}
       />
     );
   }
