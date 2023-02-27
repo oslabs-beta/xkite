@@ -4,6 +4,7 @@ interface AdvancedBrokerConfigProps {
   brokerIndex: number;
   updateKiteConfigRequest: (update: Partial<KiteConfig>) => void;
   kiteConfigRequest: KiteConfig;
+  isPortOpen: (port: number) => boolean;
 }
 
 // We should probably define these elsewhere and import them
@@ -15,6 +16,7 @@ export default function AdvancedBrokerConfig({
   brokerIndex,
   updateKiteConfigRequest,
   kiteConfigRequest,
+  isPortOpen,
 }: AdvancedBrokerConfigProps) {
   return (
     <Row className='mb-3'>
