@@ -5,25 +5,16 @@ import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
 import Accordion from 'react-bootstrap/Accordion';
 
-import { SyntheticEvent, useState } from 'react';
+import { SyntheticEvent, useState, useEffect } from 'react';
 import defaultCfg from '@/common/kite/constants';
+import AdvancedBrokerConfig from './_AdvancedBrokerConfig';
+import { JsxElement } from 'typescript';
 
 export default function ConfigurationForm() {
   const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultCfg);
 
-  function updateKiteConfigRequest(update: Partial<KiteConfig>) {
-    // Prevent numeric values from going below 1
-    if (update.kafka) {
-      const values = [
-        ...Object.values(update.kafka.brokers),
-        ...Object.values(update.kafka.zookeepers),
-      ];
-      for (const value of values) {
-        if (typeof value === 'number' && value <= 0) return;
-      }
-    }
-
-    setKiteConfigRequest(() => {
+  function updateKiteConfigRequest(update: Partial<KiteConfig>): void {
+    setKiteConfigRequest((kiteConfigRequest) => {
       return {
         ...kiteConfigRequest,
         ...update,
@@ -33,6 +24,9 @@ export default function ConfigurationForm() {
 
   function submitHandler(event: SyntheticEvent) {
     event.preventDefault();
+
+    // TODO: Prevent state for deleted brokers from being submitted
+
     console.log('sending configuration…');
     console.log(defaultCfg);
 
@@ -65,6 +59,22 @@ export default function ConfigurationForm() {
       .catch((error) => console.error(error));
   }
 
+  //== Rendering of Advanced Settings ==//
+  const advancedBrokerConfigElements: JSX.Element[] = [];
+  for (
+    let brokerNumber = 0;
+    brokerNumber < kiteConfigRequest.kafka.brokers.size;
+    brokerNumber++
+  ) {
+    advancedBrokerConfigElements.push(
+      <AdvancedBrokerConfig
+        brokerIndex={brokerNumber}
+        updateKiteConfigRequest={updateKiteConfigRequest}
+        kiteConfigRequest={kiteConfigRequest}
+      />
+    );
+  }
+
   return (
     <Container>
       <Form className='mb-3' onSubmit={submitHandler}>
@@ -76,6 +86,8 @@ export default function ConfigurationForm() {
               // placeholder='How many kafka brokers?'
               onChange={(e) => {
                 const size = +e.target.value;
+                if (size <= 0) return;
+
                 const update = {
                   kafka: {
                     ...kiteConfigRequest.kafka,
@@ -90,7 +102,30 @@ export default function ConfigurationForm() {
               value={kiteConfigRequest.kafka.brokers.size}
             />
           </Form.Group>
-          <Form.Group className='col-4' controlId='dataSource'>
+          <Form.Group className='col-2' controlId='kafka.broker.size'>
+            <Form.Label>Zookeepers</Form.Label>
+            <Form.Control
+              type='number'
+              // placeholder='How many kafka brokers?'
+              onChange={(e) => {
+                const size = +e.target.value;
+                if (size <= 0) return;
+
+                const update = {
+                  kafka: {
+                    ...kiteConfigRequest.kafka,
+                    zookeepers: {
+                      ...kiteConfigRequest.kafka.zookeepers,
+                      size,
+                    },
+                  },
+                };
+                updateKiteConfigRequest(update);
+              }}
+              value={kiteConfigRequest.kafka.zookeepers.size}
+            />
+          </Form.Group>
+          <Form.Group className='col-3' controlId='dataSource'>
             <Form.Label>Data Source</Form.Label>
             <Form.Select
               aria-label='Data Source'
@@ -112,7 +147,7 @@ export default function ConfigurationForm() {
               <option value='ksql'>KSQL</option>
             </Form.Select>
           </Form.Group>
-          <Form.Group className='col-4' controlId='sink'>
+          <Form.Group className='col-3' controlId='sink'>
             <Form.Label>Data Sink</Form.Label>
             <Form.Select
               aria-label='Data Sink'
@@ -139,9 +174,11 @@ export default function ConfigurationForm() {
           <Accordion className='mt-3'>
             <Accordion.Item eventKey='0'>
               <Accordion.Header>Advanced Settings</Accordion.Header>
-              <Accordion.Body></Accordion.Body>
+              <Accordion.Body>
+                <Row>{advancedBrokerConfigElements}</Row>
+              </Accordion.Body>
             </Accordion.Item>
-          </Accordion>{' '}
+          </Accordion>
         </Row>
       </Form>
       <Row className={'gx-1 gy-1'}>
