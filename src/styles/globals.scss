@@ -1,3 +1,43 @@
+.metrics1 {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+
+  div {
+    margin: 1rem 0.5rem;
+
+    iframe {
+      width: 250px;
+      border-radius: 12px;
+    }
+  }
+}
+
+.metrics2 {
+  display: flex;
+  flex-direction: row;
+  // each element takes the size it needs
+  justify-content: space-around;
+  iframe {
+    border-radius: 8px;
+  }
+}
+
+h1,
+h3 {
+  text-align: center;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  margin-top: 2rem;
+
+  Button {
+    width: 250px;
+  }
+}
 //:root {
 //  --max-width: 1100px;
 //  --border-radius: 12px;
