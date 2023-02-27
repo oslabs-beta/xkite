@@ -1,5 +1,3 @@
-import { createSlice, configureStore } from '@reduxjs/toolkit';
-
 import path from 'path';
 import fs from 'fs-extra';
 import compose from 'docker-compose';
@@ -11,63 +9,7 @@ import defaultCfg from './constants';
 const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
 const configPath = path.join(downloadDir, 'docker-compose.yml');
 
-const kiteSlice = createSlice({
-  name: 'kite',
-  initialState: {
-    packageBuild: false, //change to make pipeline.zip
-    config: {}, //Promise<KiteConfig> | KiteConfig
-    server: 'localhost:6661',
-    setup: {}, //Promise<KiteSetup> | KiteSetup;
-    state: KiteState.Init,
-    serverState: KiteServerState.Disconnected,
-    configFile: {}, //Promise<KiteConfigFile> | KiteConfigFile;
-  },
-  reducers: {
-    setPackageBuild: (state, action) => {
-      state.packageBuild = action.payload;
-    },
-    setConfig: (state, action) => {
-      console.log(
-        `setting state: ${state.config} = ${JSON.stringify(action.payload)}`
-      );
-      state.config = Object.assign(action.payload);
-    },
-    setServer: (state, action) => {
-      console.log(
-        `setting state: ${state.server} = ${JSON.stringify(action.payload)}`
-      );
-      state.server = action.payload;
-    },
-    setSetup: (state, action) => {
-      console.log(
-        `setting state: ${state.setup} = ${JSON.stringify(action.payload)}`
-      );
-      state.setup = Object.assign(action.payload);
-    },
-    setState: (state, action) => {
-      console.log(
-        `setting state: ${state.state} = ${JSON.stringify(action.payload)}`
-      );
-      state.state = action.payload;
-    },
-    setServerState: (state, action) => {
-      console.log(
-        `setting state: ${state.serverState} = ${JSON.stringify(
-          action.payload
-        )}`
-      );
-      state.serverState = action.payload;
-    },
-    setConfigFile: (state, action) => {
-      console.log(
-        `setting state: ${state.configFile} = ${JSON.stringify(action.payload)}`
-      );
-      state.configFile = Object.assign(action.payload);
-    },
-  },
-});
-
-const {
+import store, {
   setPackageBuild,
   setConfig,
   setServer,
@@ -75,11 +17,7 @@ const {
   setState,
   setServerState,
   setConfigFile,
-} = kiteSlice.actions;
-
-const store = configureStore({
-  reducer: kiteSlice.reducer,
-});
+} from '@/common/kite/redux';
 
 const Kite = {
   //Private Variable / Methods:
