@@ -6,7 +6,7 @@ import Container from 'react-bootstrap/Container';
 
 import { SyntheticEvent, useState } from 'react';
 import defaultCfg from '@/common/kite/constants';
-import ShutDownBtn from './_ShutdownBtn';
+import ShutDownBtn from './ShutdownBtn';
 
 export default function ConfigurationForm() {
   const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultCfg);

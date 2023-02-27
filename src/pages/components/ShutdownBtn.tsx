@@ -6,7 +6,7 @@ export default function ShutDownBtn() {
   async function disconnectHandler(event: SyntheticEvent): Promise<void> {
     console.log('Disconnecting…');
     try {
-      const response = await axios.delete('/api/shutdown');
+      const response = await axios.delete('/api/kite/shutdown');
       console.log(response);
     } catch (error) {
       console.error('Error occurred during shutdown:', error);
