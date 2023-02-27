@@ -133,7 +133,7 @@ export default function ConfigurationForm() {
               value={kiteConfigRequest.sink?.name}
             />
           </Form.Group>
-          <FormGroup className='col-2 '>
+          <FormGroup className='col-3 '>
             <Button variant='primary' type='submit'>
               Submit
             </Button>
