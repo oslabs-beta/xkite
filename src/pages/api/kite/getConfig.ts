@@ -6,13 +6,18 @@ type Config = KiteConfig;
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Config| string>
+  res: NextApiResponse<Config | string>
 ) {
   if (req.method === 'GET') {
-    const config = await Kite.getConfig();
-    res.status(200).json(config);
+    try {
+      const config = await Kite.getConfig();
+      if (!config) throw Error('Config not defined!');
+      res.status(200).json(config);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send('Internal Server Error /api/kite/getConfig');
+    }
   } else {
     res.status(405).send('Method Not Allowed');
   }
-
 }
