@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 
 @RestController
 @RequestMapping(value = "/api/kafka")
-@CrossOrigin(origins = "http://localhost:6662/display")
+@CrossOrigin(origins = "http://localhost:6662")
 
 public class JsonMessageController {
     private JsonKafkaProducer kafkaProducer;
