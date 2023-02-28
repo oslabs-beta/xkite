@@ -3,6 +3,7 @@ import { NextApiResponseServerIO } from "src/types/io";
 const { db } = require('./pg.ts');
 import Kite from '@/common/kite';
 import KafkaConnector from '@/common/kafkaConnector';
+const { Kafka } = require('kafkajs');
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default async (req: NextApiRequest, res: NextApiResponseServerIO) => {
@@ -14,16 +15,24 @@ export default async (req: NextApiRequest, res: NextApiResponseServerIO) => {
       const values = [sender_id, message];
       const data = await db.query(query, values);
       const {message_id, time} = data.rows[0];
-      console.log(data.rows, 'this is data.rows');
+      //console.log(data.rows, 'this is data.rows');
       const query2 = `SELECT username FROM users WHERE user_id = $1`;
       const data2 = await db.query(query2, [sender_id]);
       const username = data2.rows[0].username;
       const fullMessage = { message, sender_id, message_id, time, username, avatar };
-
-      const kafkaSetup: KafkaSetup = await Kite.getKafkaSetup();
-      const connect = new KafkaConnector(kafkaSetup);
-      const messageString = {timestamp: time, message}
-      connect.sendMessage('jsonTopic', [message]);
+      
+      // const sendMessage = await fetch("http://localhost:8081/api/kafka/publish", {
+      //   method: "POST", // or 'PUT'
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({timestamp: 'test', message}),
+      // })
+      //   .then((response) => response.json())
+      //   .then(response => console.log(response))
+      //   .catch((error) => {
+      //     console.error("Error:", error);
+      //   });
       // dispatch to channel "message"
       res?.socket?.server?.io?.emit("message", fullMessage);
       res.status(201).json(fullMessage);

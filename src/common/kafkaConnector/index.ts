@@ -1,6 +1,7 @@
 // this is a kafka connector class that uses kafkajs to simplift the process of connecting to a kafka instance. the constructor takes in a kafka setup object that constructs a kafka instance via kafkajs
 
 import { Kafka, logLevel, Consumer, Producer, Admin } from 'kafkajs';
+/// <reference path="./types.d.ts" />
 
 export default class KafkaConnector {
   kafka: Kafka;
@@ -97,7 +98,7 @@ export default class KafkaConnector {
         ? this.producer
         : this.kafka.producer();
       await producer.connect();
-
+      
       if (!this.producer) await producer.connect();
 
       const result = await producer.send({

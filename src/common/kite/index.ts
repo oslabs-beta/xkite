@@ -18,39 +18,41 @@ const kiteSlice = createSlice({
     config: {}, //Promise<KiteConfig> | KiteConfig
     server: 'localhost:6661',
     setup: {}, //Promise<KiteSetup> | KiteSetup;
+    kafkaSetup: {},
     state: KiteState.Init,
     serverState: KiteServerState.Disconnected,
     configFile: {}, //Promise<KiteConfigFile> | KiteConfigFile;
   },
   reducers: {
-    setPackageBuild: (state: any, action: any) => {
+    setPackageBuild: (state, action) => {
       state.packageBuild = action.payload;
     },
-    setConfig: (state: any, action: any) => {
+    setConfig: (state, action) => {
       console.log(
         `setting state: ${state.config} = ${JSON.stringify(action.payload)}`
       );
       state.config = Object.assign(action.payload);
     },
-    setServer: (state: any, action: any) => {
+    setServer: (state, action) => {
       console.log(
         `setting state: ${state.server} = ${JSON.stringify(action.payload)}`
       );
       state.server = action.payload;
     },
-    setSetup: (state: any, action: any) => {
+    setSetup: (state, action) => {
       console.log(
         `setting state: ${state.setup} = ${JSON.stringify(action.payload)}`
       );
       state.setup = Object.assign(action.payload);
+      state.kafkaSetup = Object.assign(action.payload.kafkaSetup ? action.payload.kafkaSetup : {});
     },
-    setState: (state: any, action: any) => {
+    setState: (state, action) => {
       console.log(
         `setting state: ${state.state} = ${JSON.stringify(action.payload)}`
       );
       state.state = action.payload;
     },
-    setServerState: (state: any, action: any) => {
+    setServerState: (state, action) => {
       console.log(
         `setting state: ${state.serverState} = ${JSON.stringify(
           action.payload
@@ -58,7 +60,7 @@ const kiteSlice = createSlice({
       );
       state.serverState = action.payload;
     },
-    setConfigFile: (state: any, action: any) => {
+    setConfigFile: (state, action) => {
       console.log(
         `setting state: ${state.configFile} = ${JSON.stringify(action.payload)}`
       );
@@ -93,6 +95,7 @@ const Kite = {
    */
   configServer: async function (server: string) {
     store.dispatch(setState(KiteState.Init));
+    store.dispatch(setServer(server));
     store.dispatch(setServerState(KiteServerState.Disconnected));
     try {
       const res = [
@@ -302,9 +305,8 @@ const Kite = {
    * is a substrate of KiteSetup
    */
    getKafkaSetup: function (): any {
-    const { setup } = store.getState();
-    const kafkaSetup = setup.kafkaSetup;
-    return new Promise((res) => res(kafkaSetup));
+    const { kafkaSetup } = store.getState();
+    return kafkaSetup;
   },
 
   /**
