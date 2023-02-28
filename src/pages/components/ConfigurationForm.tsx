@@ -5,9 +5,10 @@ import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
 import Accordion from 'react-bootstrap/Accordion';
 
-import { SyntheticEvent, useState, useEffect } from 'react';
+import { SyntheticEvent, useState } from 'react';
 import defaultCfg from '@/common/kite/constants';
 import AdvancedBrokerConfig from './AdvancedBrokerConfig';
+import ShutDownBtn from './ShutdownBtn';
 
 export interface PortsOpen {
   [index: string]: PortOpen;
@@ -252,13 +253,7 @@ export default function ConfigurationForm() {
         >
           Export Config
         </Button>
-        <Button
-          variant='danger'
-          onClick={disconnectHandler}
-          // disabled
-        >
-          Disconnect
-        </Button>
+        <ShutDownBtn />
         {/*</Col>*/}
       </Row>
     </Container>

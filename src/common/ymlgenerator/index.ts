@@ -17,6 +17,7 @@ import {
   PROMCONFIG,
   downloadDir,
   network,
+  _ports_,
 } from './constants';
 
 const dependencies: string[] = [];
@@ -45,20 +46,28 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
 
     try {
       // database
-      setup.dataSetup = createDB(db);
-      console.log(`dataSetup= ${JSON.stringify(setup.dataSetup)}`);
-      // sink
+      setup.dBSetup = createDB(db);
+      console.log(`dataSetup= ${JSON.stringify(setup.dBSetup)}`);
+      // sink //TODO make and call createSink() method
       if (sink?.name === 'jupyter') YAML.services.jupyter = JUPYTER;
       if (sink?.name === 'spark') YAML.services.spark = SPARK;
       // prometheus
       YAML.services.prometheus = {
         ...PROMETHEUS,
-        ports: [`${prometheus?.port ?? 9099}:9090`],
+        ports: [
+          `${prometheus?.port ?? _ports_.prometheus.external}:${
+            _ports_.prometheus.internal
+          }`,
+        ],
       };
       // grafana
       YAML.services.grafana = {
         ...GRAFANA,
-        ports: [`${grafana?.port ?? 3050}:3000`],
+        ports: [
+          `${grafana?.port ?? _ports_.grafana.external}:${
+            _ports_.grafana.internal
+          }`,
+        ],
       };
       // Checks if directories download, prometheus and jmx exist, if not, then it creates all of them
       fs.ensureDirSync(downloadDir);
@@ -107,7 +116,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       dependencies.push(db.dataSource);
       YAML.services.postgresql = {
         ...POSTGRES,
-        ports: [`${db.port}:5432`],
+        ports: [`${db.port}:${_ports_.postgresql.internal}`],
         environment: {
           ...POSTGRES.environment,
           POSTGRES_USER: db.postgresql?.username ?? 'admin',
@@ -124,18 +133,22 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
     } else if (db?.dataSource === 'ksql') {
       YAML.services.ksql = {
         ...KSQL,
-        ports: [`${db.port}:8088`],
+        ports: [`${db.port}:${_ports_.ksql.internal}`],
         environment: {
           ...KSQL.environment,
           KSQL_LISTENERS: `http://${network}:${db.port}`,
           KSQL_KSQL_SCHEMA_REGISTRY_URL: `http://schema-registry:${
-            db.ksql?.schema_port ?? 8085
+            db.ksql?.schema_port ?? _ports_.ksql_schema.internal //TODO revisit/test
           }`,
         },
       };
       YAML.services.ksql_schema = {
         ...KSQL_SCHEMA,
-        ports: [`${db.ksql?.schema_port ?? 8085}:8085`],
+        ports: [
+          `${db.ksql?.schema_port ?? _ports_.ksql_schema.external}:${
+            _ports_.ksql_schema.internal
+          }`,
+        ],
       };
     }
     return db;
@@ -153,41 +166,45 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
    * zookeeper (kafka).
    */
   function createZooKeepers(kafka: KiteKafkaCfg): {
-    zkServer: string;
     zkClients: string;
+    zkPeers: string;
   } {
     console.log('creating zookeepers...');
     const numOfZKs = kafka.zookeepers.size > 1 ? kafka.zookeepers.size : 1;
     // get server list
-    const internalPort = 2181;
     const name = (x: number) => `zookeeper${x}`;
 
     const getZKServerPorts: () => {
-      zkServer: string;
       zkClients: string;
+      zkPeers: string;
     } = () => {
-      let zkServer: string = '';
       let zkClients: string = '';
-      const getServerPort: (x: number) => string = (x) => {
+      let zkPeers: string = '';
+      const getPeerPort: (x: number) => string = (x) => {
         if (
-          kafka.zookeepers.server_ports !== undefined &&
-          kafka.zookeepers.election_ports !== undefined
+          kafka.zookeepers.ports !== undefined &&
+          kafka.zookeepers.ports.peer !== undefined
         )
-          return `${kafka.zookeepers.server_ports[x]}:${kafka.zookeepers.election_ports[x]};`;
-        return `${x + 1}2888:${x + 1}3888;`;
+          return `${kafka.zookeepers.ports.peer.external}:${kafka.zookeepers.ports.peer.internal};`;
+        return `${x + 1}${_ports_.zookeeper.peer.external}:${x + 1}${
+          _ports_.zookeeper.peer.internal
+        };`;
       };
       const getClientPort: (x: number) => string = (x) => {
-        if (kafka.zookeepers.client_ports !== undefined)
-          return kafka.zookeepers.client_ports[x] + ',';
-        return `${x + 1}${internalPort},`;
+        if (
+          kafka.zookeepers.ports !== undefined &&
+          kafka.zookeepers.ports.client[x] !== undefined
+        )
+          return kafka.zookeepers.ports.client[x] + ',';
+        return `${x + 1}${_ports_.zookeeper.client.external},`;
       };
       for (let i: number = 0; i < numOfZKs; i++) {
-        zkServer += `${name(i + 1)}:${getServerPort(i)}`;
         zkClients += `${name(i + 1)}:${getClientPort(i)}`;
+        zkPeers += `${name(i + 1)}:${getPeerPort(i)}`;
       }
-      zkServer = zkServer.slice(0, -1);
       zkClients = zkClients.slice(0, -1);
-      return { zkServer, zkClients };
+      zkPeers = zkPeers.slice(0, -1);
+      return { zkClients, zkPeers };
     };
 
     const servers = getZKServerPorts();
@@ -195,9 +212,12 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
     for (let i = 0; i < numOfZKs; i++) {
       const n = i + 1;
       const name = `zookeeper${n}`;
-      let cport = 10000 * n + internalPort;
-      if (kafka.zookeepers.client_ports !== undefined) {
-        cport = kafka.zookeepers.client_ports[i];
+      let cport = 10000 * n + _ports_.zookeeper.client.external;
+      if (
+        kafka.zookeepers.ports?.client !== undefined &&
+        kafka.zookeepers.ports.client[i] !== undefined
+      ) {
+        cport = kafka.zookeepers.ports.client[i];
       }
 
       YAML.services[name] = {
@@ -206,15 +226,15 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           ...ZOOKEEPER.environment,
           ZOOKEEPER_SERVER_ID: n,
           ZOOKEEPER_CLIENT_PORT: cport,
-          ZOOKEEPER_SERVERS: servers.zkServer,
+          ZOOKEEPER_SERVERS: servers.zkPeers,
         },
-        ports: [`${cport}:${internalPort}`],
+        ports: [`${cport}:${_ports_.zookeeper.client.internal}`],
         container_name: name,
       };
       // update the schema with the zk info
       if (YAML.services.ksql_schema !== undefined) {
         YAML.services.ksql_schema.depends_on?.push(name);
-        YAML.services.ksql_schema.environment.SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL += `${name}:2181,`; //last comma may be an issue?
+        YAML.services.ksql_schema.environment.SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL += `${name}:${_ports_.zookeeper.client.internal},`; //last comma may be an issue?
       }
       dependencies.push(name);
     }
@@ -232,7 +252,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
    */
   function createBrokers(
     kafka: KiteKafkaCfg,
-    servers: { zkServer: string; zkClients: string }
+    servers: { zkClients: string; zkPeers: string }
   ) {
     console.log('creating brokers...');
     const jmxExporterConfig: any = yaml.load(
@@ -242,26 +262,24 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       )
     );
 
-    const bootstrapServers = [];
+    const springBSServers = [];
     const springDeps = [];
     for (let i = 0; i < kafka.brokers.size; i++) {
       const n = i + 1;
       // JMX Config:
-      let jmxInternalPort = 5556;
-      let jmxPort = jmxInternalPort + n;
+      let jmxPort = _ports_.jmx.internal + n;
       const jmxName = `jmx-kafka${n}`;
-      if (kafka.jmx !== undefined) {
-        jmxPort = kafka.jmx.if_ports[i];
-        jmxInternalPort = kafka.jmx.port;
+      if (kafka.jmx !== undefined && kafka.jmx.ports[i] !== undefined) {
+        jmxPort = kafka.jmx.ports[i];
       }
       // update YAML service
       YAML.services[jmxName] = {
         ...JMX,
-        command: [`${jmxInternalPort}`, '/etc/myconfig.yml'], // set the port for the service
-        ports: [`${jmxPort}:${jmxInternalPort}`],
+        command: [`${_ports_.jmx.internal}`, '/etc/myconfig.yml'], // set the port for the service
+        ports: [`${jmxPort}:${_ports_.jmx.internal}`],
         environment: {
           ...JMX.environment,
-          SERVICE_PORT: jmxInternalPort,
+          SERVICE_PORT: _ports_.jmx.internal,
         },
         container_name: jmxName,
         volumes: [
@@ -275,28 +293,44 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       // Kafka Config:
       const brokerName = `kafka${n}`;
       // broker ports
-      let mainPort = 9090 + n;
-      if (kafka.brokers.ports !== undefined) mainPort = kafka.brokers.ports[i];
+      let extPort = _ports_.kafka.broker.external + i;
+      if (
+        kafka.brokers.ports !== undefined &&
+        kafka.brokers.ports.brokers !== undefined &&
+        kafka.brokers.ports.brokers[i] !== undefined
+      )
+        extPort = kafka.brokers.ports.brokers[i];
       // metrics reporter port
-      const metricsPort: number = kafka.brokers.metrics_port ?? 29092;
-      bootstrapServers.push(`${brokerName}:${mainPort}`);
+      let metricsPort = _ports_.kafka.metrics;
+      if (
+        kafka.brokers.ports !== undefined &&
+        kafka.brokers.ports.metrics !== undefined
+      )
+        metricsPort = kafka.brokers.ports.metrics;
+      springBSServers.push(`${brokerName}:${_ports_.kafka.spring}`);
       // jmx host port
-      let jmxHostPort = 9990 + n;
-      if (kafka.brokers.jmx_port !== undefined)
-        jmxHostPort = kafka.brokers.jmx_port[i];
+      let jmxHostPort = _ports_.kafka.jmx + i;
+      if (
+        kafka.brokers.ports !== undefined &&
+        kafka.brokers.ports.jmx !== undefined &&
+        kafka.brokers.ports.jmx[i] !== undefined
+      )
+        jmxHostPort = kafka.brokers.ports.jmx[i];
       // broker id
       let brokerID = 101 + i;
-      if (kafka.brokers.id !== undefined) brokerID = kafka.brokers.id[i];
+      if (kafka.brokers.id !== undefined && kafka.brokers.id[i] !== undefined)
+        brokerID = kafka.brokers.id[i];
       // update YAML service
       YAML.services[brokerName] = {
         ...KAFKA_BROKER,
-        ports: [`${mainPort}:9092`],
+        ports: [`${extPort}:${_ports_.kafka.broker.internal}`],
         container_name: brokerName,
         environment: {
           ...KAFKA_BROKER.environment,
           KAFKA_BROKER_ID: brokerID,
           KAFKA_JMX_PORT: jmxHostPort,
-          KAFKA_ADVERTISED_LISTENERS: `PLAINTEXT://${brokerName}:${metricsPort},PLAINTEXT_HOST://${network}:${mainPort}`,
+          KAFKA_LISTENERS: `METRICS://${brokerName}:${metricsPort},EXTERNAL://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring}`,
+          KAFKA_ADVERTISED_LISTENERS: `METRICS://${brokerName}:${metricsPort},EXTERNAL://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring}`,
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: kafka.brokers.replicas ?? 1,
           KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR:
             kafka.brokers.replicas ?? 1,
@@ -307,10 +341,10 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
         depends_on: dependencies,
       };
       // requires port forwarding on host computer
-      setup.kafkaSetup.brokers.push(`${network}:${mainPort}`);
+      setup.kafkaSetup.brokers.push(`${network}:${extPort}`);
 
       PROMCONFIG.scrape_configs[0].static_configs[0].targets.push(
-        `${jmxName}:${jmxInternalPort}`
+        `${jmxName}:${_ports_.jmx.internal}`
       );
 
       jmxExporterConfig.hostPort = `kafka${n}:${jmxHostPort}`;
@@ -328,12 +362,16 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
 
     YAML.services.spring = {
       ...SPRING,
-      ports: [`${kafka.spring?.port ?? 8080}:8080`],
+      ports: [
+        `${kafka.spring?.port ?? _ports_.spring.external}:${
+          _ports_.spring.external
+        }`,
+      ],
       environment: {
         ...SPRING.environment,
-        'SPRING_KAFKA_BOOTSTRAP-SERVERS': bootstrapServers.join(','),
-        'SPRING_KAFKA_CONSUMER_BOOTSTRAP-SERVERS': bootstrapServers.join(','),
-        'SPRING_KAFKA_PRODUCER_BOOTSTRAP-SERVERS': bootstrapServers.join(','),
+        'SPRING_KAFKA_BOOTSTRAP-SERVERS': springBSServers.join(','),
+        'SPRING_KAFKA_CONSUMER_BOOTSTRAP-SERVERS': springBSServers.join(','),
+        'SPRING_KAFKA_PRODUCER_BOOTSTRAP-SERVERS': springBSServers.join(','),
       },
       depends_on: springDeps,
     };

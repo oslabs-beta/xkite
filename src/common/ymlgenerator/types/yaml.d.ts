@@ -34,15 +34,23 @@ interface VolumeCfg {
   };
 }
 
-interface YAMLServices {
-  postgres: string;
-  ksql: string;
-  jupyter: string;
-  spark: string;
-  zookeeper: string;
-  prometheus: string;
-  grafana: string;
+interface YAMLServicesDefaultSetup {
+  postgresql: PortForward;
+  ksql: PortForward;
+  ksql_schema: PortForward;
+  spark: { webui: PortForward; rpc: PortForward };
+  spring: PortForward;
+  prometheus: PortForward;
+  grafana: PortForward;
+  jupyter: PortForward;
+  zookeeper: { client: PortForward; peer: PortForward };
+  kafka: { jmx: number; broker: PortForward; spring: number; metrics: number };
+  jmx: PortForward;
 }
+type PortForward = {
+  internal: number;
+  external: number;
+};
 
 interface YAMLDataSetup {
   dbSrc: string;
@@ -84,6 +92,7 @@ interface KafkaBrokerCfg extends BaseCfg {
     KAFKA_HEAP_OPTS: string;
     KAFKA_BROKER_ID: number;
     KAFKA_JMX_PORT: number;
+    KAFKA_LISTENERS: string;
     KAFKA_ADVERTISED_LISTENERS: string;
     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: number;
     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: number;
@@ -166,6 +175,16 @@ interface SpringCfg extends BaseCfg {
     'SPRING_KAFKA_BOOTSTRAP-SERVERS': string;
     'SPRING_KAFKA_CONSUMER_BOOTSTRAP-SERVERS': string;
     'SPRING_KAFKA_PRODUCER_BOOTSTRAP-SERVERS': string;
+  };
+}
+
+//https://hub.docker.com/r/bitnami/spark/
+// https://dev.to/mvillarrealb/creating-a-spark-standalone-cluster-with-docker-and-docker-compose-2021-update-6l4
+interface SparkCfg extends BaseCfg {
+  environment: {
+    SPARK_LOCAL_IP: string;
+    SPARK_MODE: 'master' | 'worker';
+    SPARK_DAEMON_USER: string;
   };
 }
 
