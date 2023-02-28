@@ -201,11 +201,11 @@ export default function ConfigurationForm() {
                 )
                   updateKiteConfigRequest({
                     db: {
-                      dataSource: e.target.value,
+                      name: e.target.value,
                     },
                   });
               }}
-              value={kiteConfigRequest.db?.dataSource}
+              value={kiteConfigRequest.db?.name}
             >
               <option value='postgresql'>PostgreSQL</option>
               <option value='ksql'>KSQL</option>
