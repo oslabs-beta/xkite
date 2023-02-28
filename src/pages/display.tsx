@@ -11,31 +11,31 @@ import ShutDownBtn from './components/ShutdownBtn';
 export default function Display() {
   const [message, setMessage] = useState('');
 
-  // const submitHandler = async (event: SyntheticEvent): Promise<void> => {
-  //   event.preventDefault();
-
-  //   const send = await axios.post('http://localhost:8080/api/kafka/publish', {
-  //     timestamp: new Date().toISOString(),
-  //     message,
-  //   });
-  //   console.log(send);
-
-  //   setMessage('');
-  // };
-
-  const submitHandler = (event: SyntheticEvent): void => {
+  const submitHandler = async (event: SyntheticEvent): Promise<void> => {
     event.preventDefault();
 
-    axios
-      .post('http://localhost:8080/api/v1/kafka/publish', {
-        timestamp: new Date().toISOString(),
-        message,
-      })
-      .then((data) => console.log(data))
-      .catch((error) => console.error(error));
+    const send = await axios.post('http://localhost:8080/api/kafka/publish', {
+      timestamp: new Date().toISOString(),
+      message,
+    });
+    console.log(send);
 
     setMessage('');
   };
+
+  // const submitHandler = (event: SyntheticEvent): void => {
+  //   event.preventDefault();
+
+  //   axios
+  //     .post('http://localhost:8080/api/kafka/publish', {
+  //       timestamp: new Date().toISOString(),
+  //       message,
+  //     })
+  //     .then((data) => console.log(data))
+  //     .catch((error) => console.error(error));
+
+  //   setMessage('');
+  // };
 
   return (
     <>
@@ -45,28 +45,28 @@ export default function Display() {
         <meta name='viewport' content='width=device-width, initial-scale=1' />
       </Head>
       <main>
-        <h1 id = "generalHeader">General Display Page</h1>
+        <h1 id='generalHeader'>General Display Page</h1>
         <div className='metrics1'>
           <div>
-            <h3 className = 'metric-header'>Brokers Online</h3>
+            <h3 className='metric-header'>Brokers Online</h3>
             <iframe src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=647&kiosk'></iframe>
           </div>
           <div>
-            <h3 className = 'metric-header'>Active Controllers</h3>
+            <h3 className='metric-header'>Active Controllers</h3>
             <iframe src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=233&kiosk'></iframe>
           </div>
           <div>
-            <h3 className = 'metric-header'>Total Topics</h3>
+            <h3 className='metric-header'>Total Topics</h3>
             <iframe src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=625&kiosk'></iframe>
           </div>
           <div>
-            <h3 className = 'metric-header'>Online Partitions</h3>
+            <h3 className='metric-header'>Online Partitions</h3>
             <iframe src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=40&kiosk'></iframe>
           </div>
         </div>
         <div className='metrics2'>
           <div>
-            <h3 className = 'metric-header'>Producer Latency</h3>
+            <h3 className='metric-header'>Producer Latency</h3>
             <iframe
               src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=192&kiosk'
               width='400'
@@ -74,9 +74,9 @@ export default function Display() {
             ></iframe>
           </div>
           <div>
-            <h3 className = 'metric-header'>Message Throughput</h3>
+            <h3 className='metric-header'>Message Throughput</h3>
             <iframe
-              src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=152&kiosk'
+              src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&kiosk&viewPanel=152'
               width='800'
               height='300'
             ></iframe>
@@ -84,7 +84,7 @@ export default function Display() {
         </div>
         <div className='metrics2'>
           <div>
-            <h3 className = 'metric-header'>Failed Produce Requests</h3>
+            <h3 className='metric-header'>Failed Produce Requests</h3>
             <iframe
               src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=612&kiosk'
               width='1000'
@@ -114,11 +114,11 @@ export default function Display() {
         <div className='buttons'>
           <Button
             variant='secondary'
-            href='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&kiosk=tv'
+            href='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&kiosk'
           >
             View more metrics
           </Button>
-          <ShutDownBtn id = 'dangerDisplay'/>
+          <ShutDownBtn id='dangerDisplay' />
         </div>
       </main>
     </>

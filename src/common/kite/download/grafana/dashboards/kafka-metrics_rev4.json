@@ -68,7 +68,7 @@
     ]
   },
   "description": "Dashboard for metrics jmx_exporter protmetheus",
-  "editable": true,
+  "editable": false,
   "gnetId": 11962,
   "graphTooltip": 0,
   "id": null,
@@ -94,11 +94,7 @@
       "colorBackground": false,
       "colorPostfix": false,
       "colorValue": true,
-      "colors": [
-        "#d44a3a",
-        "rgba(237, 129, 40, 0.89)",
-        "#299c46"
-      ],
+      "colors": ["#d44a3a", "rgba(237, 129, 40, 0.89)", "#299c46"],
       "datasource": "Prometheus",
       "description": "",
       "fieldConfig": {
@@ -187,11 +183,7 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": true,
-      "colors": [
-        "#C4162A",
-        "#37872D",
-        "#299c46"
-      ],
+      "colors": ["#C4162A", "#37872D", "#299c46"],
       "datasource": "Prometheus",
       "description": "",
       "fieldConfig": {
@@ -277,11 +269,7 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": true,
-      "colors": [
-        "#37872D",
-        "#37872D",
-        "#37872D"
-      ],
+      "colors": ["#37872D", "#37872D", "#37872D"],
       "datasource": "Prometheus",
       "description": "",
       "fieldConfig": {
@@ -370,11 +358,7 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": true,
-      "colors": [
-        "#508642",
-        "rgba(237, 129, 40, 0.89)",
-        "#bf1b00"
-      ],
+      "colors": ["#508642", "rgba(237, 129, 40, 0.89)", "#bf1b00"],
       "datasource": "Prometheus",
       "description": "",
       "fieldConfig": {
@@ -461,11 +445,7 @@
       "colorBackground": false,
       "colorPrefix": false,
       "colorValue": true,
-      "colors": [
-        "#d44a3a",
-        "rgba(237, 129, 40, 0.89)",
-        "#299c46"
-      ],
+      "colors": ["#d44a3a", "rgba(237, 129, 40, 0.89)", "#299c46"],
       "datasource": "Prometheus",
       "description": "",
       "fieldConfig": {
@@ -550,11 +530,7 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": true,
-      "colors": [
-        "#508642",
-        "rgba(237, 129, 40, 0.89)",
-        "#bf1b00"
-      ],
+      "colors": ["#508642", "rgba(237, 129, 40, 0.89)", "#bf1b00"],
       "datasource": "Prometheus",
       "description": "",
       "fieldConfig": {
@@ -706,18 +682,12 @@
           "alias": "",
           "align": "auto",
           "colorMode": "value",
-          "colors": [
-            "#FA6400",
-            "#56A64B",
-            "#FF780A"
-          ],
+          "colors": ["#FA6400", "#56A64B", "#FF780A"],
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "decimals": 2,
           "mappingType": 1,
           "pattern": "Value",
-          "thresholds": [
-            "1"
-          ],
+          "thresholds": ["1"],
           "type": "string",
           "unit": "short",
           "valueMaps": [
@@ -803,9 +773,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
+          "calcs": ["last"],
           "fields": "",
           "values": false
         },
@@ -899,18 +867,12 @@
           "alias": "Leader ",
           "align": "auto",
           "colorMode": "value",
-          "colors": [
-            "#FA6400",
-            "#56A64B",
-            "#FF780A"
-          ],
+          "colors": ["#FA6400", "#56A64B", "#FF780A"],
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "decimals": 2,
           "mappingType": 1,
           "pattern": "Value #A",
-          "thresholds": [
-            "1"
-          ],
+          "thresholds": ["1"],
           "type": "string",
           "unit": "short",
           "valueMaps": []
@@ -965,11 +927,7 @@
           "decimals": 2,
           "mappingType": 1,
           "pattern": "Value #C",
-          "thresholds": [
-            "20",
-            "30",
-            "40"
-          ],
+          "thresholds": ["20", "30", "40"],
           "type": "number",
           "unit": "percent"
         }
@@ -1048,9 +1006,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
+          "calcs": ["last"],
           "fields": "",
           "values": false
         },
@@ -1124,9 +1080,7 @@
       "options": {
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -1221,9 +1175,7 @@
       "options": {
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -1311,9 +1263,7 @@
       "options": {
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -1386,9 +1336,7 @@
       "options": {
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -1460,9 +1408,7 @@
       "options": {
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -4153,18 +4099,12 @@
           "alias": "Status",
           "align": "auto",
           "colorMode": "value",
-          "colors": [
-            "#FA6400",
-            "#56A64B",
-            "#FF780A"
-          ],
+          "colors": ["#FA6400", "#56A64B", "#FF780A"],
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "decimals": 2,
           "mappingType": 1,
           "pattern": "Value",
-          "thresholds": [
-            "1"
-          ],
+          "thresholds": ["1"],
           "type": "string",
           "unit": "short",
           "valueMaps": [
@@ -4319,9 +4259,7 @@
         "mode": "series",
         "name": null,
         "show": true,
-        "values": [
-          "total"
-        ]
+        "values": ["total"]
       },
       "yaxes": [
         {
@@ -4425,9 +4363,7 @@
         "mode": "series",
         "name": null,
         "show": true,
-        "values": [
-          "current"
-        ]
+        "values": ["current"]
       },
       "yaxes": [
         {
@@ -4882,10 +4818,7 @@
   "refresh": "1m",
   "schemaVersion": 26,
   "style": "dark",
-  "tags": [
-    "stable",
-    "kafka"
-  ],
+  "tags": ["stable", "kafka"],
   "templating": {
     "list": [
       {
@@ -5000,17 +4933,7 @@
       "2h",
       "1d"
     ],
-    "time_options": [
-      "5m",
-      "15m",
-      "1h",
-      "6h",
-      "12h",
-      "24h",
-      "2d",
-      "7d",
-      "30d"
-    ]
+    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
   },
   "timezone": "",
   "title": "Kafka Metrics",
