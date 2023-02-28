@@ -1,6 +1,6 @@
-import ConfigurationForm from '@/pages/components/ConfigurationForm';
+import ConfigurationForm from '@/components/ConfigurationForm';
 import { Container } from 'react-bootstrap';
-import Image from 'next/image'
+import Image from 'next/image';
 
 export default function SetupPage() {
   return (

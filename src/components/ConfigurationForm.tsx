@@ -87,7 +87,7 @@ export default function ConfigurationForm() {
     // TODO: Prevent state for deleted brokers from being submitted
 
     console.log('sending configuration…');
-    console.log(defaultCfg);
+    // console.log(defaultCfg);
 
     fetch('/api/kite/create', {
       method: 'POST',
@@ -201,11 +201,11 @@ export default function ConfigurationForm() {
                 )
                   updateKiteConfigRequest({
                     db: {
-                      dataSource: e.target.value,
+                      name: e.target.value,
                     },
                   });
               }}
-              value={kiteConfigRequest.db?.dataSource}
+              value={kiteConfigRequest.db?.name}
             >
               <option value='postgresql'>PostgreSQL</option>
               <option value='ksql'>KSQL</option>
@@ -253,7 +253,7 @@ export default function ConfigurationForm() {
         >
           Export Config
         </Button>
-        <ShutDownBtn id ='dangerSetup'/>
+        <ShutDownBtn id='dangerSetup' />
         {/*</Col>*/}
       </Row>
     </Container>

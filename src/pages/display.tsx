@@ -6,7 +6,7 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import FormGroup from 'react-bootstrap/FormGroup';
 import Row from 'react-bootstrap/Row';
-import ShutDownBtn from './components/ShutdownBtn';
+import ShutDownBtn from '@/components/ShutdownBtn';
 
 export default function Display() {
   const [message, setMessage] = useState('');
@@ -14,11 +14,13 @@ export default function Display() {
   const submitHandler = async (event: SyntheticEvent): Promise<void> => {
     event.preventDefault();
 
-    const send = await axios.post('http://localhost:8080/api/kafka/publish', {
-      timestamp: new Date().toISOString(),
-      message,
-    });
-    console.log(send);
+    axios
+      .post('http://localhost:8080/api/kafka/publish', {
+        timestamp: new Date().toISOString(),
+        message,
+      })
+      .then((data) => console.log(data))
+      .catch((error) => console.error(error));
 
     setMessage('');
   };

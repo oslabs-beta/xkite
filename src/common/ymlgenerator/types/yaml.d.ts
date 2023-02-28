@@ -92,7 +92,7 @@ interface KafkaBrokerCfg extends BaseCfg {
     KAFKA_HEAP_OPTS: string;
     KAFKA_BROKER_ID: number;
     KAFKA_JMX_PORT: number;
-    KAFKA_LISTENERS: string;
+    // KAFKA_LISTENERS: string;
     KAFKA_ADVERTISED_LISTENERS: string;
     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: number;
     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: number;
