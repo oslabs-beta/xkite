@@ -242,7 +242,7 @@ function KiteCreator() {
     /**
      * @returns {KafkaSetup}
      * setup to be used for connecting
-     * to a kafka instance and/or database.
+     * to a kafka instance.
      */
     getKafkaSetup: function (): any {
       const { kafkaSetup } = store.getState();
@@ -252,7 +252,7 @@ function KiteCreator() {
     /**
      * @returns {dbCfg}
      * setup to be used for connecting
-     * to a kafka instance and/or database.
+     * to a database.
      */
     getDBSetup: function (): any {
       const { dBSetup } = store.getState();
