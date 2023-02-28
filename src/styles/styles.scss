@@ -10,7 +10,7 @@ body {
     font-size: 20px;
   }
 
-  .metric-header{
+  .metric-header {
     font-weight: 540;
     font-size: 25px;
   }
@@ -58,14 +58,14 @@ body {
   .buttons {
     display: flex;
   }
-  .btn.btn-secondary{
+  .btn.btn-secondary {
     background: linear-gradient(to left, #9f9fed 50%, #736ced 50%) right;
     background-size: 200%;
     transition: 0.3s ease-out;
     width: 50%;
     border-color: #736ced;
     color: #f5f5f5;
-    line-height: 45px; 
+    line-height: 45px;
     justify-content: center;
     align-items: center;
     text-align: center;
@@ -97,7 +97,7 @@ body {
     padding-bottom: 15px;
   }
 
-  #generalHeader{
+  #generalHeader {
     text-align: center;
     font-weight: 245;
     font-size: 50px;
@@ -125,18 +125,6 @@ body {
     justify-content: flex-end;
   }
 
-  .col-4 {
-    width: 25%;
-  }
-
-  .col-2 {
-    width: 25%;
-  }
-
-  .col-3 {
-    width: 25%;
-  }
-
   .bg-dark {
     background-color: #736ced !important;
   }
@@ -156,7 +144,7 @@ body {
     flex-wrap: wrap;
   }
 
-  .metrics2{
+  .metrics2 {
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
