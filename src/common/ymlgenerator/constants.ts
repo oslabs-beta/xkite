@@ -207,7 +207,7 @@ export const SPARK: SparkCfg = {
 };
 
 export const SPRING: SpringCfg = {
-  image: 'eclipse-temurin:19-jre-alpine',
+  image: 'eclipse-temurin',
   ports: [`${_ports_.spring.external}:${_ports_.spring.internal}`],
   environment: {
     JAVA_OPTS: '',
