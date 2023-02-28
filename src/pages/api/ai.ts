@@ -2,6 +2,7 @@ import type { NextApiRequest } from 'next';
 const { db } = require('./pg.ts');
 const { Configuration, OpenAIApi } = require('openai');
 import { NextApiResponseServerIO } from "src/types/io";
+import Kite from '@/common/kite';
 
 const configuration = new Configuration({
     apiKey: process.env.AI_KEY,
@@ -36,7 +37,8 @@ export default async function handler(
                 model: 'text-davinci-003',
                 prompt: `Given this array of messages that have been sent in an online chatroom: ${data3}. 
                 Write a single message to add to chatroom. The message should be no more than one short sentence, 
-                have limited punctuation, and use hip abbreviations. Do not send any greetings. Instead, just ask questions, or say funny or random things.`,
+                have limited punctuation, and use hip abbreviations. Do not send any greetings. Instead, just ask questions, or say funny or random things.
+                Do not include quotation marks`,
                 max_tokens: 30,
                 temperature: 0.5,
             });
@@ -55,6 +57,15 @@ export default async function handler(
                 message: aiMessage,
                 avatar: '',
                 };
+            const springPort: number = Kite.getSpringPort();
+            await fetch(`http://localhost:${springPort}/api/kafka/publish`, {
+            method: "POST", // or 'PUT'
+            body: JSON.stringify({timestamp: 'test', message: aiMessage}),
+            headers: {
+            "Content-Type": "application/json",
+            },
+        
+      });
             //use socket server, same strategy as chat api call
             res?.socket?.server?.io?.emit("message", message);
     } catch (err) {

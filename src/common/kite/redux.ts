@@ -13,6 +13,7 @@ const kiteSlice = createSlice({
     state: KiteState.Init,
     serverState: KiteServerState.Disconnected,
     configFile: {}, //Promise<KiteConfigFile> | KiteConfigFile;
+    springPort: 8080, 
   },
   reducers: {
     setPackageBuild: (state, action) => {
@@ -23,6 +24,7 @@ const kiteSlice = createSlice({
       //   `setting state: ${state.config} = ${JSON.stringify(action.payload)}`
       // );
       state.config = Object.assign(action.payload);
+      state.springPort = action.payload.kafka.spring.port;
     },
     setServer: (state, action) => {
       // console.log(

@@ -2,8 +2,6 @@ import { NextApiRequest } from "next";
 import { NextApiResponseServerIO } from "src/types/io";
 const { db } = require('./pg.ts');
 import Kite from '@/common/kite';
-import KafkaConnector from '@/common/kafkaConnector';
-const { Kafka } = require('kafkajs');
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default async (req: NextApiRequest, res: NextApiResponseServerIO) => {
@@ -20,19 +18,18 @@ export default async (req: NextApiRequest, res: NextApiResponseServerIO) => {
       const data2 = await db.query(query2, [sender_id]);
       const username = data2.rows[0].username;
       const fullMessage = { message, sender_id, message_id, time, username, avatar };
+      const springPort: number = Kite.getSpringPort();
       
-      // const sendMessage = await fetch("http://localhost:8081/api/kafka/publish", {
-      //   method: "POST", // or 'PUT'
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({timestamp: 'test', message}),
-      // })
-      //   .then((response) => response.json())
-      //   .then(response => console.log(response))
-      //   .catch((error) => {
-      //     console.error("Error:", error);
-      //   });
+      await fetch(`http://localhost:${springPort}/api/kafka/publish`, {
+        method: "POST", // or 'PUT'
+        body: JSON.stringify({timestamp: 'test', message}),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        
+      });
+      
+
       // dispatch to channel "message"
       res?.socket?.server?.io?.emit("message", fullMessage);
       res.status(201).json(fullMessage);

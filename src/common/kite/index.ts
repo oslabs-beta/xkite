@@ -276,6 +276,17 @@ function KiteCreator() {
       return config;
     },
 
+     /**
+     * If connected to kite server, gets the localhost port listening to spring app.
+     *
+     * @returns {number}
+     *
+     */
+     getSpringPort: function (): number {
+      const { springPort } = store.getState();
+      return springPort;
+    },
+
     /**
      * If connected to kite server, gets the config from the server.
      *
