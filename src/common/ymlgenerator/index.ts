@@ -19,6 +19,7 @@ import {
   network,
   _ports_,
 } from './constants';
+import { KafkaConfig } from 'kafkajs';
 
 const dependencies: string[] = [];
 const setup: KiteSetup = {
@@ -333,7 +334,9 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           KAFKA_ADVERTISED_LISTENERS: `METRICS://${brokerName}:${metricsPort},EXTERNAL://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring}`,
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: kafka.brokers.replicas ?? 1,
           KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR:
-            kafka.brokers.replicas ?? 1, //TODO limit to # of brokers.size
+            (kafka.brokers.replicas ?? 1) < kafka.brokers.size
+              ? kafka.brokers.size
+              : kafka.brokers.replicas ?? 1,
           CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `${brokerName}:${metricsPort}`,
           KAFKA_ZOOKEEPER_CONNECT: servers.zkClients,
           CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: servers.zkClients,
