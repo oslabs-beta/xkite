@@ -2,7 +2,11 @@ import { SyntheticEvent } from 'react';
 import Button from 'react-bootstrap/Button';
 import axios from 'axios';
 
-export default function ShutDownBtn() {
+interface ShutDownBtnProps {
+  id: string;
+}
+
+export default function ShutDownBtn({ id }: ShutDownBtnProps) {
   async function disconnectHandler(event: SyntheticEvent): Promise<void> {
     console.log('Disconnecting…');
     try {
@@ -15,6 +19,7 @@ export default function ShutDownBtn() {
 
   return (
     <Button
+      id={id}
       variant='danger'
       onClick={disconnectHandler}
       // disabled

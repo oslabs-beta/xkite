@@ -140,7 +140,7 @@ export default function ConfigurationForm(props: unknown) {
               value={kiteConfigRequest.sink?.name}
             />
           </Form.Group>
-          <FormGroup className='col-2 '>
+          <FormGroup className='col-3 '>
             <Button variant='primary' type='submit'>
               Submit
             </Button>
@@ -149,13 +149,13 @@ export default function ConfigurationForm(props: unknown) {
       </Form>
       <Row className={'gx-1 gy-1'}>
         <Button
-          variant='secondary'
+          variant='export'
           onClick={exportConfigHandler}
           // disabled
         >
           Export Config
         </Button>
-        <ShutDownBtn />
+        <ShutDownBtn id ='dangerSetup'/>
         {/*</Col>*/}
       </Row>
     </Container>
