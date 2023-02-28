@@ -9,7 +9,7 @@ const defaultCfg: KiteConfig = {
     },
   },
   db: {
-    dataSource: 'postgresql',
+    name: 'postgresql',
     port: 5432,
   },
   sink: { name: 'jupyter' },
