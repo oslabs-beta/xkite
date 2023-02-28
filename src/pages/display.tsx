@@ -14,7 +14,6 @@ export default function Display() {
   const submitHandler = async (event: SyntheticEvent): Promise<void> => {
     event.preventDefault();
 
-<<<<<<< HEAD
     axios
       .post('http://localhost:8080/api/kafka/publish', {
         timestamp: new Date().toISOString(),
@@ -22,13 +21,6 @@ export default function Display() {
       })
       .then((data) => console.log(data))
       .catch((error) => console.error(error));
-=======
-    const send = await axios.post('http://localhost:8080/api/kafka/publish', {
-      timestamp: new Date().toISOString(),
-      message,
-    });
-    console.log(send);
->>>>>>> dev
 
     setMessage('');
   };
