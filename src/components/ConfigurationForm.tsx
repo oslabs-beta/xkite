@@ -140,7 +140,7 @@ export default function ConfigurationForm() {
   }
 
   return (
-    <Container>
+    <>
       <Form className='mb-3' onSubmit={submitHandler}>
         <Row className='align-items-end'>
           <Form.Group className='col-2' controlId='kafka.broker.size'>
@@ -230,7 +230,7 @@ export default function ConfigurationForm() {
               <option value='spark'>Spark</option>
             </Form.Select>
           </Form.Group>
-          <FormGroup className='col-3 '>
+          <FormGroup className='col-2 '>
             <Button variant='primary' type='submit'>
               Submit
             </Button>
@@ -253,9 +253,9 @@ export default function ConfigurationForm() {
         >
           Export Config
         </Button>
-        <ShutDownBtn id ='dangerSetup'/>
+        <ShutDownBtn id='dangerSetup' />
         {/*</Col>*/}
       </Row>
-    </Container>
+    </>
   );
 }
