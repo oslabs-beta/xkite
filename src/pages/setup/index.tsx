@@ -15,8 +15,7 @@ export default function SetupPage() {
       height={120}
     />
             </div> */}
-        <h1 className={'my-4'}>Configure Your Kafka Cluster(s)</h1>
-
+        <h1 className='my-4'>Configure Your Kafka Cluster</h1>
         <ConfigurationForm />
       </Container>
     </>
