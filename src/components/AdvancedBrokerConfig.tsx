@@ -1,5 +1,5 @@
 import { FormGroup, Form, Row } from 'react-bootstrap';
-import { CheckPortOpen, PortOpen, PortsOpen } from './_ConfigurationForm';
+import { CheckPortOpen, PortOpen, PortsOpen } from './ConfigurationForm';
 
 interface AdvancedBrokerConfigProps {
   brokerIndex: number;

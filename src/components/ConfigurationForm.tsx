@@ -7,7 +7,7 @@ import Accordion from 'react-bootstrap/Accordion';
 
 import { SyntheticEvent, useState, useEffect } from 'react';
 import defaultCfg from '@/common/kite/constants';
-import AdvancedBrokerConfig from './_AdvancedBrokerConfig';
+import AdvancedBrokerConfig from './AdvancedBrokerConfig';
 
 export interface PortsOpen {
   [index: string]: PortOpen;
