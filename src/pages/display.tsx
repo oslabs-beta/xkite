@@ -11,21 +11,10 @@ import ShutDownBtn from '@/components/ShutdownBtn';
 export default function Display() {
   const [message, setMessage] = useState('');
 
-  // const submitHandler = async (event: SyntheticEvent): Promise<void> => {
-  //   event.preventDefault();
-
-  //   const send = await axios.post('http://localhost:8080/api/kafka/publish', {
-  //     timestamp: new Date().toISOString(),
-  //     message,
-  //   });
-  //   console.log(send);
-
-  //   setMessage('');
-  // };
-
-  const submitHandler = (event: SyntheticEvent): void => {
+  const submitHandler = async (event: SyntheticEvent): Promise<void> => {
     event.preventDefault();
 
+<<<<<<< HEAD
     axios
       .post('http://localhost:8080/api/kafka/publish', {
         timestamp: new Date().toISOString(),
@@ -33,9 +22,30 @@ export default function Display() {
       })
       .then((data) => console.log(data))
       .catch((error) => console.error(error));
+=======
+    const send = await axios.post('http://localhost:8080/api/kafka/publish', {
+      timestamp: new Date().toISOString(),
+      message,
+    });
+    console.log(send);
+>>>>>>> dev
 
     setMessage('');
   };
+
+  // const submitHandler = (event: SyntheticEvent): void => {
+  //   event.preventDefault();
+
+  //   axios
+  //     .post('http://localhost:8080/api/kafka/publish', {
+  //       timestamp: new Date().toISOString(),
+  //       message,
+  //     })
+  //     .then((data) => console.log(data))
+  //     .catch((error) => console.error(error));
+
+  //   setMessage('');
+  // };
 
   return (
     <>
@@ -76,7 +86,7 @@ export default function Display() {
           <div>
             <h3 className='metric-header'>Message Throughput</h3>
             <iframe
-              src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=152&kiosk'
+              src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&kiosk&viewPanel=152'
               width='800'
               height='300'
             ></iframe>
@@ -114,7 +124,7 @@ export default function Display() {
         <div className='buttons'>
           <Button
             variant='secondary'
-            href='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&kiosk=tv'
+            href='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&kiosk'
           >
             View more metrics
           </Button>

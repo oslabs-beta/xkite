@@ -68,7 +68,7 @@
     ]
   },
   "description": "Dashboard for metrics jmx_exporter protmetheus",
-  "editable": true,
+  "editable": false,
   "gnetId": 11962,
   "graphTooltip": 0,
   "id": null,
