@@ -67,7 +67,7 @@ interface KiteKafkaCfg {
 }
 
 interface KiteSetup {
-  dataSetup?: dbCfg;
+  dBSetup?: dbCfg;
   kafkaSetup: KafkaSetup;
 }
 

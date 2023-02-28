@@ -46,8 +46,8 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
 
     try {
       // database
-      setup.dataSetup = createDB(db);
-      console.log(`dataSetup= ${JSON.stringify(setup.dataSetup)}`);
+      setup.dBSetup = createDB(db);
+      console.log(`dataSetup= ${JSON.stringify(setup.dBSetup)}`);
       // sink //TODO make and call createSink() method
       if (sink?.name === 'jupyter') YAML.services.jupyter = JUPYTER;
       if (sink?.name === 'spark') YAML.services.spark = SPARK;

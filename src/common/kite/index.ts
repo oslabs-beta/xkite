@@ -19,17 +19,17 @@ import store, {
   setConfigFile,
 } from '@/common/kite/redux';
 
-const Kite = {
+function KiteCreator() {
   //Private Variable / Methods:
-  defaultCfg,
-  //
+
   /**
    * Gets the remote server link configuration.
    * @param {string} server
    * the server string of a remote Kite
    * instance for connection.
    */
-  configServer: async function (server: string) {
+  async function configServer(server: string) {
+    store.dispatch(setServer(server));
     store.dispatch(setState(KiteState.Init));
     store.dispatch(setServerState(KiteServerState.Disconnected));
     try {
@@ -45,7 +45,7 @@ const Kite = {
     } catch (err) {
       console.error(`error fetching from ${server}/api/:\n${err}`);
     }
-  },
+  }
 
   /**
    * @param {KiteConfig} config
@@ -54,7 +54,7 @@ const Kite = {
    * and generates the YAML configuration
    * file locally.
    */
-  configLocal: function (config: KiteConfig) {
+  function configLocal(config: KiteConfig) {
     store.dispatch(setState(KiteState.Init));
     store.dispatch(setServerState(KiteServerState.Disconnected));
     // create config + setup
@@ -85,13 +85,13 @@ const Kite = {
         `KITE failed to initialize: ${err}\nConfiguration ${config}`
       );
     }
-  },
+  }
 
   /**
    * requests the remote server
    * to deploy docker.
    */
-  deployServer: async function () {
+  async function deployServer() {
     try {
       const { server } = store.getState();
       await fetch(`${server}/api/kite/deploy`);
@@ -99,12 +99,12 @@ const Kite = {
     } catch (err) {
       console.error(`Kite deployment failed:\n${JSON.stringify(err)}`);
     }
-  },
+  }
 
   /**
    * deploys docker locally
    */
-  deployLocal: async function () {
+  async function deployLocal() {
     try {
       console.log('deploying docker containers...');
       await compose.upAll({
@@ -120,9 +120,9 @@ const Kite = {
     } catch (err) {
       console.error(`Kite deployment failed:\n${JSON.stringify(err)}`);
     }
-  },
+  }
 
-  shutdownServer: async function () {
+  async function shutdownServer() {
     try {
       const { server } = store.getState();
       await fetch(`${server}/api/kite/shutdown`, {
@@ -136,9 +136,9 @@ const Kite = {
     } catch (err) {
       console.error(`Could not shutdown docker instances on server:\n${err}`);
     }
-  },
+  }
 
-  shutdownLocal: async function () {
+  async function shutdownLocal() {
     try {
       await compose.down({
         cwd: downloadDir,
@@ -148,11 +148,11 @@ const Kite = {
     } catch (err) {
       console.error(`Could not shutdown docker instances on local:\n${err}`);
     }
-  },
+  }
   /**
    * disconnects from the remote server instance
    */
-  disconnectServer: async function () {
+  async function disconnectServer() {
     try {
       const { server } = store.getState();
       await fetch(`${server}/api/kite/disconnect`, {
@@ -166,12 +166,12 @@ const Kite = {
     } catch (err) {
       console.error(`Could not disconnect docker instances on server:\n${err}`);
     }
-  },
+  }
 
   /**
    * disconnects from the local instance
    */
-  disconnectLocal: async function () {
+  async function disconnectLocal() {
     try {
       await compose.kill({
         cwd: downloadDir,
@@ -180,139 +180,165 @@ const Kite = {
     } catch (err) {
       console.error(`Could not disconnect docker instances on local:\n${err}`);
     }
-  },
+  }
 
-  /**
-   * @param {string | KiteConfig} arg
-   * either the configuration object or
-   * the address of kite server instance
-   * for remote or local setup.
-   */
-  configure: function (arg?: string | KiteConfig) {
-    if (arg === undefined) {
-      Kite.configLocal(defaultCfg);
-    } else {
-      switch (typeof arg) {
-        case 'string':
-          Kite.configServer(arg);
-          break;
-        default:
-          Kite.configLocal(arg);
-          break;
+  return {
+    //Public Variables / Methods:
+
+    defaultCfg,
+
+    /**
+     * @param {string | KiteConfig} arg
+     * either the configuration object or
+     * the address of kite server instance
+     * for remote or local setup.
+     */
+    configure: function (arg?: string | KiteConfig) {
+      if (arg === undefined) {
+        configLocal(defaultCfg);
+      } else {
+        switch (typeof arg) {
+          case 'string':
+            configServer(arg);
+            break;
+          default:
+            configLocal(arg);
+            break;
+        }
       }
-    }
-  },
+    },
 
-  /**
-   * invokes docker-compose
-   * locally or on remote server
-   *
-   * @param {any} arg
-   * either the configuration object or
-   * the address of kite server instance
-   * for remote or local setup.
-   *
-   */
-  deploy: async function (arg?: any) {
-    // if server active deployment happens there...
-    const { serverState } = store.getState();
-    if (serverState === KiteServerState.Connected) {
-      await Kite.deployServer();
-    } else {
-      await Kite.deployLocal();
-      Monitor.initiate();
-    }
-  },
+    /**
+     * invokes docker-compose
+     * locally or on remote server
+     *
+     * @param {any} arg
+     * either the configuration object or
+     * the address of kite server instance
+     * for remote or local setup.
+     *
+     */
+    deploy: async function (arg?: any) {
+      // if server active deployment happens there...
+      const { serverState } = store.getState();
+      if (serverState === KiteServerState.Connected) {
+        await deployServer();
+      } else {
+        await deployLocal();
+        Monitor.initiate();
+      }
+    },
 
-  /**
-   * @returns {KiteSetup}
-   * setup to be used for connecting
-   * to a kafka instance and/or database.
-   */
-  getSetup: function (): any {
-    const { setup } = store.getState();
-    return setup;
-  },
+    /**
+     * @returns {KiteSetup}
+     * setup to be used for connecting
+     * to a kafka instance and/or database.
+     */
+    getSetup: function (): any {
+      const { setup } = store.getState();
+      return setup;
+    },
 
-  /**
-   * If connected to kite server, gets the config from the server.
-   *
-   * @returns {KiteConfig}
-   *
-   */
-  getConfig: function (): any {
-    const { config } = store.getState();
-    return config;
-  },
+    /**
+     * @returns {KafkaSetup}
+     * setup to be used for connecting
+     * to a kafka instance and/or database.
+     */
+    getKafkaSetup: function (): any {
+      const { kafkaSetup } = store.getState();
+      return kafkaSetup;
+    },
 
-  /**
-   * If connected to kite server, gets the config from the server.
-   *
-   * @returns {KiteConfigFile}
-   *
-   * the header content and the
-   * file stream for transmission.
-   * Use case: const kite = new Kite();
-   * const configObj = getConfig();
-   * res.writeHead(200, configObj.header);
-   * configObj.fileStream.pipe(res);
-   */
-  getConfigFile: function (): any {
-    const { configFile } = store.getState();
-    return configFile;
-  },
+    /**
+     * @returns {dbCfg}
+     * setup to be used for connecting
+     * to a kafka instance and/or database.
+     */
+    getDBSetup: function (): any {
+      const { dBSetup } = store.getState();
+      return dBSetup;
+    },
 
-  /**
-   *
-   * @returns state of the Kite Application
-   */
-  getKiteState: function (): KiteState {
-    const { state } = store.getState();
-    return state;
-  },
+    /**
+     * If connected to kite server, gets the config from the server.
+     *
+     * @returns {KiteConfig}
+     *
+     */
+    getConfig: function (): any {
+      const { config } = store.getState();
+      return config;
+    },
 
-  /**
-   *
-   * @returns state of Kite Server
-   */
-  getKiteServerState: function (): KiteServerState {
-    const { serverState } = store.getState();
-    return serverState;
-  },
+    /**
+     * If connected to kite server, gets the config from the server.
+     *
+     * @returns {KiteConfigFile}
+     *
+     * the header content and the
+     * file stream for transmission.
+     * Use case: const kite = new Kite();
+     * const configObj = getConfig();
+     * res.writeHead(200, configObj.header);
+     * configObj.fileStream.pipe(res);
+     */
+    getConfigFile: function (): any {
+      const { configFile } = store.getState();
+      return configFile;
+    },
 
-  /**
-   * If the kite server isn't running
-   * invokes the docker-compose
-   * down method directly. Otherwise
-   * makes a request to shutdown remotely.
-   */
-  disconnect: async function (): Promise<any> {
-    const { serverState } = store.getState();
-    if (serverState === KiteServerState.Connected) {
-      store.dispatch(setServerState(KiteServerState.Disconnected));
-      Kite.disconnectServer();
-    } else {
-      Kite.disconnectLocal();
-    }
-    store.dispatch(setState(KiteState.Shutdown));
-  },
+    /**
+     *
+     * @returns state of the Kite Application
+     */
+    getKiteState: function (): KiteState {
+      const { state } = store.getState();
+      return state;
+    },
 
-  /**
-   * If the kite server isn't running
-   * invokes the docker-compose
-   * down method directly. Otherwise
-   * makes a request to shutdown remotely.
-   */
-  shutdown: async function (): Promise<any> {
-    const { serverState } = store.getState();
-    if (serverState === KiteServerState.Connected) {
-      store.dispatch(setServerState(KiteServerState.Disconnected));
-      Kite.shutdownServer();
-    } else {
-      Kite.shutdownLocal();
-    }
-    store.dispatch(setState(KiteState.Shutdown));
-  },
-};
+    /**
+     *
+     * @returns state of Kite Server
+     */
+    getKiteServerState: function (): KiteServerState {
+      const { serverState } = store.getState();
+      return serverState;
+    },
 
+    /**
+     * If the kite server isn't running
+     * invokes the docker-compose
+     * down method directly. Otherwise
+     * makes a request to shutdown remotely.
+     */
+    disconnect: async function (): Promise<any> {
+      const { serverState } = store.getState();
+      if (serverState === KiteServerState.Connected) {
+        store.dispatch(setServerState(KiteServerState.Disconnected));
+        disconnectServer();
+      } else {
+        disconnectLocal();
+      }
+      store.dispatch(setState(KiteState.Shutdown));
+    },
+
+    /**
+     * If the kite server isn't running
+     * invokes the docker-compose
+     * down method directly. Otherwise
+     * makes a request to shutdown remotely.
+     */
+    shutdown: async function (): Promise<any> {
+      const { serverState } = store.getState();
+      if (serverState === KiteServerState.Connected) {
+        store.dispatch(setServerState(KiteServerState.Disconnected));
+        shutdownServer();
+      } else {
+        shutdownLocal();
+      }
+      store.dispatch(setState(KiteState.Shutdown));
+    },
+  };
+}
+const Kite = KiteCreator();
 export default Kite;

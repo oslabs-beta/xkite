@@ -8,6 +8,8 @@ const kiteSlice = createSlice({
     config: {}, //Promise<KiteConfig> | KiteConfig
     server: 'localhost:6661',
     setup: {}, //Promise<KiteSetup> | KiteSetup;
+    kafkaSetup: {}, //KafkaSetup
+    dBSetup: {}, //dbCfg
     state: KiteState.Init,
     serverState: KiteServerState.Disconnected,
     configFile: {}, //Promise<KiteConfigFile> | KiteConfigFile;
@@ -17,41 +19,43 @@ const kiteSlice = createSlice({
       state.packageBuild = action.payload;
     },
     setConfig: (state, action) => {
-      console.log(
-        `setting state: ${state.config} = ${JSON.stringify(action.payload)}`
-      );
+      // console.log(
+      //   `setting state: ${state.config} = ${JSON.stringify(action.payload)}`
+      // );
       state.config = Object.assign(action.payload);
     },
     setServer: (state, action) => {
-      console.log(
-        `setting state: ${state.server} = ${JSON.stringify(action.payload)}`
-      );
+      // console.log(
+      //   `setting state: ${state.server} = ${JSON.stringify(action.payload)}`
+      // );
       state.server = action.payload;
     },
     setSetup: (state, action) => {
-      console.log(
-        `setting state: ${state.setup} = ${JSON.stringify(action.payload)}`
-      );
+      // console.log(
+      //   `setting state: ${state.setup} = ${JSON.stringify(action.payload)}`
+      // );
       state.setup = Object.assign(action.payload);
+      state.kafkaSetup = Object.assign(action.payload.kafkaSetup ?? {});
+      state.dBSetup = Object.assign(action.payload.dataSetup ?? {});
     },
     setState: (state, action) => {
-      console.log(
-        `setting state: ${state.state} = ${JSON.stringify(action.payload)}`
-      );
+      // console.log(
+      //   `setting state: ${state.state} = ${JSON.stringify(action.payload)}`
+      // );
       state.state = action.payload;
     },
     setServerState: (state, action) => {
-      console.log(
-        `setting state: ${state.serverState} = ${JSON.stringify(
-          action.payload
-        )}`
-      );
+      // console.log(
+      //   `setting state: ${state.serverState} = ${JSON.stringify(
+      //     action.payload
+      //   )}`
+      // );
       state.serverState = action.payload;
     },
     setConfigFile: (state, action) => {
-      console.log(
-        `setting state: ${state.configFile} = ${JSON.stringify(action.payload)}`
-      );
+      // console.log(
+      //   `setting state: ${state.configFile} = ${JSON.stringify(action.payload)}`
+      // );
       state.configFile = Object.assign(action.payload);
     },
   },
