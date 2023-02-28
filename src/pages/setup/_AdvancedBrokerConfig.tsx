@@ -1,10 +1,12 @@
 import { FormGroup, Form, Row } from 'react-bootstrap';
+import { CheckPortOpen, PortOpen, PortsOpen } from './_ConfigurationForm';
 
 interface AdvancedBrokerConfigProps {
   brokerIndex: number;
-  updateKiteConfigRequest: (update: Partial<KiteConfig>) => void;
   kiteConfigRequest: KiteConfig;
-  isPortOpen: (port: number) => boolean;
+  portsOpen: PortOpen;
+  checkPortOpen: CheckPortOpen;
+  updateKiteConfigRequest: (update: Partial<KiteConfig>) => void;
 }
 
 // We should probably define these elsewhere and import them
@@ -16,8 +18,11 @@ export default function AdvancedBrokerConfig({
   brokerIndex,
   updateKiteConfigRequest,
   kiteConfigRequest,
-  isPortOpen,
+  portsOpen,
+  checkPortOpen,
 }: AdvancedBrokerConfigProps) {
+  console.log('what we get on the props', portsOpen);
+
   return (
     <Row className='mb-3'>
       <h4>Broker {brokerIndex + 1}</h4>
@@ -45,11 +50,7 @@ export default function AdvancedBrokerConfig({
             };
             updateKiteConfigRequest(update);
           }}
-          value={
-            kiteConfigRequest.kafka.brokers?.id?.[brokerIndex]
-              ? kiteConfigRequest.kafka.brokers.id[brokerIndex].toString()
-              : ''
-          }
+          value={kiteConfigRequest.kafka.brokers?.id?.[brokerIndex] || ''}
         />
       </FormGroup>
       <FormGroup className='col-3 my-2' controlId='kafka.brokers.ports'>
@@ -73,12 +74,28 @@ export default function AdvancedBrokerConfig({
             };
             updateKiteConfigRequest(update);
           }}
-          value={
-            kiteConfigRequest.kafka.brokers?.ports?.[brokerIndex]
-              ? kiteConfigRequest.kafka.brokers.ports[brokerIndex].toString()
-              : ''
+          value={kiteConfigRequest.kafka.brokers?.ports?.[brokerIndex] || ''}
+          // if the port has been set, use the value of whether it's open or not. Otherwise, default to !isInvalid
+          // kind of ugly...
+          isInvalid={
+            portsOpen
+              ? Object.hasOwn(portsOpen, 'port')
+                ? !portsOpen.port
+                : false
+              : false
+          }
+          onBlur={(e) =>
+            checkPortOpen(
+              `broker-${brokerIndex}`,
+              'port',
+              Number(e.target.value)
+            )
           }
         />
+        <Form.Control.Feedback type='valid'>Port open</Form.Control.Feedback>
+        <Form.Control.Feedback type='invalid'>
+          Port in Use!
+        </Form.Control.Feedback>
       </FormGroup>
       <FormGroup className='col-3 my-2' controlId='kafka.brokers.jmx_port'>
         <Form.Label>JMX Port</Form.Label>
@@ -102,11 +119,7 @@ export default function AdvancedBrokerConfig({
             };
             updateKiteConfigRequest(update);
           }}
-          value={
-            kiteConfigRequest.kafka.brokers?.jmx_port?.[brokerIndex]
-              ? kiteConfigRequest.kafka.brokers.jmx_port[brokerIndex].toString()
-              : ''
-          }
+          value={kiteConfigRequest.kafka.brokers?.jmx_port?.[brokerIndex] || ''}
         />
       </FormGroup>
     </Row>
