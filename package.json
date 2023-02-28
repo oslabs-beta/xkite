@@ -41,6 +41,7 @@
     "eslint": "8.34.0",
     "eslint-config-next": "13.0.6",
     "mdb-react-ui-kit": "^5.1.0",
+    "get-port": "^6.1.2",
     "next": "13.0.6",
     "react": "18.2.0",
     "react-bootstrap": "^2.7.2",

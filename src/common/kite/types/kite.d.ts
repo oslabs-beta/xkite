@@ -23,6 +23,7 @@ interface dbCfg {
 
 interface sinkCfg {
   name: 'jupyter' | 'spark';
+  port?: number;
 }
 
 interface grafanaCfg {
@@ -40,19 +41,25 @@ interface KiteKafkaCfg {
     size: number;
     id?: number[]; // [101, 102,...]
     replicas?: number; // must be less than size
-    ports?: number[]; // ["1734", "8888", ...]
-    metrics_port?: number;
-    jmx_port?: number[]; // broker interface with jmx
+    ports?: {
+      brokers?: number[]; // external ports to access brokers
+      metrics?: number; // confluent metric interface on docker net
+      jmx?: number[]; // broker interface with jmx on docker net
+    };
   };
   zookeepers: {
     size: number;
-    client_ports?: number[]; // [25483, 65534, ...] //external
-    server_ports?: number[]; // [2134, 2845, ...] //external
-    election_ports?: number[]; // internal goes along with server port these must be unique
+    ports?: {
+      peer?: {
+        //does not need to be configurable, docker net only
+        internal: number; // 2888
+        external: number; // 3888
+      };
+      client: number[]; // [2181, 2182] //external
+    };
   };
   jmx?: {
-    port: number; // internal main port on jmx
-    if_ports: number[]; // external host port to interface with port
+    ports: number[]; // external host port to interface with port
   };
   spring?: {
     port: number; // external host port to interface with 8080
@@ -60,7 +67,7 @@ interface KiteKafkaCfg {
 }
 
 interface KiteSetup {
-  dataSetup?: dbCfg;
+  dBSetup?: dbCfg;
   kafkaSetup: KafkaSetup;
 }
 

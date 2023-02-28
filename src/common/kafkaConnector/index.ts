@@ -1,4 +1,4 @@
-// this is a kafka connector class that uses kafkajs to simplift the process of connecting to a kafka instance. the constructor takes in a kafka setup object that constructs a kafka instance via kafkajs
+// this is a kafka connector class that uses kafkajs to simplify the process of connecting to a kafka instance. The constructor takes in a kafka setup object that constructs a kafka instance via kafkajs
 
 import { Kafka, logLevel, Consumer, Producer, Admin } from 'kafkajs';
 
