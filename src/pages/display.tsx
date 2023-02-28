@@ -6,7 +6,7 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import FormGroup from 'react-bootstrap/FormGroup';
 import Row from 'react-bootstrap/Row';
-import ShutDownBtn from './components/ShutdownBtn';
+import ShutDownBtn from '@/components/ShutdownBtn';
 
 export default function Display() {
   const [message, setMessage] = useState('');
@@ -45,28 +45,28 @@ export default function Display() {
         <meta name='viewport' content='width=device-width, initial-scale=1' />
       </Head>
       <main>
-        <h1 id = "generalHeader">General Display Page</h1>
+        <h1 id='generalHeader'>General Display Page</h1>
         <div className='metrics1'>
           <div>
-            <h3 className = 'metric-header'>Brokers Online</h3>
+            <h3 className='metric-header'>Brokers Online</h3>
             <iframe src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=647&kiosk'></iframe>
           </div>
           <div>
-            <h3 className = 'metric-header'>Active Controllers</h3>
+            <h3 className='metric-header'>Active Controllers</h3>
             <iframe src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=233&kiosk'></iframe>
           </div>
           <div>
-            <h3 className = 'metric-header'>Total Topics</h3>
+            <h3 className='metric-header'>Total Topics</h3>
             <iframe src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=625&kiosk'></iframe>
           </div>
           <div>
-            <h3 className = 'metric-header'>Online Partitions</h3>
+            <h3 className='metric-header'>Online Partitions</h3>
             <iframe src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=40&kiosk'></iframe>
           </div>
         </div>
         <div className='metrics2'>
           <div>
-            <h3 className = 'metric-header'>Producer Latency</h3>
+            <h3 className='metric-header'>Producer Latency</h3>
             <iframe
               src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=192&kiosk'
               width='400'
@@ -74,7 +74,7 @@ export default function Display() {
             ></iframe>
           </div>
           <div>
-            <h3 className = 'metric-header'>Message Throughput</h3>
+            <h3 className='metric-header'>Message Throughput</h3>
             <iframe
               src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=152&kiosk'
               width='800'
@@ -84,7 +84,7 @@ export default function Display() {
         </div>
         <div className='metrics2'>
           <div>
-            <h3 className = 'metric-header'>Failed Produce Requests</h3>
+            <h3 className='metric-header'>Failed Produce Requests</h3>
             <iframe
               src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=612&kiosk'
               width='1000'
@@ -118,7 +118,7 @@ export default function Display() {
           >
             View more metrics
           </Button>
-          <ShutDownBtn id = 'dangerDisplay'/>
+          <ShutDownBtn id='dangerDisplay' />
         </div>
       </main>
     </>
