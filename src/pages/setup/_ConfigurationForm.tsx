@@ -8,10 +8,29 @@ import Accordion from 'react-bootstrap/Accordion';
 import { SyntheticEvent, useState, useEffect } from 'react';
 import defaultCfg from '@/common/kite/constants';
 import AdvancedBrokerConfig from './_AdvancedBrokerConfig';
-import { JsxElement } from 'typescript';
+
+export interface PortsOpen {
+  [index: string]: PortOpen;
+}
+
+export interface PortOpen {
+  [type: string]: boolean;
+}
+
+export interface CheckPortOpen {
+  (index: string, type: string, port: number): Promise<boolean>;
+}
+
+// const test: PortsOpen = {
+//   'broker-1': {
+//     port: true,
+//     'jmx-port': false,
+//   },
+// };
 
 export default function ConfigurationForm() {
   const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultCfg);
+  const [portsOpen, setPortsOpen] = useState<PortsOpen>({});
 
   function updateKiteConfigRequest(update: Partial<KiteConfig>): void {
     setKiteConfigRequest((kiteConfigRequest) => {
@@ -21,6 +40,29 @@ export default function ConfigurationForm() {
       };
     });
   }
+
+  const checkPortOpen: CheckPortOpen = async (index, type, port) => {
+    console.log({ index, type, port });
+    const isOpen = await isPortOpen(port);
+    setPortsOpen((portsOpen) => ({
+      ...portsOpen,
+      [index]: {
+        ...portsOpen[index],
+        [type]: isOpen,
+      },
+    }));
+    console.log(isOpen);
+
+    return isOpen;
+  };
+
+  // async function checkPortOpen(
+  //   index: string,
+  //   type: string,
+  //   port: number
+  // ): Promise<boolean> {
+  //   return isPortOpen(port);
+  // }
 
   async function isPortOpen(port: number): Promise<boolean> {
     const { isOpen } = await fetch('/api/checkPort', {
@@ -78,16 +120,20 @@ export default function ConfigurationForm() {
   //== Rendering of Advanced Settings ==//
   const advancedBrokerConfigElements: JSX.Element[] = [];
   for (
-    let brokerNumber = 0;
-    brokerNumber < kiteConfigRequest.kafka.brokers.size;
-    brokerNumber++
+    let brokerIndex = 0;
+    brokerIndex < kiteConfigRequest.kafka.brokers.size;
+    brokerIndex++
   ) {
+    // portsOpen[`broker-${brokerIndex}`] = {};
     advancedBrokerConfigElements.push(
       <AdvancedBrokerConfig
-        brokerIndex={brokerNumber}
+        brokerIndex={brokerIndex}
         updateKiteConfigRequest={updateKiteConfigRequest}
         kiteConfigRequest={kiteConfigRequest}
-        isPortOpen={isPortOpen}
+        // isPortOpen={isPortOpen}
+        portsOpen={portsOpen[`broker-${brokerIndex}`]}
+        checkPortOpen={checkPortOpen}
+        key={`abc-${brokerIndex}`}
       />
     );
   }
