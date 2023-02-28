@@ -21,8 +21,6 @@ export default function AdvancedBrokerConfig({
   portsOpen,
   checkPortOpen,
 }: AdvancedBrokerConfigProps) {
-  console.log('what we get on the props', portsOpen);
-
   return (
     <Row className='mb-3'>
       <h4>Broker {brokerIndex + 1}</h4>
@@ -60,21 +58,27 @@ export default function AdvancedBrokerConfig({
           placeholder={(DEFAULT_BROKER_PORT + brokerIndex).toString()}
           onChange={(e) => {
             if (+e.target.value <= 0) return;
-            const ports: number[] = kiteConfigRequest.kafka.brokers.ports ?? [];
-            ports[brokerIndex] = +e.target.value;
+            const brokers: number[] =
+              kiteConfigRequest.kafka.brokers.ports?.brokers ?? [];
+            brokers[brokerIndex] = +e.target.value;
 
             const update = {
               kafka: {
                 ...kiteConfigRequest.kafka,
                 brokers: {
                   ...kiteConfigRequest.kafka.brokers,
-                  ports: ports,
+                  ports: {
+                    ...kiteConfigRequest.kafka.brokers.ports,
+                    brokers,
+                  },
                 },
               },
             };
             updateKiteConfigRequest(update);
           }}
-          value={kiteConfigRequest.kafka.brokers?.ports?.[brokerIndex] || ''}
+          value={
+            kiteConfigRequest.kafka.brokers?.ports?.brokers?.[brokerIndex] || ''
+          }
           // if the port has been set, use the value of whether it's open or not. Otherwise, default to !isInvalid
           // kind of ugly...
           isInvalid={
@@ -104,22 +108,27 @@ export default function AdvancedBrokerConfig({
           placeholder={(DEFAULT_JMX_PORT + brokerIndex).toString()}
           onChange={(e) => {
             if (+e.target.value <= 0) return;
-            const jmx_port: number[] =
-              kiteConfigRequest.kafka.brokers.jmx_port ?? [];
-            jmx_port[brokerIndex] = +e.target.value;
+            const jmx: number[] =
+              kiteConfigRequest.kafka.brokers?.ports?.jmx ?? [];
+            jmx[brokerIndex] = +e.target.value;
 
             const update = {
               kafka: {
                 ...kiteConfigRequest.kafka,
                 brokers: {
                   ...kiteConfigRequest.kafka.brokers,
-                  jmx_port: jmx_port,
+                  ports: {
+                    ...kiteConfigRequest.kafka.brokers.ports,
+                    jmx,
+                  },
                 },
               },
             };
             updateKiteConfigRequest(update);
           }}
-          value={kiteConfigRequest.kafka.brokers?.jmx_port?.[brokerIndex] || ''}
+          value={
+            kiteConfigRequest.kafka.brokers?.ports?.jmx?.[brokerIndex] || ''
+          }
         />
       </FormGroup>
     </Row>
