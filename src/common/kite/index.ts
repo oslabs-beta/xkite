@@ -173,9 +173,14 @@ function KiteCreator() {
    */
   async function disconnectLocal() {
     try {
-      await compose.kill({
+      // await compose.kill({
+      //   cwd: downloadDir,
+      //   log: true,
+      // });
+      await compose.down({
         cwd: downloadDir,
         log: true,
+        commandOptions: ['--remove-orphans', '--volumes'], //force stop and delete volumes.
       });
     } catch (err) {
       console.error(`Could not disconnect docker instances on local:\n${err}`);

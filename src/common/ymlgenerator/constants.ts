@@ -29,9 +29,9 @@ export const _ports_: YAMLServicesDefaultSetup = {
 };
 export const PROMCONFIG: PROMConfig = {
   global: {
-    scrape_interval: '26s',
-    evaluation_interval: '15s',
-    scrape_timeout: '25s',
+    scrape_interval: '5s',
+    evaluation_interval: '2s',
+    scrape_timeout: '4s',
   },
   rule_files: [null],
   scrape_configs: [

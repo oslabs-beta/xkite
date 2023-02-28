@@ -188,7 +188,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           return `${kafka.zookeepers.ports.peer.external}:${kafka.zookeepers.ports.peer.internal};`;
         return `${x + 1}${_ports_.zookeeper.peer.external}:${x + 1}${
           _ports_.zookeeper.peer.internal
-        }`;
+        };`;
       };
       const getClientPort: (x: number) => string = (x) => {
         if (
