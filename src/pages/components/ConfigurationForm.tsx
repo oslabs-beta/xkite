@@ -4,12 +4,27 @@ import FormGroup from 'react-bootstrap/FormGroup';
 import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
 
-import { SyntheticEvent, useState } from 'react';
-import defaultCfg from '@/common/kite/constants';
+import { SyntheticEvent, useState, useEffect } from 'react';
+// import defaultCfg from '@/common/kite/constants';
 import ShutDownBtn from './ShutdownBtn';
 
-export default function ConfigurationForm() {
-  const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultCfg);
+export default function ConfigurationForm(props: unknown) {
+  const [kiteConfigRequest, setKiteConfigRequest] = useState({
+    kafka: {
+      brokers: { size: 0 },
+      zookeepers: { size: 0 },
+    },
+    db: { name: 'postgresql' },
+    sink: { name: 'jupyter' },
+  });
+  // on load get default config from server
+  useEffect(() => {
+    console.log('getting routes...');
+    fetch('/api/kite/getConfig')
+      .then((res) => res.json())
+      .then((data) => setKiteConfigRequest(data))
+      .catch((err) => console.log(`Error getting Config on startup: ${err}`));
+  }, [props]);
 
   function updateKiteConfigRequest(
     // Prevent numeric values from going below 1
@@ -29,7 +44,7 @@ export default function ConfigurationForm() {
   function submitHandler(event: SyntheticEvent) {
     event.preventDefault();
     console.log('sending configuration…');
-    console.log(defaultCfg);
+    // console.log(defaultCfg);
 
     fetch('/api/kite/create', {
       method: 'POST',
@@ -103,10 +118,10 @@ export default function ConfigurationForm() {
                   throw TypeError(`Invalid Data Source ${e.target.value}`);
                 else
                   return updateKiteConfigRequest({
-                    db: { dataSource: e.target.value },
+                    db: { name: e.target.value },
                   });
               }}
-              value={kiteConfigRequest.db?.dataSource}
+              value={kiteConfigRequest.db?.name}
             />
           </Form.Group>
           <Form.Group className='col-4' controlId='sink'>

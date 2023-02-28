@@ -9,7 +9,7 @@ interface KiteConfig {
 }
 
 interface dbCfg {
-  dataSource: 'postgresql' | 'ksql';
+  name: 'postgresql' | 'ksql';
   port?: number;
   postgresql?: {
     username: string;

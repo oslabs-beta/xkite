@@ -27,7 +27,7 @@ export default function Display() {
     event.preventDefault();
 
     axios
-      .post('http://localhost:8080/api/v1/kafka/publish', {
+      .post('http://localhost:8080/api/kafka/publish', {
         timestamp: new Date().toISOString(),
         message,
       })

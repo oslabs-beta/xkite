@@ -112,8 +112,8 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
    * configured from the yamlGeneration.
    */
   function createDB(db?: dbCfg): dbCfg | undefined {
-    if (db?.dataSource === 'postgresql') {
-      dependencies.push(db.dataSource);
+    if (db?.name === 'postgresql') {
+      dependencies.push(db.name);
       YAML.services.postgresql = {
         ...POSTGRES,
         ports: [`${db.port}:${_ports_.postgresql.internal}`],
@@ -130,7 +130,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           driver: 'local',
         },
       };
-    } else if (db?.dataSource === 'ksql') {
+    } else if (db?.name === 'ksql') {
       YAML.services.ksql = {
         ...KSQL,
         ports: [`${db.port}:${_ports_.ksql.internal}`],
