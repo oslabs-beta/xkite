@@ -329,11 +329,11 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           ...KAFKA_BROKER.environment,
           KAFKA_BROKER_ID: brokerID,
           KAFKA_JMX_PORT: jmxHostPort,
-          KAFKA_LISTENERS: `METRICS://${brokerName}:${metricsPort},EXTERNAL://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring}`,
+          // KAFKA_LISTENERS: `METRICS://${brokerName}:${metricsPort},EXTERNAL://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring}`,
           KAFKA_ADVERTISED_LISTENERS: `METRICS://${brokerName}:${metricsPort},EXTERNAL://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring}`,
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: kafka.brokers.replicas ?? 1,
           KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR:
-            kafka.brokers.replicas ?? 1,
+            kafka.brokers.replicas ?? 1, //TODO limit to # of brokers.size
           CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `${brokerName}:${metricsPort}`,
           KAFKA_ZOOKEEPER_CONNECT: servers.zkClients,
           CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: servers.zkClients,
