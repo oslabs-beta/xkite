@@ -1,8 +1,6 @@
 import { Html, Head, Main, NextScript } from 'next/document';
-import Image from 'next/image';
-import Container from 'react-bootstrap/Container';
-import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar';
+import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
 
 export default function Document() {
   return (
@@ -10,34 +8,32 @@ export default function Document() {
       <Head />
       <body>
         <header>
-          <Navbar
-            bg='dark'
-            variant='dark'
-            sticky='top'
-            className='px-5 justify-content-between'
-          >
-            <Navbar.Brand href='https://github.com/oslabs-beta/xkite'>
-              xkite
-              <Image
-                src='/favicon-32x32.png'
-                alt='kite'
-                height={20}
-                width={20}
-              />
-            </Navbar.Brand>
-            <Nav>
-              <Nav.Link href='/'>Home</Nav.Link>
-              <Nav.Link href='/setup'>Configure</Nav.Link>
-              <Nav.Link href='http://localhost:6662/display'>Display</Nav.Link>
-            </Nav>
-          </Navbar>
+          <NavBar />
         </header>
+        <div id='background-wrap'>
+          <div className='x1'>
+            <div className='cloud'></div>
+          </div>
+          <div className='x2'>
+            <div className='cloud'></div>
+          </div>
+          <div className='x3'>
+            <div className='cloud'></div>
+          </div>
+          <div className='x4'>
+            <div className='cloud'></div>
+          </div>
+          <div className='x5'>
+            <div className='cloud'></div>
+          </div>
+        </div>
         <br />
         <Main />
         <NextScript />
+        <footer>
+          <Footer />
+        </footer>
       </body>
     </Html>
   );
 }
-// style={{ width: '100vh' }}
-// className='justify-content-between'

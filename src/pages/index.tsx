@@ -9,7 +9,7 @@ export default function Home() {
         <meta name='description' content='xkite landing page' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
       </Head>
-      <main>
+      <main className='landing-page'>
         <h1>xkite</h1>
         <Button variant='secondary' href='/setup'>
           Configure a Cluster!

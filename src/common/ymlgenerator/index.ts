@@ -19,6 +19,7 @@ import {
   network,
   _ports_,
 } from './constants';
+import { KafkaConfig } from 'kafkajs';
 
 const dependencies: string[] = [];
 const setup: KiteSetup = {
@@ -112,8 +113,8 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
    * configured from the yamlGeneration.
    */
   function createDB(db?: dbCfg): dbCfg | undefined {
-    if (db?.dataSource === 'postgresql') {
-      dependencies.push(db.dataSource);
+    if (db?.name === 'postgresql') {
+      dependencies.push(db.name);
       YAML.services.postgresql = {
         ...POSTGRES,
         ports: [`${db.port}:${_ports_.postgresql.internal}`],
@@ -130,7 +131,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           driver: 'local',
         },
       };
-    } else if (db?.dataSource === 'ksql') {
+    } else if (db?.name === 'ksql') {
       YAML.services.ksql = {
         ...KSQL,
         ports: [`${db.port}:${_ports_.ksql.internal}`],
@@ -329,11 +330,13 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           ...KAFKA_BROKER.environment,
           KAFKA_BROKER_ID: brokerID,
           KAFKA_JMX_PORT: jmxHostPort,
-          KAFKA_LISTENERS: `METRICS://${brokerName}:${metricsPort},EXTERNAL://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring}`,
+          // KAFKA_LISTENERS: `METRICS://${brokerName}:${metricsPort},EXTERNAL://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring}`,
           KAFKA_ADVERTISED_LISTENERS: `METRICS://${brokerName}:${metricsPort},EXTERNAL://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring}`,
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: kafka.brokers.replicas ?? 1,
           KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR:
-            kafka.brokers.replicas ?? 1,
+            (kafka.brokers.replicas ?? 1) < kafka.brokers.size
+              ? kafka.brokers.size
+              : kafka.brokers.replicas ?? 1,
           CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `${brokerName}:${metricsPort}`,
           KAFKA_ZOOKEEPER_CONNECT: servers.zkClients,
           CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: servers.zkClients,

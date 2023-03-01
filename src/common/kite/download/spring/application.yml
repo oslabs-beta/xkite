@@ -8,6 +8,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
       properties:
         spring.json.trusted.packages: '*'
+        partition.assignment.strategy: org.apache.kafka.clients.consumer.RoundRobinAssignor
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer

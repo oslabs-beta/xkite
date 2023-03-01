@@ -13,7 +13,7 @@
     "build-spring": "mvn -f ./src/common/springApp clean package && mv ./src/common/springApp/target/*.jar ./src/common/kite/download/spring/app.jar",
     "next-dev": "next dev",
     "dev:6662": "next dev -p 6662",
-    "dev": "concurrently \"open http://localhost:3000\" \"npm run dev:6662\" \"next dev\"",
+    "dev": "concurrently \"npm run dev:6662\" \"next dev\" \"open http://localhost:3000\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -41,6 +41,8 @@
     "eslint": "8.34.0",
     "eslint-config-next": "13.0.6",
     "net": "^1.0.2",
+    "mdb-react-ui-kit": "^5.1.0",
+    "get-port": "^6.1.2",
     "next": "13.0.6",
     "openai": "^3.1.0",
     "pg": "^8.9.0",

@@ -1,11 +1,14 @@
 import { createSlice, configureStore } from '@reduxjs/toolkit';
-import { KiteState, KiteServerState } from '@/common/kite/constants';
+import defaultCfg, {
+  KiteState,
+  KiteServerState,
+} from '@/common/kite/constants';
 
 const kiteSlice = createSlice({
   name: 'kite',
   initialState: {
     packageBuild: false, //change to make pipeline.zip
-    config: {}, //Promise<KiteConfig> | KiteConfig
+    config: defaultCfg, //Promise<KiteConfig> | KiteConfig
     server: 'localhost:6661',
     setup: {}, //Promise<KiteSetup> | KiteSetup;
     kafkaSetup: {}, //KafkaSetup
