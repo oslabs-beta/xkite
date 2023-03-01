@@ -330,11 +330,15 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           ...KAFKA_BROKER.environment,
           KAFKA_BROKER_ID: brokerID,
           KAFKA_JMX_PORT: jmxHostPort,
-          // KAFKA_LISTENERS: `METRICS://${brokerName}:${metricsPort},EXTERNAL://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring}`,
-          KAFKA_ADVERTISED_LISTENERS: `METRICS://${brokerName}:${metricsPort},EXTERNAL://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring}`,
-          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: kafka.brokers.replicas ?? 1,
+          // KAFKA_LISTENERS: `EXTERNAL://:${extPort}`,
+          KAFKA_LISTENERS: `METRICS://:${metricsPort},PLAINTEXT://:${extPort},INTERNAL://:${_ports_.kafka.spring}`,
+          KAFKA_ADVERTISED_LISTENERS: `METRICS://${brokerName}:${metricsPort},PLAINTEXT://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring}`,
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR:
+            (kafka.brokers.replicas ?? 1) > kafka.brokers.size
+              ? kafka.brokers.size
+              : kafka.brokers.replicas ?? 1,
           KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR:
-            (kafka.brokers.replicas ?? 1) < kafka.brokers.size
+            (kafka.brokers.replicas ?? 1) > kafka.brokers.size
               ? kafka.brokers.size
               : kafka.brokers.replicas ?? 1,
           CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `${brokerName}:${metricsPort}`,

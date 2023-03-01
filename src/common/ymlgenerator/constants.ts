@@ -60,7 +60,7 @@ export const KAFKA_BROKER: KafkaBrokerCfg = {
   environment: {
     KAFKA_ZOOKEEPER_CONNECT: `zookeeper:${_ports_.zookeeper.peer.external}`,
     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:
-      'METRICS:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT',
+      'METRICS:PLAINTEXT,INTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT',
     KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL',
     CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: `zookeeper:${_ports_.zookeeper.peer.external}`,
     CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1,
@@ -68,8 +68,9 @@ export const KAFKA_BROKER: KafkaBrokerCfg = {
     KAFKA_HEAP_OPTS: '-Xmx512M -Xms512M',
     KAFKA_BROKER_ID: 101,
     KAFKA_JMX_PORT: _ports_.kafka.jmx,
+    KAFKA_LISTENERS: `METRICS://:${_ports_.kafka.metrics},PLAINTEXT://:${_ports_.kafka.broker.external},INTERNAL://:${_ports_.kafka.spring}`,
     // KAFKA_LISTENERS: `METRICS://kafka:${_ports_.kafka.metrics},EXTERNAL://${network}:${_ports_.kafka.broker.external},INTERNAL://kafka:${_ports_.kafka.spring}`,
-    KAFKA_ADVERTISED_LISTENERS: `METRICS://kafka:${_ports_.kafka.metrics},EXTERNAL://${network}:${_ports_.kafka.broker.external},INTERNAL://kafka:${_ports_.kafka.spring}`,
+    KAFKA_ADVERTISED_LISTENERS: `METRICS://kafka:${_ports_.kafka.metrics},PLAINTEXT://${network}:${_ports_.kafka.broker.external},INTERNAL://kafka:${_ports_.kafka.spring}`,
     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1,
     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1,
     CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `kafka:${_ports_.kafka.metrics}`,

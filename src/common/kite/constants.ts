@@ -1,3 +1,5 @@
+import path from 'path';
+
 const defaultCfg: KiteConfig = {
   kafka: {
     brokers: {
@@ -26,5 +28,9 @@ export enum KiteServerState {
   Disconnected = 'Disconnected',
   Connected = 'Connected',
 }
+export const configFilePath = path.join(
+  process.cwd(),
+  'src/common/kite/config'
+);
 
 export default defaultCfg;
