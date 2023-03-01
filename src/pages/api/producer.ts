@@ -1,6 +1,6 @@
 const { Kafka, logLevel } = require('kafkajs');
 const clientId = 'myGroup2';
-const brokers = ['localhost:9092'];
+const brokers = ['localhost:9092', 'localhost:9093'];
 const topic = 'jsonTopic2';
 import type { NextApiRequest, NextApiResponse } from 'next';
 

@@ -22,7 +22,7 @@ export default class ExampleConsumer {
     try {
       await this.kafkaConsumer.connect()
       await this.kafkaConsumer.subscribe(topic)
-
+      console.log('connecting')
       await this.kafkaConsumer.run({
         eachMessage: async (messagePayload: EachMessagePayload) => {
           const { topic, partition, message } = messagePayload
@@ -65,7 +65,7 @@ export default class ExampleConsumer {
   private createKafkaConsumer(): Consumer {
     const kafka = new Kafka({ 
       clientId: 'myGroup2',
-      brokers: ['localhost:9092']
+      brokers: ['localhost:9092', 'localhost:9093']
     })
     const consumer = kafka.consumer({ groupId: 'myGroup2' })
     return consumer
