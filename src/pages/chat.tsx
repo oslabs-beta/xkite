@@ -53,14 +53,17 @@ export default function Chat() {
         }
       };
 
-      // const startAiTransmit = async () => {
-      //   try {
-      //     const response = await fetch('/api/ai'); // update endpoint when ready
-      //     //console.log(response);
-      //   } catch (err) {
-      //     console.log(err);
-      //   }
-      // };
+      const startAiTransmit = (): void => {
+        setInterval(async () => {
+          try {
+            await fetch('/api/ai'); // update endpoint when ready
+            //console.log(response);
+          } catch (err) {
+            console.log(err);
+          }
+        }, Math.random() * 10000 + 40000);
+        
+      };
   
       const fetchAllMessages = async () => {
         try {
@@ -78,13 +81,11 @@ export default function Chat() {
           console.log(err);
         }
       };
-      setTimeout(async () => {
-        await fetch('/api/ai');
-      }, Math.random() * 10000 + 40000);
+     
       
       fetchAndSetSenderId();
       fetchAllMessages();
-      //startAiTransmit()
+      startAiTransmit()
     }, []);
     
     const messageElementList = newBody.map((message: any) => (

@@ -14,6 +14,7 @@ export default class ExampleConsumer {
   }
 
   public async startConsumer(): Promise<void> {
+    console.log('starting consumer...')
     const topic: ConsumerSubscribeTopics = {
       topics: ['jsonTopic2'],
       fromBeginning: false
@@ -37,7 +38,7 @@ export default class ExampleConsumer {
 
   public async startBatchConsumer(): Promise<void> {
     const topic: ConsumerSubscribeTopics = {
-      topics: ['example-topic'],
+      topics: ['jsonTopic2'],
       fromBeginning: false
     }
 
