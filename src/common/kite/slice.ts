@@ -1,31 +1,16 @@
-import { createSlice, configureStore } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
+import { KiteState, KiteServerState } from '@/common/kite/constants';
+import defaultCfg, { configFilePath } from './constants';
 import path from 'path';
 import fs from 'fs-extra';
-import defaultCfg, {
-  KiteState,
-  KiteServerState,
-  configFilePath,
-} from '@/common/kite/constants';
-
 const initialState = readConfigFromFile();
-const defaultState = {
-  init: true,
-  packageBuild: false, //change to make pipeline.zip
-  config: defaultCfg, //Promise<KiteConfig> | KiteConfig
-  server: 'localhost:6661',
-  setup: {}, //Promise<KiteSetup> | KiteSetup;
-  kafkaSetup: {}, //KafkaSetup
-  dBSetup: {}, //dbCfg
-  state: KiteState.Init,
-  serverState: KiteServerState.Disconnected,
-  configFile: {}, //Promise<KiteConfigFile> | KiteConfigFile;
-};
 
 const kiteSlice = createSlice({
   name: 'kite',
   initialState,
   reducers: {
     setPackageBuild: (state, action) => {
+      console.log(`setting packageBuild: ${action.payload}`);
       state.packageBuild = action.payload;
       writeConfigToFile(state);
     },
@@ -69,10 +54,6 @@ const {
   setConfigFile,
 } = kiteSlice.actions;
 
-const store = configureStore({
-  reducer: kiteSlice.reducer,
-});
-
 export {
   setPackageBuild,
   setConfig,
@@ -83,7 +64,38 @@ export {
   setConfigFile,
 };
 
-export default store;
+export default kiteSlice.reducer;
+
+function readConfigFromFile(): any {
+  try {
+    const state = fs.readFileSync(
+      path.resolve(configFilePath, 'cfg.json'),
+      'utf-8'
+    );
+    if (state !== undefined && Object.keys(state).length !== 0) {
+      return JSON.parse(state);
+    } else {
+      console.log('return default');
+      return defaultState;
+    }
+  } catch (err) {
+    console.log(`Error reading Kite configFile: ${err}`);
+    return defaultState;
+  }
+}
+
+const defaultState = {
+  init: true,
+  packageBuild: false, //change to make pipeline.zip
+  config: defaultCfg, //Promise<KiteConfig> | KiteConfig
+  server: 'localhost:6661',
+  setup: {}, //Promise<KiteSetup> | KiteSetup;
+  kafkaSetup: {}, //KafkaSetup
+  dBSetup: {}, //dbCfg
+  state: KiteState.Init,
+  serverState: KiteServerState.Disconnected,
+  configFile: {}, //Promise<KiteConfigFile> | KiteConfigFile;
+};
 
 function writeConfigToFile(state: any): void {
   try {
@@ -94,22 +106,5 @@ function writeConfigToFile(state: any): void {
     );
   } catch (err) {
     console.log(`Error writing Kite configFile ${err}`);
-  }
-}
-
-function readConfigFromFile(): any {
-  try {
-    const state = fs.readFileSync(
-      path.resolve(configFilePath, 'cfg.json'),
-      'utf-8'
-    );
-    if (state !== undefined) {
-      return JSON.parse(state);
-    } else {
-      return defaultState;
-    }
-  } catch (err) {
-    console.log(`Error reading Kite configFile: ${err}`);
-    return defaultState;
   }
 }

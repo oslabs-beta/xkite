@@ -8,8 +8,10 @@ import { KiteState, KiteServerState } from '@/common/kite/constants';
 import defaultCfg, { configFilePath } from './constants';
 const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
 const configPath = path.join(downloadDir, 'docker-compose.yml');
+const zipPath = path.join(downloadDir, 'pipeline.zip');
 
-import store, {
+import store from '@/common/kite/store';
+import {
   setPackageBuild,
   setConfig,
   setServer,
@@ -17,7 +19,7 @@ import store, {
   setState,
   setServerState,
   setConfigFile,
-} from '@/common/kite/redux';
+} from '@/common/kite/slice';
 
 function KiteCreator() {
   //Private Variable / Methods:
@@ -37,10 +39,12 @@ function KiteCreator() {
         fetch(`${server}/api/kite/getConfig`),
         fetch(`${server}/api/kite/getSetup`),
         fetch(`${server}/api/kite/getConfigFile`),
+        fetch(`${server}/api/kite/getPackageBuild`),
       ];
       store.dispatch(setConfig((await res[0]).json()));
       store.dispatch(setSetup((await res[1]).json()));
       store.dispatch(setConfigFile((await res[2]).json()));
+      store.dispatch(setPackageBuild((await res[3]).json()));
       store.dispatch(setServerState(KiteServerState.Connected));
     } catch (err) {
       console.error(`error fetching from ${server}/api/:\n${err}`);
@@ -61,17 +65,10 @@ function KiteCreator() {
     try {
       // generate the docker config
       const generate: Function = ymlGenerator();
-      const { packageBuild } = store.getState();
       store.dispatch(setConfig(config));
       store.dispatch(setSetup(generate(config)));
       // package the download, comment out or make optional fro time optimization
-      if (packageBuild) {
-        zipper.sync
-          .zip(downloadDir)
-          .compress()
-          .save(path.resolve(downloadDir, 'pipeline.zip'));
-      }
-      // store the config file
+      store.dispatch(setPackageBuild(zipPath));
       const header = {
         'Content-Type': 'text/yml',
         'Content-Length': fs.statSync(configPath).size,
@@ -303,6 +300,20 @@ function KiteCreator() {
       return store.getState().serverState;
     },
 
+    getPackageBuild: function (): Promise<KiteConfigFile> {
+      if (!fs.existsSync(zipPath)) {
+        zipper.sync.zip(downloadDir).compress().save(zipPath);
+      }
+
+      return new Promise((res, rej) => {
+        const header = {
+          'Content-Type': 'application/zip',
+          'Content-Length': fs.statSync(zipPath).size,
+        };
+        const fileStream = fs.readFileSync(zipPath, 'utf-8');
+        res({ header, fileStream });
+      });
+    },
     /**
      * If the kite server isn't running
      * invokes the docker-compose
@@ -318,6 +329,7 @@ function KiteCreator() {
         disconnectLocal();
       }
       store.dispatch(setState(KiteState.Shutdown));
+      fs.removeSync(zipPath);
     },
 
     /**
@@ -335,6 +347,7 @@ function KiteCreator() {
         shutdownLocal();
       }
       store.dispatch(setState(KiteState.Shutdown));
+      fs.removeSync(zipPath);
     },
   };
 }
