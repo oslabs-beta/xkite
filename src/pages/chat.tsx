@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import SocketIOClient from "socket.io-client";
 import Message from '../components/Message';
-import Navigation from '../components/Navbar';
+import NavBar from '@/components/NavBar';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import { Navbar } from 'react-bootstrap';
 
 type Msg = {
     avatar?: string;
@@ -144,7 +145,7 @@ export default function Chat() {
   
     return (
       <>
-        <Navigation/>
+        <Navbar/>
         <div className="chatroom">
           <div className="messages">
             <div>{messageElementList}</div>
