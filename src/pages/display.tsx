@@ -1,4 +1,9 @@
-import React, { useState, SyntheticEvent } from 'react';
+import React, {
+  useState,
+  SyntheticEvent,
+  ChangeEvent,
+  MouseEvent,
+} from 'react';
 import axios from 'axios';
 
 import Head from 'next/head';
@@ -6,55 +11,89 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import FormGroup from 'react-bootstrap/FormGroup';
 import Row from 'react-bootstrap/Row';
-import ShutDownBtn from './components/ShutdownBtn';
+import ShutDownBtn from '@/components/ShutdownBtn';
 
 export default function Display() {
   const [message, setMessage] = useState('');
-
-  // const submitHandler = async (event: SyntheticEvent): Promise<void> => {
-  //   event.preventDefault();
-
-  //   const msg = JSON.stringify({
-  //     timestamp: new Date().toISOString(),
-  //     message,
-  //   });
-
-  //   console.log('msg:', msg);
-
-  //   const send = await axios.post(
-  //     'http://localhost:8081/api/kafka/publish',
-  //     msg,
-  //     {
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //     }
-  //   );
-
-  //   console.log(send);
-
-  //   setMessage('');
-  // };
+  const [topic, setTopic] = useState('testTopic');
+  const [csvfile, setCSVFile] = useState<File>();
 
   const submitHandler = (event: SyntheticEvent): void => {
     event.preventDefault();
 
-    const msg = JSON.stringify({
-      timestamp: 1,
-      message,
-    });
-    axios
-      .post('http://localhost:8080/api/kafka/publish', msg, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
+    fetch('/api/kite/connect/kafka', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        method: 'sendMessages',
+        topics: [topic !== '' ? topic : 'testTopic'],
+        messages: [
+          {
+            key: 'timestamp',
+            value: new Date().toISOString(),
+          },
+          {
+            key: 'message',
+            value: message,
+          },
+        ],
+      }),
+    })
       .then((data) => console.log(data))
       .catch((error) => console.error(error));
 
     setMessage('');
   };
 
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    console.log(event.target.files);
+    const target = event.target;
+    if (target.files !== null && target.files[0] !== undefined)
+      setCSVFile(target.files[0]);
+  };
+
+  const handleOnSubmitFile = (event: MouseEvent): void => {
+    event.preventDefault();
+    const reader = new FileReader();
+
+    if (csvfile) {
+      reader.onload = async (event) => {
+        if (event.target === null) return;
+        const text = event.target.result;
+        if (text !== null) {
+          const messageArray = text.toString().split('\n');
+          for (const msg of messageArray) {
+            fetch('/api/kite/connect/kafka', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                method: 'sendMessages',
+                topics: [topic !== '' ? topic : 'testTopic'],
+                messages: [
+                  {
+                    key: 'timestamp',
+                    value: new Date().toISOString(),
+                  },
+                  {
+                    key: 'message',
+                    value: msg,
+                  },
+                ],
+              }),
+            })
+              .then((data) => console.log(data))
+              .catch((error) => console.error(error));
+          }
+        }
+      };
+
+      const file = reader.readAsText(csvfile);
+    }
+  };
   // const submitHandler = (event: SyntheticEvent): void => {
   //   event.preventDefault();
 
@@ -135,8 +174,8 @@ export default function Display() {
           </div>
         </div>
         {/* localhost:8080/api/kafka/publish post --> {"timestamp": "1","message": "hello"} */}
-        <Form className='mb-3'>
-          <Row className='align-items-end'>
+        <Form className='mb-3' onSubmit={submitHandler}>
+          <Row className='align-items-center'>
             <Form.Group className='col-4' controlId='sendingMessage'>
               <Form.Label>Send Message</Form.Label>
               <Form.Control
@@ -146,6 +185,33 @@ export default function Display() {
                 value={message}
               />
             </Form.Group>
+            <Form.Group className='col-4' controlId='sendingTopic'>
+              <Form.Label>Create Topic</Form.Label>
+              <Form.Control
+                type='text'
+                placeholder='Set topic name'
+                onChange={(e) => setTopic(e.target.value)}
+                value={topic}
+              />
+            </Form.Group>
+          </Row>
+          <Row className='align-items-center'>
+            <Form.Group className='col-4' controlId='uploadCSV'>
+              <Form.Control
+                type='file'
+                accept='.csv'
+                onChange={handleFileChange}
+              />
+              <Button
+                variant='primary'
+                type='submit'
+                onClick={handleOnSubmitFile}
+              >
+                Import CSV File
+              </Button>
+            </Form.Group>
+          </Row>
+          <Row className='align-items-center'>
             <FormGroup className='col-2 '>
               <Button variant='primary' onClick={submitHandler}>
                 Send
