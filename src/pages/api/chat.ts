@@ -18,17 +18,6 @@ export default async (req: NextApiRequest, res: NextApiResponseServerIO) => {
       const data2 = await db.query(query2, [sender_id]);
       const username = data2.rows[0].username;
       const fullMessage = { message, sender_id, message_id, time, username, avatar };
-      const springPort: number = Kite.getSpringPort();
-      
-      await fetch(`http://localhost:${springPort}/api/kafka/publish`, {
-        method: "POST", // or 'PUT'
-        body: JSON.stringify({timestamp: 'test', message}),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        
-      });
-      
 
       // dispatch to channel "message"
       res?.socket?.server?.io?.emit("message", fullMessage);

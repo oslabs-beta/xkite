@@ -5,8 +5,6 @@ import Navigation from '../components/Navbar';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 
-
-
 type Msg = {
     avatar?: string;
     message: string;
@@ -16,7 +14,6 @@ type Msg = {
     username: string;
 }
 
-
 export default function Chat() {
     const [messages, setMessages] = useState(Array<Msg>);
     const [newBody, setBody] = useState([]);
@@ -24,8 +21,9 @@ export default function Chat() {
     const [senderId, setSenderId] = useState(null);
     const [senderAvatar, setSenderAvatar] = useState(null);
     const [connected, setConnected] = useState<boolean>(false);
-  
+
     useEffect(() => {
+
       const socket = SocketIOClient.connect('localhost:3000', {
         path: "/api/socket",
         });
@@ -39,6 +37,7 @@ export default function Chat() {
       // update chat on new message dispatched
         socket.on("message", (message: Msg) => {
         if (message.message) {
+            sendProducerMessage(message.message);
             fetchAllMessages();
           }
       });
@@ -54,14 +53,14 @@ export default function Chat() {
         }
       };
 
-      const startAiTransmit = async () => {
-        try {
-          const response = await fetch('/api/ai'); // update endpoint when ready
-          console.log(response);
-        } catch (err) {
-          console.log(err);
-        }
-      };
+      // const startAiTransmit = async () => {
+      //   try {
+      //     const response = await fetch('/api/ai'); // update endpoint when ready
+      //     //console.log(response);
+      //   } catch (err) {
+      //     console.log(err);
+      //   }
+      // };
   
       const fetchAllMessages = async () => {
         try {
@@ -69,7 +68,7 @@ export default function Chat() {
           if (response.status === 200) {
             const body = await response.json();
             setBody(body);
-            console.log(body)
+            //console.log(body)
             setMessages(body.messages);
           } else {
             const error = await response.json();
@@ -82,10 +81,10 @@ export default function Chat() {
       setTimeout(async () => {
         await fetch('/api/ai');
       }, Math.random() * 10000 + 40000);
-  
+      
       fetchAndSetSenderId();
       fetchAllMessages();
-      startAiTransmit();
+      //startAiTransmit()
     }, []);
     
     const messageElementList = newBody.map((message: any) => (
@@ -120,6 +119,28 @@ export default function Chat() {
       // reset field if OK
       if (resp.ok) setMessageInput("");
     }
+
+    const callConsumer = async () => {
+        await fetch('/api/consumer');
+        //const newKafka = await kafka;
+        //console.log(kafka)
+      }
+
+    const sendProducerMessage = async (message: String) => {
+      const sendMessage = {
+          message
+          };
+        const resp = await fetch("/api/producer", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(sendMessage),
+        });
+  
+        // reset field if OK
+        if (resp.ok) setMessageInput("");
+      }
   
     return (
       <>

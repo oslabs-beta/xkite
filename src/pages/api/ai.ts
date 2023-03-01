@@ -57,16 +57,7 @@ export default async function handler(
                 message: aiMessage,
                 avatar: '',
                 };
-            const springPort: number = Kite.getSpringPort();
-            await fetch(`http://localhost:${springPort}/api/kafka/publish`, {
-            method: "POST", // or 'PUT'
-            body: JSON.stringify({timestamp: 'test', message: aiMessage}),
-            headers: {
-            "Content-Type": "application/json",
-            },
-        
-      });
-            //use socket server, same strategy as chat api call
+
             res?.socket?.server?.io?.emit("message", message);
     } catch (err) {
         return res.status(405).send({ reply: 'Method Not Allowed' });
