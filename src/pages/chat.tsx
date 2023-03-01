@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SocketIOClient from "socket.io-client";
 import Message from '../components/Message';
-import NavBar from '@/components/NavBar';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { Navbar } from 'react-bootstrap';

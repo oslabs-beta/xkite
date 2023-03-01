@@ -1,5 +1,5 @@
 import { Html, Head, Main, NextScript } from 'next/document';
-import NavBar from '@/components/NavBar';
+import NavBar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 export default function Document() {
