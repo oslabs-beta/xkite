@@ -1,7 +1,6 @@
 // this is a kafka connector class that uses kafkajs to simplify the process of connecting to a kafka instance. The constructor takes in a kafka setup object that constructs a kafka instance via kafkajs
 
-import { Kafka, logLevel, Consumer, Producer, Admin } from 'kafkajs';
-/// <reference path="./types.d.ts" />
+import { Kafka, logLevel, Consumer, Producer, Admin, Message } from 'kafkajs';
 
 export default class KafkaConnector {
   kafka: Kafka;
@@ -87,11 +86,11 @@ export default class KafkaConnector {
    *
    *
    * @param {string} topic
-   * @param {msg[]} messages
+   * @param {Message[]} messages
    *
    * sends a message to a topic in the kafka instance
    */
-  public async sendMessage(topic: string, messages: msg[]) {
+  public async sendMessage(topic: string, messages: Message[]) {
     try {
       // create a new producer and connect to the kafka instance
       const producer: Producer = this.producer
