@@ -57,8 +57,10 @@ export default async function handler(
                 message: aiMessage,
                 avatar: '',
                 };
-
-            res?.socket?.server?.io?.emit("message", message);
+        //emit message to socket
+        res?.socket?.server?.io?.emit("message", message);
+        //return standard message
+        return res.status(201).json(message);
     } catch (err) {
         return res.status(405).send({ reply: 'Method Not Allowed' });
     }

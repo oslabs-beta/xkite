@@ -2,7 +2,7 @@ import Head from 'next/head';
 import type { AppProps } from 'next/app';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/styles.scss';
-import '../styles/globals.scss';
+import '../styles/chat.scss';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (

@@ -52,18 +52,6 @@ export default function Chat() {
           console.log(err);
         }
       };
-
-      const startAiTransmit = (): void => {
-        setInterval(async () => {
-          try {
-            await fetch('/api/ai'); // update endpoint when ready
-            //console.log(response);
-          } catch (err) {
-            console.log(err);
-          }
-        }, Math.random() * 10000 + 40000);
-        
-      };
   
       const fetchAllMessages = async () => {
         try {
@@ -82,11 +70,22 @@ export default function Chat() {
         }
       };
      
-      
+      startAiTransmit();
       fetchAndSetSenderId();
       fetchAllMessages();
-      startAiTransmit()
     }, []);
+
+    const startAiTransmit = (): void => {
+      setInterval(async () => {
+        try {
+          await fetch('/api/ai'); // update endpoint when ready
+          //console.log(response);
+        } catch (err) {
+          console.log(err);
+        }
+      }, Math.random() * 10000 + 40000);
+      
+    };
     
     const messageElementList = newBody.map((message: any) => (
       <Message
@@ -98,6 +97,7 @@ export default function Chat() {
             time={message.time} 
             username={message.username} />
     ));
+    
   
     // Handler to update state of controlled input
     const handleMessageInput = (e: { target: { value: React.SetStateAction<string>; }; }) => setMessageInput(e.target.value);

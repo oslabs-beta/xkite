@@ -65,10 +65,10 @@ export default class ExampleConsumer {
 
   private createKafkaConsumer(): Consumer {
     const kafka = new Kafka({ 
-      clientId: 'myGroup2',
-      brokers: ['localhost:9092', 'localhost:9093']
+      clientId: 'myGroup1',
+      brokers: ['localhost:9092', 'localhost:9093'],
     })
-    const consumer = kafka.consumer({ groupId: 'myGroup2' })
+    const consumer = kafka.consumer({ groupId: 'myGroup1' })
     return consumer
   }
 }

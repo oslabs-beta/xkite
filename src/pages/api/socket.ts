@@ -14,7 +14,7 @@ export const config = {
 export default async (req: NextApiRequest, res: NextApiResponseServerIO) => {
   if (!res.socket.server.io) {
     const newConsumer = new ExampleConsumer({processor: 'void'});
-    newConsumer.startConsumer();
+    await newConsumer.startConsumer();
     console.log("New Socket.io server...");
     // adapt Next's net Server to http Server
     const httpServer: NetServer = res.socket.server as any;

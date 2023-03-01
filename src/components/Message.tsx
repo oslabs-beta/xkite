@@ -19,6 +19,8 @@ interface Props {
         props.message[props.message.length - 1].match(/[/\"/]/gi)
     ) {
       containerMessage = containerMessage.slice(1, containerMessage.length - 1);
+    }else if (props.message[0] == '.'){
+      containerMessage = containerMessage.slice(1, containerMessage.length);
     }
  
 

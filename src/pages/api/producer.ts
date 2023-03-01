@@ -1,5 +1,5 @@
 const { Kafka, logLevel } = require('kafkajs');
-const clientId = 'myGroup2';
+const clientId = 'myGroup1';
 const brokers = ['localhost:9092', 'localhost:9093'];
 const topic = 'jsonTopic2';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -21,7 +21,6 @@ export default async function handler(
           brokers,
           enforceRequestTimeout: true,
           logLevel: logLevel.DEBUG,
-          acks: 1,
           connectionTimeout: 20000,
         });
         const producer = await kafka.producer();
