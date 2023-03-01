@@ -136,6 +136,12 @@ body {
     justify-content: start;
   }
 
+  .align-items-center.row {
+    display: flex;
+    padding: 0.5rem;
+    justify-content: center;
+  }
+
   .metrics1 {
     display: flex;
     justify-content: space-around;

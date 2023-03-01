@@ -105,8 +105,16 @@ export default function ConfigurationForm() {
       });
   }
 
-  function exportConfigHandler(event: SyntheticEvent) {
-    console.log('Configuration exporting is not implemented yet');
+  async function exportConfigHandler(event: SyntheticEvent) {
+    console.log('Getting Config Zip…');
+    const openWindow = window.open('/api/kite/getPackageBuild', '_blank');
+    // fetch('/api/kite/getPackageBuild', {
+    //   method: 'GET',
+    //   headers: { Accept: 'application/zip' },
+    // })
+    //   .then((response) => console.log(response))
+    //   .then((res) => window.open('pack', '_blank'))
+    //   .catch((error) => console.error(error));
   }
 
   function disconnectHandler(event: SyntheticEvent) {
@@ -142,7 +150,7 @@ export default function ConfigurationForm() {
   return (
     <>
       <Form className='mb-3' onSubmit={submitHandler}>
-        <Row className='align-items-end'>
+        <Row className='align-items-center'>
           <Form.Group className='col-2' controlId='kafka.broker.size'>
             <Form.Label>Brokers</Form.Label>
             <Form.Control
@@ -230,11 +238,6 @@ export default function ConfigurationForm() {
               <option value='spark'>Spark</option>
             </Form.Select>
           </Form.Group>
-          <FormGroup className='col-2 '>
-            <Button variant='primary' type='submit'>
-              Submit
-            </Button>
-          </FormGroup>
           <Accordion className='mt-3'>
             <Accordion.Item eventKey='0'>
               <Accordion.Header>Advanced Settings</Accordion.Header>
@@ -243,6 +246,11 @@ export default function ConfigurationForm() {
               </Accordion.Body>
             </Accordion.Item>
           </Accordion>
+          <FormGroup className='col-3 '>
+            <Button variant='primary' type='submit'>
+              Submit
+            </Button>
+          </FormGroup>
         </Row>
       </Form>
       <Row className={'gx-1 gy-1'}>
