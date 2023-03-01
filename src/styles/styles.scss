@@ -160,6 +160,10 @@ body {
     flex-wrap: wrap;
   }
 
+  iframe {
+    border-radius: 1rem;
+  }
+
   background: #00b4ff;
   color: #333;
   height: 100vh;

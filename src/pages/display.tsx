@@ -11,14 +11,46 @@ import ShutDownBtn from './components/ShutdownBtn';
 export default function Display() {
   const [message, setMessage] = useState('');
 
-  const submitHandler = async (event: SyntheticEvent): Promise<void> => {
+  // const submitHandler = async (event: SyntheticEvent): Promise<void> => {
+  //   event.preventDefault();
+
+  //   const msg = JSON.stringify({
+  //     timestamp: new Date().toISOString(),
+  //     message,
+  //   });
+
+  //   console.log('msg:', msg);
+
+  //   const send = await axios.post(
+  //     'http://localhost:8081/api/kafka/publish',
+  //     msg,
+  //     {
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //     }
+  //   );
+
+  //   console.log(send);
+
+  //   setMessage('');
+  // };
+
+  const submitHandler = (event: SyntheticEvent): void => {
     event.preventDefault();
 
-    const send = await axios.post('http://localhost:8080/api/kafka/publish', {
-      timestamp: new Date().toISOString(),
+    const msg = JSON.stringify({
+      timestamp: 1,
       message,
     });
-    console.log(send);
+    axios
+      .post('http://localhost:8080/api/kafka/publish', msg, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then((data) => console.log(data))
+      .catch((error) => console.error(error));
 
     setMessage('');
   };
@@ -26,15 +58,25 @@ export default function Display() {
   // const submitHandler = (event: SyntheticEvent): void => {
   //   event.preventDefault();
 
-  //   axios
-  //     .post('http://localhost:8080/api/kafka/publish', {
-  //       timestamp: new Date().toISOString(),
-  //       message,
-  //     })
-  //     .then((data) => console.log(data))
-  //     .catch((error) => console.error(error));
+  //   const msg = JSON.stringify({
+  //     timestamp: 1,
+  //     message,
+  //   });
 
-  //   setMessage('');
+  //   fetch('http://localhost:8080/api/kafka/publish', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: msg,
+  //   })
+  //     .then((response) => {
+  //       console.log(response);
+  //       setMessage('');
+  //     })
+  //     .catch((error) => {
+  //       console.error(error);
+  //     });
   // };
 
   return (
@@ -93,7 +135,7 @@ export default function Display() {
           </div>
         </div>
         {/* localhost:8080/api/kafka/publish post --> {"timestamp": "1","message": "hello"} */}
-        <Form className='mb-3' onSubmit={submitHandler}>
+        <Form className='mb-3'>
           <Row className='align-items-end'>
             <Form.Group className='col-4' controlId='sendingMessage'>
               <Form.Label>Send Message</Form.Label>
@@ -105,7 +147,7 @@ export default function Display() {
               />
             </Form.Group>
             <FormGroup className='col-2 '>
-              <Button variant='primary' type='submit'>
+              <Button variant='primary' onClick={submitHandler}>
                 Send
               </Button>
             </FormGroup>
