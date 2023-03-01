@@ -5,7 +5,7 @@ import ymlGenerator from '@/common/ymlgenerator';
 const zipper = require('zip-local');
 import Monitor from '@/common/monitor/monitor';
 import { KiteState, KiteServerState } from '@/common/kite/constants';
-import defaultCfg from './constants';
+import defaultCfg, { configFilePath } from './constants';
 const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
 const configPath = path.join(downloadDir, 'docker-compose.yml');
 
@@ -240,8 +240,7 @@ function KiteCreator() {
      * to a kafka instance and/or database.
      */
     getSetup: function (): any {
-      const { setup } = store.getState();
-      return setup;
+      return store.getState().setup;
     },
 
     /**
@@ -250,8 +249,7 @@ function KiteCreator() {
      * to a kafka instance.
      */
     getKafkaSetup: function (): any {
-      const { kafkaSetup } = store.getState();
-      return kafkaSetup;
+      return store.getState().kafkaSetup;
     },
 
     /**
@@ -260,8 +258,7 @@ function KiteCreator() {
      * to a database.
      */
     getDBSetup: function (): any {
-      const { dBSetup } = store.getState();
-      return dBSetup;
+      return store.getState().dBSetup;
     },
 
     /**
@@ -271,8 +268,7 @@ function KiteCreator() {
      *
      */
     getConfig: function (): any {
-      const { config } = store.getState();
-      return config;
+      return store.getState().config;
     },
 
     /**
@@ -288,8 +284,7 @@ function KiteCreator() {
      * configObj.fileStream.pipe(res);
      */
     getConfigFile: function (): any {
-      const { configFile } = store.getState();
-      return configFile;
+      return store.getState().configFile;
     },
 
     /**
@@ -297,8 +292,7 @@ function KiteCreator() {
      * @returns state of the Kite Application
      */
     getKiteState: function (): KiteState {
-      const { state } = store.getState();
-      return state;
+      return store.getState().state;
     },
 
     /**
@@ -306,8 +300,7 @@ function KiteCreator() {
      * @returns state of Kite Server
      */
     getKiteServerState: function (): KiteServerState {
-      const { serverState } = store.getState();
-      return serverState;
+      return store.getState().serverState;
     },
 
     /**

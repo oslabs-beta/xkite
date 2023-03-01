@@ -1,65 +1,60 @@
 import { createSlice, configureStore } from '@reduxjs/toolkit';
+import path from 'path';
+import fs from 'fs-extra';
 import defaultCfg, {
   KiteState,
   KiteServerState,
+  configFilePath,
 } from '@/common/kite/constants';
+
+const initialState = readConfigFromFile();
+const defaultState = {
+  init: true,
+  packageBuild: false, //change to make pipeline.zip
+  config: defaultCfg, //Promise<KiteConfig> | KiteConfig
+  server: 'localhost:6661',
+  setup: {}, //Promise<KiteSetup> | KiteSetup;
+  kafkaSetup: {}, //KafkaSetup
+  dBSetup: {}, //dbCfg
+  state: KiteState.Init,
+  serverState: KiteServerState.Disconnected,
+  configFile: {}, //Promise<KiteConfigFile> | KiteConfigFile;
+};
 
 const kiteSlice = createSlice({
   name: 'kite',
-  initialState: {
-    packageBuild: false, //change to make pipeline.zip
-    config: defaultCfg, //Promise<KiteConfig> | KiteConfig
-    server: 'localhost:6661',
-    setup: {}, //Promise<KiteSetup> | KiteSetup;
-    kafkaSetup: {}, //KafkaSetup
-    dBSetup: {}, //dbCfg
-    state: KiteState.Init,
-    serverState: KiteServerState.Disconnected,
-    configFile: {}, //Promise<KiteConfigFile> | KiteConfigFile;
-  },
+  initialState,
   reducers: {
     setPackageBuild: (state, action) => {
       state.packageBuild = action.payload;
+      writeConfigToFile(state);
     },
     setConfig: (state, action) => {
-      // console.log(
-      //   `setting state: ${state.config} = ${JSON.stringify(action.payload)}`
-      // );
       state.config = Object.assign(action.payload);
+      state.init = false;
+      writeConfigToFile(state);
     },
     setServer: (state, action) => {
-      // console.log(
-      //   `setting state: ${state.server} = ${JSON.stringify(action.payload)}`
-      // );
       state.server = action.payload;
+      writeConfigToFile(state);
     },
     setSetup: (state, action) => {
-      // console.log(
-      //   `setting state: ${state.setup} = ${JSON.stringify(action.payload)}`
-      // );
       state.setup = Object.assign(action.payload);
       state.kafkaSetup = Object.assign(action.payload.kafkaSetup ?? {});
       state.dBSetup = Object.assign(action.payload.dataSetup ?? {});
+      writeConfigToFile(state);
     },
     setState: (state, action) => {
-      // console.log(
-      //   `setting state: ${state.state} = ${JSON.stringify(action.payload)}`
-      // );
       state.state = action.payload;
+      writeConfigToFile(state);
     },
     setServerState: (state, action) => {
-      // console.log(
-      //   `setting state: ${state.serverState} = ${JSON.stringify(
-      //     action.payload
-      //   )}`
-      // );
       state.serverState = action.payload;
+      writeConfigToFile(state);
     },
     setConfigFile: (state, action) => {
-      // console.log(
-      //   `setting state: ${state.configFile} = ${JSON.stringify(action.payload)}`
-      // );
       state.configFile = Object.assign(action.payload);
+      writeConfigToFile(state);
     },
   },
 });
@@ -89,3 +84,32 @@ export {
 };
 
 export default store;
+
+function writeConfigToFile(state: any): void {
+  try {
+    console.log('writing to file...');
+    fs.writeFileSync(
+      path.resolve(configFilePath, 'cfg.json'),
+      JSON.stringify(state)
+    );
+  } catch (err) {
+    console.log(`Error writing Kite configFile ${err}`);
+  }
+}
+
+function readConfigFromFile(): any {
+  try {
+    const state = fs.readFileSync(
+      path.resolve(configFilePath, 'cfg.json'),
+      'utf-8'
+    );
+    if (state !== undefined) {
+      return JSON.parse(state);
+    } else {
+      return defaultState;
+    }
+  } catch (err) {
+    console.log(`Error reading Kite configFile: ${err}`);
+    return defaultState;
+  }
+}

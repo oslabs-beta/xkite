@@ -10,15 +10,31 @@ import ShutDownBtn from '@/components/ShutdownBtn';
 
 export default function Display() {
   const [message, setMessage] = useState('');
+  const [topic, setTopic] = useState('testTopic');
 
-  const submitHandler = async (event: SyntheticEvent): Promise<void> => {
+  const submitHandler = (event: SyntheticEvent): void => {
     event.preventDefault();
 
-    axios
-      .post('http://localhost:8080/api/kafka/publish', {
-        timestamp: new Date().toISOString(),
-        message,
-      })
+    fetch('/api/kite/connect/kafka', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        method: 'sendMessages',
+        topics: [topic !== '' ? topic : 'testTopic'],
+        messages: [
+          {
+            key: 'timestamp',
+            value: new Date().toISOString(),
+          },
+          {
+            key: 'message',
+            value: message,
+          },
+        ],
+      }),
+    })
       .then((data) => console.log(data))
       .catch((error) => console.error(error));
 
@@ -104,6 +120,15 @@ export default function Display() {
                 placeholder='Enter message'
                 onChange={(e) => setMessage(e.target.value)}
                 value={message}
+              />
+            </Form.Group>
+            <Form.Group className='col-4' controlId='sendingTopic'>
+              <Form.Label>Create Topic</Form.Label>
+              <Form.Control
+                type='text'
+                placeholder='Set topic name'
+                onChange={(e) => setTopic(e.target.value)}
+                value={topic}
               />
             </Form.Group>
             <FormGroup className='col-2 '>
