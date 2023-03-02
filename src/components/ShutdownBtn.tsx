@@ -1,5 +1,6 @@
-import { SyntheticEvent } from 'react';
+import { SyntheticEvent, useState } from 'react';
 import Button from 'react-bootstrap/Button';
+import Spinner from 'react-bootstrap/Spinner';
 import axios from 'axios';
 
 interface ShutDownBtnProps {
@@ -7,7 +8,10 @@ interface ShutDownBtnProps {
 }
 
 export default function ShutDownBtn({ id }: ShutDownBtnProps) {
+  const [shuttingDown, setShuttingDown] = useState(false);
+
   async function disconnectHandler(event: SyntheticEvent): Promise<void> {
+    setShuttingDown(true);
     console.log('Disconnecting…');
     try {
       const response = await axios.delete('/api/kite/shutdown');
@@ -15,6 +19,7 @@ export default function ShutDownBtn({ id }: ShutDownBtnProps) {
     } catch (error) {
       console.error('Error occurred during shutdown:', error);
     }
+    setShuttingDown(false);
   }
 
   return (
@@ -22,9 +27,9 @@ export default function ShutDownBtn({ id }: ShutDownBtnProps) {
       id={id}
       variant='danger'
       onClick={disconnectHandler}
-      // disabled
+      disabled={shuttingDown}
     >
-      Disconnect
+      {!shuttingDown ? 'Disconnect' : <Spinner />}
     </Button>
   );
 }

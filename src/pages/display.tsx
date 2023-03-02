@@ -4,7 +4,8 @@ import React, {
   ChangeEvent,
   MouseEvent,
 } from 'react';
-import axios from 'axios';
+
+import Image from 'next/image';
 
 import Head from 'next/head';
 import Form from 'react-bootstrap/Form';
@@ -219,12 +220,13 @@ export default function Display() {
             </FormGroup>
           </Row>
         </Form>
+
         <div className='buttons'>
           <Button
             variant='secondary'
             href='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&kiosk'
           >
-            View more metrics
+            View More Metrics
           </Button>
           <ShutDownBtn id='dangerDisplay' />
         </div>

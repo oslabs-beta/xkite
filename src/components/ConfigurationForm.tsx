@@ -4,11 +4,13 @@ import FormGroup from 'react-bootstrap/FormGroup';
 import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
 import Accordion from 'react-bootstrap/Accordion';
+import Spinner from 'react-bootstrap/Spinner';
 
 import { SyntheticEvent, useState } from 'react';
 import defaultCfg from '@/common/kite/constants';
 import AdvancedBrokerConfig from './AdvancedBrokerConfig';
 import ShutDownBtn from './ShutdownBtn';
+import ExportConfigBtn from './ExportConfigBtn';
 
 export interface PortsOpen {
   [index: string]: PortOpen;
@@ -32,6 +34,7 @@ export interface CheckPortOpen {
 export default function ConfigurationForm() {
   const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultCfg);
   const [portsOpen, setPortsOpen] = useState<PortsOpen>({});
+  const [submit, setSubmit] = useState(false);
 
   function updateKiteConfigRequest(update: Partial<KiteConfig>): void {
     setKiteConfigRequest((kiteConfigRequest) => {
@@ -88,7 +91,7 @@ export default function ConfigurationForm() {
 
     console.log('sending configuration…');
     // console.log(defaultCfg);
-
+    setSubmit(true);
     fetch('/api/kite/create', {
       method: 'POST',
       headers: {
@@ -98,23 +101,18 @@ export default function ConfigurationForm() {
     })
       .then((response) => {
         console.dir(response);
+
+        setTimeout(() => {
+          setSubmit(false);
+          // redirect to display page
+          window.location.href = '/display';
+        }, 10000);
         // setKiteConfigRequest(defaultConfig);
       })
       .catch((error) => {
         console.error(error.message);
       });
-  }
-
-  async function exportConfigHandler(event: SyntheticEvent) {
-    console.log('Getting Config Zip…');
-    const openWindow = window.open('/api/kite/getPackageBuild', '_blank');
-    // fetch('/api/kite/getPackageBuild', {
-    //   method: 'GET',
-    //   headers: { Accept: 'application/zip' },
-    // })
-    //   .then((response) => console.log(response))
-    //   .then((res) => window.open('pack', '_blank'))
-    //   .catch((error) => console.error(error));
+    // setSubmit(false);
   }
 
   function disconnectHandler(event: SyntheticEvent) {
@@ -247,20 +245,14 @@ export default function ConfigurationForm() {
             </Accordion.Item>
           </Accordion>
           <FormGroup className='col-3 '>
-            <Button variant='primary' type='submit'>
-              Submit
+            <Button variant='primary' type='submit' disabled={submit}>
+              {!submit ? 'Submit' : <Spinner />}
             </Button>
           </FormGroup>
         </Row>
       </Form>
       <Row className={'gx-1 gy-1'}>
-        <Button
-          variant='export'
-          onClick={exportConfigHandler}
-          // disabled
-        >
-          Export Config
-        </Button>
+        <ExportConfigBtn />
         <ShutDownBtn id='dangerSetup' />
         {/*</Col>*/}
       </Row>
