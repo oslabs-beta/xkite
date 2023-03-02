@@ -2,7 +2,10 @@ import { NextApiRequest } from "next";
 import { NextApiResponseServerIO } from "src/types/io";
 import { Server as ServerIO } from "socket.io";
 import { Server as NetServer } from "http";
-import ExampleConsumer from '../../components/consumerUtil';
+import ExampleConsumer from '../../common/utilities/consumerUtil';
+const clientId = 'json1';
+const brokers = ['localhost:9092', 'localhost:9093'];
+const topic = 'newSetupTopic';
 
 export const config = {
   api: {
@@ -12,9 +15,11 @@ export const config = {
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default async (req: NextApiRequest, res: NextApiResponseServerIO) => {
+  const newConsumer = new ExampleConsumer(brokers, clientId);
+  await newConsumer.startBatchConsumer(topic);
+  console.log('...new consumer socket')
   if (!res.socket.server.io) {
-    const newConsumer = new ExampleConsumer({processor: 'void'});
-    await newConsumer.startConsumer();
+    
     console.log("New Socket.io server...");
     // adapt Next's net Server to http Server
     const httpServer: NetServer = res.socket.server as any;

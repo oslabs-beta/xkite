@@ -6,17 +6,17 @@ type ExampleMessageProcessor = {
 
 export default class ExampleConsumer {
   private kafkaConsumer: Consumer
-  private messageProcessor: ExampleMessageProcessor
+  //private messageProcessor: ExampleMessageProcessor
 
-  public constructor(messageProcessor: ExampleMessageProcessor) {
-    this.messageProcessor = messageProcessor
-    this.kafkaConsumer = this.createKafkaConsumer()
+  public constructor(brokers: string[], clientId: string) {
+    //this.messageProcessor = messageProcessor
+    this.kafkaConsumer = this.createKafkaConsumer(brokers, clientId)
   }
 
-  public async startConsumer(): Promise<void> {
+  public async startConsumer(topicToFollow: string): Promise<void> {
     console.log('starting consumer...')
     const topic: ConsumerSubscribeTopics = {
-      topics: ['jsonTopic2'],
+      topics: [topicToFollow],
       fromBeginning: false
     }
 
@@ -36,9 +36,9 @@ export default class ExampleConsumer {
     }
   }
 
-  public async startBatchConsumer(): Promise<void> {
+  public async startBatchConsumer(topicToFollow: string): Promise<void> {
     const topic: ConsumerSubscribeTopics = {
-      topics: ['jsonTopic2'],
+      topics: [topicToFollow],
       fromBeginning: false
     }
 
@@ -63,12 +63,12 @@ export default class ExampleConsumer {
     await this.kafkaConsumer.disconnect()
   }
 
-  private createKafkaConsumer(): Consumer {
+  private createKafkaConsumer(brokers: string[], clientId: string): Consumer {
     const kafka = new Kafka({ 
-      clientId: 'myGroup1',
-      brokers: ['localhost:9092', 'localhost:9093'],
+      clientId,
+      brokers
     })
-    const consumer = kafka.consumer({ groupId: 'myGroup1' })
+    const consumer = kafka.consumer({ groupId: 'myGroup2' })
     return consumer
   }
 }

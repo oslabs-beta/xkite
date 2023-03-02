@@ -140,12 +140,6 @@ export default function Chat() {
       if (resp.ok) setMessageInput("");
     }
 
-    const callConsumer = async () => {
-        await fetch('/api/consumer');
-        //const newKafka = await kafka;
-        //console.log(kafka)
-      }
-
     const sendProducerMessage = async (message: String) => {
       const sendMessage = {
           message

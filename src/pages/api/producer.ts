@@ -1,9 +1,8 @@
-const { Kafka, logLevel } = require('kafkajs');
-const clientId = 'myGroup1';
-const brokers = ['localhost:9092', 'localhost:9093'];
-const topic = 'jsonTopic2';
-import KafkaConnector from '../../common/kafkaConnector/index';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import ProducerFactory from '../../common/utilities/producerUtil';
+const clientId = 'json1';
+const brokers = ['localhost:9092', 'localhost:9093'];
+const topic = 'newSetupTopic';
 
 type Data = {
   reply?: string;
@@ -14,20 +13,19 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  const kafkaConnector = new KafkaConnector({
-    clientId: clientId,
-    brokers: brokers,
-    ssl: false,
-  });
+  if (req.method === "POST") {
   try {
-    const { message, sender_id, avatar } = req.body;
-    let newMessage = [{ key: 'message', value: message }];
-    await kafkaConnector.sendMessage(topic, newMessage);
+    //get message from req.body
+    const { message} = req.body;
+    const producer = new ProducerFactory(brokers, clientId);
+    await producer.start();
+    await producer.sendBatch([{a: message}], topic);
+    await producer.shutdown();
     console.log('produced successfully');
-    //producer.disconnect();
-    await kafkaConnector.disconnectProducer();
+    // //await producer.disconnectProducer();
     return res.json({ reply: 'Success!' });
   } catch (err) {
     return res.status(405).send({ reply: 'Method Not Allowed' });
   }
+}
 }
