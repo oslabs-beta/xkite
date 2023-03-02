@@ -17,7 +17,7 @@ export default function NavBar() {
       <Nav>
         <Nav.Link href='/'>Home</Nav.Link>
         <Nav.Link href='/setup'>Configure</Nav.Link>
-        <Nav.Link href='http://localhost:6662/display'>Display</Nav.Link>
+        <Nav.Link href='/display'>Display</Nav.Link>
       </Nav>
     </Navbar>
   );

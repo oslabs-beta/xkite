@@ -227,7 +227,7 @@ function KiteCreator() {
         await deployServer();
       } else {
         await deployLocal();
-        Monitor.initiate();
+        // Monitor.initiate();
       }
     },
 

@@ -5,7 +5,7 @@ import { spawn } from 'child_process';
 const urls: string[] = [
   `http://localhost:${process.env.PORT1 || 6661}/`,
   `http://localhost:${process.env.PORT1 || 6661}/setup`,
-  `http://localhost:${process.env.PORT2 || 6662}/display`
+  `http://localhost:${process.env.PORT2 || 6662}/display`,
 ];
 
 type Result = {
@@ -18,16 +18,30 @@ export default async function handler(
   res: NextApiResponse<Result>
 ) {
   if (req.method === 'DELETE') {
-    const kite = Kite.shutdown();
+    const kite = await Kite.shutdown();
     for (const url of urls) {
       if (process.platform === 'darwin') {
         // For mac
-        spawn('osascript', ['-e', `tell application "Google Chrome" to close (tabs of window 1 whose URL is "${url}")`]);
+        spawn('osascript', [
+          '-e',
+          `tell application "Google Chrome" to close (tabs of window 1 whose URL is "${url}")`,
+        ]);
       } else if (process.platform === 'win32') {
         // For Windows
-        spawn('taskkill', ['/F', '/IM', 'tasklist.exe', '/FI', `IMAGENAME eq chrome.exe`]).stdout.on('data', (data) => {
-          const processes = data.toString().split('\r\n').slice(3).filter((line: string) => line.trim() !== '').map((line:string) => line.trim().split(/\s+/)[0]);
-          processes.forEach((pid:string) => {
+        spawn('taskkill', [
+          '/F',
+          '/IM',
+          'tasklist.exe',
+          '/FI',
+          `IMAGENAME eq chrome.exe`,
+        ]).stdout.on('data', (data) => {
+          const processes = data
+            .toString()
+            .split('\r\n')
+            .slice(3)
+            .filter((line: string) => line.trim() !== '')
+            .map((line: string) => line.trim().split(/\s+/)[0]);
+          processes.forEach((pid: string) => {
             spawn('taskkill', ['/F', '/PID', pid]);
           });
         });
@@ -40,5 +54,4 @@ export default async function handler(
   } else {
     res.status(405).send({ error: 'Method Not Allowed' });
   }
-
 }
