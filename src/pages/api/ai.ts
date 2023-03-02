@@ -56,6 +56,7 @@ export default async function handler(
                 sender_id: aiUserId,
                 message: aiMessage,
                 avatar: '',
+                ai: true
                 };
         //emit message to socket
         res?.socket?.server?.io?.emit("message", message);

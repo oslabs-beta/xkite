@@ -1,6 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Kite from '@/common/kite';
 import KafkaConnector from '@/common/kafkaConnector';
+import ProducerFactory from '../../../../common/utilities/producerUtil';
+const clientId = 'json1';
+const brokers = ['localhost:9092', 'localhost:9093'];
+let topic = 'csvTopic';
+
 type Data = {
   reply?: string;
   err?: unknown;
@@ -31,10 +36,15 @@ export default async function handler(
           kafka.createTopics(topics);
           break;
         case 'sendMessages':
-          for (const topic of topics) {
-            console.log(`sending messages..\n${topic}`);
-            kafka.sendMessage(topic, messages);
+          const producer = new ProducerFactory(brokers, clientId);
+          await producer.start();
+          const messageArray = []
+          for (const message of messages) {
+            messageArray.push({a: message.value})
           }
+          await producer.sendBatch(messageArray, topics[0]);
+          await producer.shutdown();
+          console.log('produced successfully');
           break;
         default:
           return res.status(405).send({ reply: 'Invalid Msg Body' });

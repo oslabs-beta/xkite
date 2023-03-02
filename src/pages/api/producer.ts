@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import ProducerFactory from '../../common/utilities/producerUtil';
 const clientId = 'json1';
 const brokers = ['localhost:9092', 'localhost:9093'];
-const topic = 'newSetupTopic';
+const topic = 'humanTopic';
 
 type Data = {
   reply?: string;
@@ -16,10 +16,15 @@ export default async function handler(
   if (req.method === "POST") {
   try {
     //get message from req.body
-    const { message} = req.body;
+    const { message, ai } = req.body;
+    //console.log(ai, 'from prod');
     const producer = new ProducerFactory(brokers, clientId);
     await producer.start();
-    await producer.sendBatch([{a: message}], topic);
+    if(ai){
+      await producer.sendBatch([{a: message}], 'aiTopic');
+    } else {
+      await producer.sendBatch([{a: message}], 'humanTopic');
+    }
     await producer.shutdown();
     console.log('produced successfully');
     // //await producer.disconnectProducer();

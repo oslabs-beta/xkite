@@ -5,7 +5,7 @@ import { Server as NetServer } from "http";
 import ExampleConsumer from '../../common/utilities/consumerUtil';
 const clientId = 'json1';
 const brokers = ['localhost:9092', 'localhost:9093'];
-const topic = 'newSetupTopic';
+const topic = 'humanTopic';
 
 export const config = {
   api: {

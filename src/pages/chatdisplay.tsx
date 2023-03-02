@@ -12,6 +12,7 @@ type Msg = {
     sender_id: number;
     time: string;
     username: string;
+    ai?: boolean;
 }
 
 export default function Chat() {
@@ -22,6 +23,7 @@ export default function Chat() {
     const [senderAvatar, setSenderAvatar] = useState(null);
     const [connected, setConnected] = useState<boolean>(false);
     const [topic, setTopic] = useState('');
+    const [csvfile, setCSVFile] = useState<File>();
 
     useEffect(() => {
 
@@ -38,7 +40,7 @@ export default function Chat() {
       // update chat on new message dispatched
         socket.on("message", (message: Msg) => {
         if (message.message) {
-            sendProducerMessage(message.message);
+            sendProducerMessage(message.message, message.ai);
             fetchAllMessages();
           }
       });
@@ -75,6 +77,55 @@ export default function Chat() {
       fetchAndSetSenderId();
       fetchAllMessages();
     }, []);
+
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
+      console.log(event.target.files);
+      const target = event.target;
+      if (target.files !== null && target.files[0] !== undefined)
+        setCSVFile(target.files[0]);
+    };
+
+    const handleOnSubmitFile = (event: MouseEvent): void => {
+      event.preventDefault();
+      const reader = new FileReader();
+  
+      if (csvfile) {
+        reader.onload = async (event) => {
+          if (event.target === null) return;
+          const text = event.target.result;
+          if (text !== null) {
+            const messageArray = text.toString().split('\n');
+            for (const msg of messageArray) {
+              fetch('/api/kite/connect/kafka', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  method: 'sendMessages',
+                  topics: [topic !== '' ? topic : 'testTopic'],
+                  messages: [
+                    {
+                      key: 'timestamp',
+                      value: new Date().toISOString(),
+                    },
+                    {
+                      key: 'message',
+                      value: msg,
+                    },
+                  ],
+                }),
+              })
+                .then((data) => console.log(data))
+                .catch((error) => console.error(error));
+            }
+          }
+        };
+  
+        const file = reader.readAsText(csvfile);
+        setTopic('');
+      }
+    };
 
     const submitHandler = (event: SyntheticEvent): void => {
         event.preventDefault();
@@ -140,9 +191,10 @@ export default function Chat() {
       if (resp.ok) setMessageInput("");
     }
 
-    const sendProducerMessage = async (message: String) => {
+    const sendProducerMessage = async (message: String, ai?: boolean) => {
       const sendMessage = {
-          message
+          message,
+          ai
           };
         const resp = await fetch("/api/producer", {
           method: "POST",
@@ -189,6 +241,7 @@ export default function Chat() {
           <div className="messages">
             <div>{messageElementList}</div>
           </div>
+          
         
           <div className="message-input">
             <Form.Control
@@ -212,6 +265,20 @@ export default function Chat() {
               Send
             </Button>
           </div>
+          <Form.Group className='col-4' controlId='uploadCSV'>
+              <Form.Control
+                type='file'
+                accept='.csv'
+                onChange={handleFileChange}
+              />
+              <Button
+                variant='primary'
+                type='submit'
+                onClick={handleOnSubmitFile}
+              >
+                Import CSV File
+              </Button>
+            </Form.Group>
           <div className='metrics2'>
           <div>
             <h3 className='metric-header'>Producer Latency</h3>
