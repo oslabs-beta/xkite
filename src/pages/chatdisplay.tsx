@@ -255,16 +255,14 @@ export default function Chat() {
             <Button variant="dark" onClick={handleMessageSend}>
               Send
             </Button>
-            <Form.Control
+          </div>
+          <Form.Control
                 type='text'
-                placeholder='Set new topic...'
+                placeholder='Set mock stream topic...'
                 onChange={(e) => setTopic(e.target.value)}
                 value={topic}
+                className='topicInput'
               />
-            <Button variant="dark" onClick={submitHandler}>
-              Send
-            </Button>
-          </div>
           <Form.Group className='col-4' controlId='uploadCSV'>
               <Form.Control
                 type='file'
@@ -281,19 +279,39 @@ export default function Chat() {
             </Form.Group>
           <div className='metrics2'>
           <div>
-            <h3 className='metric-header'>Producer Latency</h3>
+            <h3 className='metric-header'>Messages/Second</h3>
             <iframe
-              src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=192&kiosk'
-              width='800'
+              src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=683&kiosk'
+              width='600'
               height='300'
+              className='needMargin'
             ></iframe>
           </div>
           <div>
             <h3 className='metric-header'>Message Throughput</h3>
             <iframe
               src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&kiosk&viewPanel=152'
-              width='800'
+              width='600'
               height='300'
+              className='needMargin'
+            ></iframe>
+          </div>
+          <div>
+            <h3 className='metric-header'>Count Partition per Broker</h3>
+            <iframe
+              src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk'
+              width='600'
+              height='300'
+              className='needMargin'
+            ></iframe>
+          </div>
+          <div>
+            <h3 className='metric-header'>Bytes in Per Topic</h3>
+            <iframe
+              src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=155&kiosk'
+              width='600'
+              height='300'
+              className='needMargin'
             ></iframe>
           </div>
         </div>
