@@ -21,15 +21,16 @@ export default function Display() {
 
   const submitHandler = (event: SyntheticEvent): void => {
     event.preventDefault();
-
+    let postMethod = 'sendMessage';
+    if (message === '') postMethod = 'createTopics';
     fetch('/api/kite/connect/kafka', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        method: 'sendMessages',
-        topics: [topic !== '' ? topic : 'testTopic'],
+        method: postMethod,
+        topic: topic !== '' ? topic : 'testTopic',
         messages: [
           {
             key: 'timestamp',
@@ -63,32 +64,34 @@ export default function Display() {
       reader.onload = async (event) => {
         if (event.target === null) return;
         const text = event.target.result;
+        const time = new Date().toISOString();
         if (text !== null) {
-          const messageArray = text.toString().split('\n');
-          for (const msg of messageArray) {
-            fetch('/api/kite/connect/kafka', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
+          const messages = text
+            .toString()
+            .split('\n')
+            .map((msg) => [
+              {
+                key: 'timestamp',
+                value: time,
               },
-              body: JSON.stringify({
-                method: 'sendMessages',
-                topics: [topic !== '' ? topic : 'testTopic'],
-                messages: [
-                  {
-                    key: 'timestamp',
-                    value: new Date().toISOString(),
-                  },
-                  {
-                    key: 'message',
-                    value: msg,
-                  },
-                ],
-              }),
-            })
-              .then((data) => console.log(data))
-              .catch((error) => console.error(error));
-          }
+              {
+                key: 'message',
+                value: msg,
+              },
+            ]);
+          fetch('/api/kite/connect/kafka', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              method: 'sendMessages',
+              topic: topic !== '' ? topic : 'testTopic',
+              messages,
+            }),
+          })
+            .then((data) => console.log(data))
+            .catch((error) => console.error(error));
         }
       };
 
@@ -208,7 +211,7 @@ export default function Display() {
                 type='submit'
                 onClick={handleOnSubmitFile}
               >
-                Import CSV File
+                Send File to Topic
               </Button>
             </Form.Group>
           </Row>

@@ -106,7 +106,7 @@ export default function ConfigurationForm() {
           setSubmit(false);
           // redirect to display page
           window.location.href = '/display';
-        }, 10000);
+        }, 20000);
         // setKiteConfigRequest(defaultConfig);
       })
       .catch((error) => {
