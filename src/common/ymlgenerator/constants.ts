@@ -57,6 +57,7 @@ export const JMX: JMXConfg = {
 
 export const KAFKA_BROKER: KafkaBrokerCfg = {
   image: 'confluentinc/cp-kafka',
+  restart: 'always',
   environment: {
     KAFKA_ZOOKEEPER_CONNECT: `zookeeper:${_ports_.zookeeper.peer.external}`,
     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:
@@ -115,6 +116,7 @@ export const PROMETHEUS: PrometheusConfig = {
 export const GRAFANA: GrafanaCfg = {
   image: 'grafana/grafana-oss',
   ports: [`${_ports_.grafana.external}:${_ports_.grafana.internal}`],
+  restart: 'always',
   environment: {
     GF_PATHS_DATA: '/var/lib/grafana',
     GF_SECURITY_ALLOW_EMBEDDING: 'true',
@@ -183,9 +185,19 @@ export const KSQL_SCHEMA: KSQLSchemaCfg = {
   container_name: 'ksql-schema',
 };
 
-export const JUPYTER: BaseCfg = {
+export const JUPYTER: Juypter = {
   image: 'jupyterhub/jupyterhub',
+  environment: {
+    JUPYTER_TOKEN: 'jupyter',
+    USERNAME: 'jupyter',
+    PASSWORD: 'jupyter',
+    JUPYTERHUB_ADMIN: 'admin',
+  },
   ports: [`${_ports_.jupyter.external}:${_ports_.jupyter.internal}`],
+  volumes: [
+    'jupyterhub_data:/data',
+    // '/var/run/docker.sock:/var/run/docker.sock',
+  ],
   container_name: 'jupyterhub',
 };
 
@@ -209,6 +221,7 @@ export const SPARK: SparkCfg = {
 
 export const SPRING: SpringCfg = {
   image: 'eclipse-temurin',
+  restart: 'always',
   ports: [`${_ports_.spring.external}:${_ports_.spring.internal}`],
   environment: {
     JAVA_OPTS: '',
@@ -229,6 +242,9 @@ export const SPRING: SpringCfg = {
 export const YAML: YAMLConfig = {
   services: {},
   volumes: {
+    jupyterhub_data: {
+      driver: 'local',
+    },
     dashboards: {
       driver: 'local',
       driver_opts: {

@@ -21,32 +21,28 @@ export default async function handler(
     */
     try {
       console.log(`sending data to kafka...\n${JSON.stringify(req.body)}`);
-      const { method, topic, messages } = req.body;
+      const { method, topic, messages, clientId } = req.body;
       const kafkaSetup = Kite.getKafkaSetup();
-      console.log(JSON.stringify({ ...kafkaSetup, clientId: 'myGroup' }));
-      const producer = await ProducerFactory.create(
-        kafkaSetup.brokers,
-        'myGroup'
-      );
+      // console.log(
+      //   JSON.stringify({ ...kafkaSetup, clientId: clientId ?? 'test' })
+      // );
+      const producer = await ProducerFactory.create({
+        ...kafkaSetup,
+        clientId: clientId ?? 'test',
+      });
 
       switch (method) {
         case 'createTopics':
-          // console.log(`creating topics..\n${topics}`);
-          // const kafka = new KafkaConnector({
-          //   ...kafkaSetup,
-          //   clientId: 'myGroup',
-          // });
           await producer.createTopics([topic]);
           break;
         case 'sendMessage':
           await producer.sendBatch(messages, topic);
           break;
         case 'sendMessages':
-          // for (const topic of topics) {
-          //   console.log(`sending messages..\n${topic}`);
-          //   kafka.sendMessage(topic, messages);
-          // }
           await producer.sendBatches(messages, topic);
+          break;
+        case 'sendMessages:Serial':
+          await producer.sendBatchesSerial(messages, topic);
           break;
         default:
           return res.status(405).send({ reply: 'Invalid Msg Body' });

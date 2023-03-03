@@ -137,7 +137,9 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
         ports: [`${db.port}:${_ports_.ksql.internal}`],
         environment: {
           ...KSQL.environment,
-          KSQL_LISTENERS: `http://${network}:${db.port}`,
+          KSQL_LISTENERS: `http://${network}:${
+            db.port ?? _ports_.ksql.external
+          }`,
           KSQL_KSQL_SCHEMA_REGISTRY_URL: `http://schema-registry:${
             db.ksql?.schema_port ?? _ports_.ksql_schema.internal //TODO revisit/test
           }`,

@@ -178,6 +178,15 @@ interface SpringCfg extends BaseCfg {
   };
 }
 
+interface Juypter extends BaseCfg {
+  environment: {
+    PASSWORD: string;
+    USERNAME: string;
+    JUPYTER_TOKEN: string;
+    JUPYTERHUB_ADMIN: string;
+  };
+}
+
 //https://hub.docker.com/r/bitnami/spark/
 // https://dev.to/mvillarrealb/creating-a-spark-standalone-cluster-with-docker-and-docker-compose-2021-update-6l4
 interface SparkCfg extends BaseCfg {

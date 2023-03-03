@@ -85,7 +85,7 @@ export default function Display() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              method: 'sendMessages',
+              method: 'sendMessages:Serial', //sending serially for test
               topic: topic !== '' ? topic : 'testTopic',
               messages,
             }),
