@@ -24,6 +24,7 @@ export const _ports_: YAMLServicesDefaultSetup = {
     broker: { internal: 9092, external: 9092 },
     spring: 9095, // only internal
     metrics: 29092, // only internal
+    ksql: 9096, // only internal
   },
   jmx: { internal: 5556, external: 5566 },
 };
@@ -61,7 +62,7 @@ export const KAFKA_BROKER: KafkaBrokerCfg = {
   environment: {
     KAFKA_ZOOKEEPER_CONNECT: `zookeeper:${_ports_.zookeeper.peer.external}`,
     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:
-      'METRICS:PLAINTEXT,INTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT',
+      'METRICS:PLAINTEXT,INTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT,KSQL:PLAINTEXT',
     KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL',
     CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: `zookeeper:${_ports_.zookeeper.peer.external}`,
     CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1,
@@ -69,9 +70,8 @@ export const KAFKA_BROKER: KafkaBrokerCfg = {
     KAFKA_HEAP_OPTS: '-Xmx512M -Xms512M',
     KAFKA_BROKER_ID: 101,
     KAFKA_JMX_PORT: _ports_.kafka.jmx,
-    KAFKA_LISTENERS: `METRICS://:${_ports_.kafka.metrics},PLAINTEXT://:${_ports_.kafka.broker.external},INTERNAL://:${_ports_.kafka.spring}`,
-    // KAFKA_LISTENERS: `METRICS://kafka:${_ports_.kafka.metrics},EXTERNAL://${network}:${_ports_.kafka.broker.external},INTERNAL://kafka:${_ports_.kafka.spring}`,
-    KAFKA_ADVERTISED_LISTENERS: `METRICS://kafka:${_ports_.kafka.metrics},PLAINTEXT://${network}:${_ports_.kafka.broker.external},INTERNAL://kafka:${_ports_.kafka.spring}`,
+    KAFKA_LISTENERS: `METRICS://:${_ports_.kafka.metrics},PLAINTEXT://:${_ports_.kafka.broker.external},INTERNAL://:${_ports_.kafka.spring},KSQL://kafka:${_ports_.kafka.ksql}`,
+    KAFKA_ADVERTISED_LISTENERS: `METRICS://kafka:${_ports_.kafka.metrics},PLAINTEXT://${network}:${_ports_.kafka.broker.external},INTERNAL://kafka:${_ports_.kafka.spring},KSQL://kafka:${_ports_.kafka.ksql}`,
     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1,
     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1,
     CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `kafka:${_ports_.kafka.metrics}`,
@@ -149,8 +149,8 @@ export const POSTGRES: PGConfig = {
 export const KSQL: KSQLConfig = {
   image: 'confluentinc/ksqldb-server',
   environment: {
+    KSQL_LISTENERS: `http://0.0.0.0:${_ports_.ksql.external}`, //TODO: revisit/test
     KSQL_BOOTSTRAP_SERVERS: `kafka:${_ports_.kafka.broker.internal}`,
-    KSQL_LISTENERS: `http://${network}:${_ports_.ksql.external}`, //TODO: revisit/test
     KSQL_KSQL_OUTPUT_TOPIC_NAME_PREFIX: 'ksql_',
     // KSQL_KSQL_SERVICE_ID: 'default_',
     KSQL_KSQL_SCHEMA_REGISTRY_URL: `http://schema-registry:${_ports_.ksql_schema.internal}`, //TODO: revisit/test
@@ -159,7 +159,7 @@ export const KSQL: KSQLConfig = {
     KSQL_KSQL_INTERNAL_TOPIC_REPLICAS: 1, //ex: 3, should be # of brokers
     KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true',
     KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: 'true',
-    KSQL_STREAMS_AUTO_OFFSET_RESET: 'latest',
+    KSQL_STREAMS_AUTO_OFFSET_RESET: 'latest', // default
     KSQL_STREAMS_PRODUCER_CONFLUENT_BATCH_EXPIRY_MS: 9223372036854775807,
     KSQL_STREAMS_PRODUCER_MAX_BLOCK_MS: 9223372036854775807,
     KSQL_STREAMS_PRODUCER_RETRIES: 2147483647,
@@ -170,6 +170,13 @@ export const KSQL: KSQLConfig = {
   depends_on: [],
 };
 // # could add CLI https://ksqldb.io/quickstart.html
+export const KSQL_CLI: BaseCfg = {
+  image: `confluentinc/ksqldb-cli`,
+  container_name: `ksqldb-cli`,
+  entrypoint: '/bin/sh',
+  ports: [],
+  tty: 'true',
+};
 
 // # Schema Registry
 export const KSQL_SCHEMA: KSQLSchemaCfg = {

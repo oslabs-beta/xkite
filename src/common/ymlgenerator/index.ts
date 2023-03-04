@@ -7,6 +7,7 @@ import {
   SPARK,
   JUPYTER,
   KSQL_SCHEMA,
+  KSQL_CLI,
   KSQL,
   POSTGRES,
   GRAFANA,
@@ -134,12 +135,10 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
     } else if (db?.name === 'ksql') {
       YAML.services.ksql = {
         ...KSQL,
-        ports: [`${db.port}:${_ports_.ksql.internal}`],
+        ports: [`${db.port ?? _ports_.ksql.external}:${_ports_.ksql.internal}`],
         environment: {
           ...KSQL.environment,
-          KSQL_LISTENERS: `http://${network}:${
-            db.port ?? _ports_.ksql.external
-          }`,
+          KSQL_LISTENERS: `http://0.0.0.0:${db.port ?? _ports_.ksql.external}`,
           KSQL_KSQL_SCHEMA_REGISTRY_URL: `http://schema-registry:${
             db.ksql?.schema_port ?? _ports_.ksql_schema.internal //TODO revisit/test
           }`,
@@ -152,6 +151,10 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
             _ports_.ksql_schema.internal
           }`,
         ],
+      };
+      YAML.services.ksql_cli = {
+        ...KSQL_CLI,
+        depends_on: [YAML.services.ksql.container_name],
       };
     }
     return db;
@@ -333,8 +336,8 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           KAFKA_BROKER_ID: brokerID,
           KAFKA_JMX_PORT: jmxHostPort,
           // KAFKA_LISTENERS: `EXTERNAL://:${extPort}`,
-          KAFKA_LISTENERS: `METRICS://:${metricsPort},PLAINTEXT://:${extPort},INTERNAL://:${_ports_.kafka.spring}`,
-          KAFKA_ADVERTISED_LISTENERS: `METRICS://${brokerName}:${metricsPort},PLAINTEXT://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring}`,
+          KAFKA_LISTENERS: `METRICS://:${metricsPort},PLAINTEXT://:${extPort},INTERNAL://:${_ports_.kafka.spring},KSQL://${brokerName}:${_ports_.kafka.ksql}`,
+          KAFKA_ADVERTISED_LISTENERS: `METRICS://${brokerName}:${metricsPort},PLAINTEXT://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring},KSQL://${brokerName}:${_ports_.kafka.ksql}`,
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR:
             (kafka.brokers.replicas ?? 1) > kafka.brokers.size
               ? kafka.brokers.size
@@ -365,26 +368,44 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       springDeps.push(brokerName);
 
       // set kqsl bootstrap servers
-      if (YAML.services.ksql !== undefined)
-        YAML.services.ksql.environment.KSQL_BOOTSTRAP_SERVERS += `${brokerName}:29192,`;
-    }
+      if (YAML.services.ksql !== undefined) {
+        YAML.services.ksql = {
+          ...YAML.services.ksql,
+          environment: {
+            ...YAML.services.ksql.environment,
+            KSQL_BOOTSTRAP_SERVERS:
+              YAML.services.ksql.environment.KSQL_BOOTSTRAP_SERVERS +
+              `${brokerName}:${_ports_.kafka.ksql},`,
+          },
+        };
+        if (YAML.services.ksql_cli !== undefined) {
+          const deps = YAML.services.ksql_cli.depends_on ?? [
+            YAML.services.ksql.container_name,
+          ];
+          deps.push(`${brokerName}`);
+          YAML.services.ksql_cli = {
+            ...YAML.services.ksql_cli,
+            depends_on: deps,
+          };
+        }
+      }
 
-    YAML.services.spring = {
-      ...SPRING,
-      ports: [
-        `${kafka.spring?.port ?? _ports_.spring.external}:${
-          _ports_.spring.external
-        }`,
-      ],
-      environment: {
-        ...SPRING.environment,
-        'SPRING_KAFKA_BOOTSTRAP-SERVERS': springBSServers.join(','),
-        'SPRING_KAFKA_CONSUMER_BOOTSTRAP-SERVERS': springBSServers.join(','),
-        'SPRING_KAFKA_PRODUCER_BOOTSTRAP-SERVERS': springBSServers.join(','),
-      },
-      depends_on: springDeps,
-    };
+      YAML.services.spring = {
+        ...SPRING,
+        ports: [
+          `${kafka.spring?.port ?? _ports_.spring.external}:${
+            _ports_.spring.external
+          }`,
+        ],
+        environment: {
+          ...SPRING.environment,
+          'SPRING_KAFKA_BOOTSTRAP-SERVERS': springBSServers.join(','),
+          'SPRING_KAFKA_CONSUMER_BOOTSTRAP-SERVERS': springBSServers.join(','),
+          'SPRING_KAFKA_PRODUCER_BOOTSTRAP-SERVERS': springBSServers.join(','),
+        },
+        depends_on: springDeps,
+      };
+    }
   }
 };
-
 export default ymlGenerator;

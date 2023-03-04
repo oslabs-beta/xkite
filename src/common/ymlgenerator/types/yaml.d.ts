@@ -7,6 +7,7 @@ interface YAMLConfig {
     [k: string]: BaseCfg | KafkaBrokerCfg | ZooKeeperCfg | JMXConfg | undefined;
     postgresql?: PGConfig;
     ksql?: KSQLConfig;
+    ksql_cli?: BaseCfg;
     ksql_schema?: KSQLSchemaCfg;
     spark?: BaseCfg;
     spring?: SpringCfg;
@@ -44,7 +45,13 @@ interface YAMLServicesDefaultSetup {
   grafana: PortForward;
   jupyter: PortForward;
   zookeeper: { client: PortForward; peer: PortForward };
-  kafka: { jmx: number; broker: PortForward; spring: number; metrics: number };
+  kafka: {
+    jmx: number;
+    broker: PortForward;
+    spring: number;
+    metrics: number;
+    ksql: number;
+  };
   jmx: PortForward;
 }
 type PortForward = {
@@ -133,6 +140,7 @@ interface PGConfig extends BaseCfg {
   };
 }
 
+//https://docs.ksqldb.io/en/latest/operate-and-deploy/installation/install-ksqldb-with-docker/
 //https://docs.confluent.io/5.2.0/ksql/docs/installation/server-config/config-reference.html
 interface KSQLConfig extends BaseCfg {
   environment: {
@@ -214,4 +222,6 @@ interface BaseCfg {
   volumes?: Array<string>;
   depends_on?: Array<string>;
   container_name: string;
+  entrypoint?: string;
+  tty?: 'true' | 'false';
 }

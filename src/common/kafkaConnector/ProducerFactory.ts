@@ -25,9 +25,9 @@ export default class ProducerFactory extends Kafka {
     this.replication = config.brokers.length;
     this._admin = super.admin();
     this._producer = super.producer({
-      createPartitioner: Partitioners.LegacyPartitioner,
+      createPartitioner: Partitioners.LegacyPartitioner, //TODO: investigate
       allowAutoTopicCreation: true,
-      retry: { maxRetryTime: 100, retries: 1 }, //limit the number of spam requests
+      retry: { maxRetryTime: 100, retries: 1 }, //TODO: remove limit the number of spam requests
     });
     this.isConnected = false;
     this.isAdminConnected = false;
