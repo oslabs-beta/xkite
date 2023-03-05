@@ -5,20 +5,24 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
-// import Head from 'next/head';
-// import Form from 'react-bootstrap/Form';
-// import Button from 'react-bootstrap/Button';
-// import FormGroup from 'react-bootstrap/FormGroup';
-// import Row from 'react-bootstrap/Row';
+import Head from 'next/head';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import InputGroup from 'react-bootstrap/InputGroup';
+import FormGroup from 'react-bootstrap/FormGroup';
+import Row from 'react-bootstrap/Row';
 
 export default function Index() {
   const workerRef = useRef<Worker>();
   const [query, setQuery] = useState('');
+  const [qResults, setQResults] = useState<string[]>(['']);
 
   useEffect(() => {
     workerRef.current = new Worker(new URL('./worker.ts', import.meta.url));
-    workerRef.current.onmessage = (event: MessageEvent<number>) =>
-      alert(`WebWorker Response => ${event.data}`);
+    workerRef.current.onmessage = (event: MessageEvent<string>) => {
+      console.log(event.data);
+      setQResults((prev) => [...prev, event.data]);
+    };
     return () => {
       workerRef.current?.terminate();
     };
@@ -26,9 +30,12 @@ export default function Index() {
 
   const handleWork = useCallback(
     async (e: SyntheticEvent) => {
-      console.log('handling?');
+      // console.log('handling?');
       // e.preventDefault();
-      workerRef.current?.postMessage({ sql: query });
+      setQResults(['']);
+      let type = 'query';
+      if (query.startsWith('CREATE')) type = 'create';
+      workerRef.current?.postMessage({ type, sql: query });
       // setQuery('');
     },
     [query]
@@ -36,26 +43,42 @@ export default function Index() {
 
   return (
     <>
-      {/* <Head>
+      <Head>
         <title>xKite Streams</title>
         <meta name='description' content='xKite Streams' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
-      </Head> */}
-      <h1 id='generalHeader'>KSQL Streams</h1>
-      {/* <form className='mb-3'> */}
-      <div className='align-items-center'>
-        <div className='col-4' id='sendingMessage'>
-          <label>Get Streams</label>
-          <input
-            type='text'
-            placeholder='Enter a query'
-            onChange={(e) => setQuery(e.target.value)}
-            value={query}
-          />
-        </div>
-        <button onClick={handleWork}>send</button>
-      </div>
-      {/* </form> */}
+      </Head>
+      <main>
+        <h1 id='generalHeader'>KSQL Streams</h1>
+        {/* <form className='mb-3'> */}
+        <Row className='align-items-center'>
+          <Form.Group id='sendingMessage'>
+            <Form.Label>Get/Create Streams</Form.Label>
+            <InputGroup>
+              <InputGroup.Text>SQL Query:</InputGroup.Text>
+              <Form.Control
+                as='textarea'
+                aria-label='With textarea'
+                placeholder='Enter a query'
+                onChange={(e) => setQuery(e.target.value)}
+                value={query}
+              />
+            </InputGroup>
+            <Button onClick={handleWork}>send</Button>
+          </Form.Group>
+        </Row>
+        <Row className='align-items-center'>
+          <InputGroup>
+            <InputGroup.Text>Results:</InputGroup.Text>
+            <Form.Control
+              as='textarea'
+              aria-label='With textarea'
+              value={qResults}
+              readOnly
+            />
+          </InputGroup>
+        </Row>
+      </main>
     </>
   );
 }

@@ -25,6 +25,7 @@ public class JsonMessageController {
         this.kafkaProducer = kafkaProducer;
     }
     //localhost:8080/api/kafka/publish post --> {"timestamp": "1","message": "hello"}
+    @CrossOrigin
     @PostMapping("/publish")
     public ResponseEntity<String> publish(@RequestBody KafkaMessage kafkaMessage) throws JsonProcessingException {
         kafkaProducer.sendMessage(kafkaMessage);

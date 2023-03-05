@@ -1,6 +1,5 @@
 // console.log('Worker Initialization');
-import http2, { ClientHttp2Session } from 'http2';
-
+import Kite from '@/common/kite';
 // const query = {
 //   ksql: 'LIST STREAMS;', //optional
 //   sql: `SELECT * FROM ridersNearMountainView EMIT CHANGES;`,
@@ -16,37 +15,38 @@ import http2, { ClientHttp2Session } from 'http2';
 //   postMessage(client.getData);
 // });
 
-addEventListener('message', async (event: MessageEvent<object>) => {
-  const url = 'http://localhost:8088/query-stream'; //TODO: make dynamic input
-  // headers.append("Authorization","********");
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      Authorization: '********',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE',
-      'Access-Control-Allow-Headers': 'Origin, Content-Type, X-Auth-Token',
-    },
-    body: JSON.stringify(event.data),
-  });
-  const reader = response.body?.getReader();
-  function push() {
-    reader?.read().then(({ done, value }) => {
-      if (done) {
-        return;
-      }
-      //post chunk to main thread
-      const streamData = new TextDecoder().decode(value);
-      postMessage(streamData);
-      //try to read message
-      push();
+addEventListener(
+  'message',
+  async (event: MessageEvent<{ type: string; ksql: string }>) => {
+    const resp = await fetch('http://localhost:3000/api/kite/getSetup');
+    const setup = await resp.json();
+    const port = setup.dBSetup?.port ?? 8088;
+    let url: string = `http://localhost:${port}`;
+    if (event.data.type === 'create') url += '/ksql';
+    else url += '/query-stream';
+    // headers.append("Authorization","********");
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/vnd.ksql.v1+json',
+      },
+      body: JSON.stringify(event.data),
     });
+    const reader = response.body?.getReader();
+    function push() {
+      reader?.read().then(({ done, value }) => {
+        if (done) {
+          return;
+        }
+        //post chunk to main thread
+        const streamData = new TextDecoder().decode(value);
+        postMessage(streamData);
+        //try to read message
+        push();
+      });
+    }
+    push();
   }
-  push();
-  // console.log(JSON.stringify(event.data));
-  // client.request(JSON.parse(event.data));
-  // client.request(event.data);
-});
+);
 
 export {};

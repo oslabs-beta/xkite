@@ -51,26 +51,27 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       setup.dBSetup = createDB(db);
       console.log(`dataSetup= ${JSON.stringify(setup.dBSetup)}`);
       // sink //TODO make and call createSink() method
-      if (sink?.name === 'jupyter') YAML.services.jupyter = JUPYTER;
-      if (sink?.name === 'spark') YAML.services.spark = SPARK;
+      if (sink?.name === 'jupyter') {
+        YAML.services.jupyter = JUPYTER;
+        setup.jupyter = { port: _ports_.jupyter.external };
+      } else if (sink?.name === 'spark') {
+        YAML.services.spark = SPARK;
+        setup.spark = { port: _ports_.spark.webui.external };
+      }
       // prometheus
+      const extPromPort = prometheus?.port ?? _ports_.prometheus.external;
       YAML.services.prometheus = {
         ...PROMETHEUS,
-        ports: [
-          `${prometheus?.port ?? _ports_.prometheus.external}:${
-            _ports_.prometheus.internal
-          }`,
-        ],
+        ports: [`${extPromPort}:${_ports_.prometheus.internal}`],
       };
+      setup.prometheus = { port: extPromPort };
       // grafana
+      const extGrafPort = grafana?.port ?? _ports_.grafana.external;
       YAML.services.grafana = {
         ...GRAFANA,
-        ports: [
-          `${grafana?.port ?? _ports_.grafana.external}:${
-            _ports_.grafana.internal
-          }`,
-        ],
+        ports: [`${extGrafPort}:${_ports_.grafana.internal}`],
       };
+      setup.grafana = { port: extGrafPort };
       // Checks if directories download, prometheus and jmx exist, if not, then it creates all of them
       fs.ensureDirSync(downloadDir);
       fs.ensureDirSync(path.resolve(downloadDir, 'jmx'));
@@ -214,6 +215,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
     };
 
     const servers = getZKServerPorts();
+    setup.zookeeper = { ports: [] };
     // construct zookeepers
     for (let i = 0; i < numOfZKs; i++) {
       const n = i + 1;
@@ -237,6 +239,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
         ports: [`${cport}:${_ports_.zookeeper.client.internal}`],
         container_name: name,
       };
+      setup.zookeeper.ports.push(cport);
       // update the schema with the zk info
       if (YAML.services.ksql_schema !== undefined) {
         YAML.services.ksql_schema.depends_on?.push(name);
@@ -270,6 +273,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
 
     const springBSServers = [];
     const springDeps = [];
+    setup.jmx = { ports: [] };
     for (let i = 0; i < kafka.brokers.size; i++) {
       const n = i + 1;
       // JMX Config:
@@ -296,6 +300,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
         ],
         depends_on: [`kafka${n}`],
       };
+      setup.jmx.ports.push(jmxPort);
       // Kafka Config:
       const brokerName = `kafka${n}`;
       // broker ports
@@ -389,14 +394,10 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           };
         }
       }
-
+      const springPort = kafka.spring?.port ?? _ports_.spring.external;
       YAML.services.spring = {
         ...SPRING,
-        ports: [
-          `${kafka.spring?.port ?? _ports_.spring.external}:${
-            _ports_.spring.external
-          }`,
-        ],
+        ports: [`${springPort}:${_ports_.spring.external}`],
         environment: {
           ...SPRING.environment,
           'SPRING_KAFKA_BOOTSTRAP-SERVERS': springBSServers.join(','),
@@ -405,6 +406,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
         },
         depends_on: springDeps,
       };
+      setup.spring = { port: springPort };
     }
   }
 };

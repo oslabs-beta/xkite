@@ -150,7 +150,7 @@ export const KSQL: KSQLConfig = {
   image: 'confluentinc/ksqldb-server',
   environment: {
     KSQL_LISTENERS: `http://0.0.0.0:${_ports_.ksql.external}`, //TODO: revisit/test
-    KSQL_BOOTSTRAP_SERVERS: `kafka:${_ports_.kafka.broker.internal}`,
+    KSQL_BOOTSTRAP_SERVERS: '', //`kafka:${_ports_.kafka.ksql}`,
     KSQL_KSQL_OUTPUT_TOPIC_NAME_PREFIX: 'ksql_',
     // KSQL_KSQL_SERVICE_ID: 'default_',
     KSQL_KSQL_SCHEMA_REGISTRY_URL: `http://schema-registry:${_ports_.ksql_schema.internal}`, //TODO: revisit/test
@@ -164,6 +164,10 @@ export const KSQL: KSQLConfig = {
     KSQL_STREAMS_PRODUCER_MAX_BLOCK_MS: 9223372036854775807,
     KSQL_STREAMS_PRODUCER_RETRIES: 2147483647,
     KSQL_STREAMS_PRODUCER_REQUEST_TIMEOUT_MS: 300000,
+    KSQL_ACCESS_CONTROL_ALLOW_ORIGIN: '*',
+    KSQL_ACCESS_CONTROL_ALLOW_METHODS: 'GET,POST,HEAD',
+    KSQL_ACCESS_CONTROL_ALLOW_HEADERS:
+      'X-Requested-With,Content-Type,Accept,Origin,Authorization',
   },
   ports: [`${_ports_.ksql.external}:${_ports_.ksql.internal}`],
   container_name: 'ksql',
