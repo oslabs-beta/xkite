@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import SidebarLayout from '@/layouts/SidebarLayout';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useState, useEffect } from 'react';
+import PageTitle from '@/components/PageTitle';
 import Footer from '@/components/Footer';
 import {
   Grid,
@@ -100,8 +101,41 @@ const TabsContainerWrapper = styled(Box)(
 
 function DashboardTasks() {
   const theme = useTheme();
-
   const [currentTab, setCurrentTab] = useState<string>('analytics');
+  const [connected, setConnected] = useState(2);
+
+  useEffect(() => {
+    checkActive();
+  }, []);
+
+  const checkActive = async () => {
+      try {
+        const response = await fetch('http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk', {
+          mode: 'no-cors',
+          headers: {
+            'Access-Control-Allow-Origin':'*'
+          }
+        });
+        console.log(response.status, 'this is status')
+        if (response.status === 0) {
+          setConnected(0);
+        } else {
+          setConnected(1);
+        }
+      } catch (err) {
+        setConnected(1);
+        console.log(err);
+      }
+  }
+
+  const pageMessage = () => {
+    return (
+      <PageTitle
+          heading="You Do Not Have an Active Deployment"
+          subHeading="Navigate to 'Create Data Pipeline' to configure and deploy a Kafka instance, or 'connect existing' to connect an existing deployment in order to view metrics."
+        />
+    )
+  }
 
   const tabs = [
     { value: 'analytics', label: 'Analytics Overview' },
@@ -118,10 +152,10 @@ function DashboardTasks() {
   return (
     <>
       <Head>
-        <title>Tasks Dashboard</title>
+        <title>View Kafka Metrics</title>
       </Head>
       <PageTitleWrapper>
-        
+        {connected === 1 && pageMessage()}
       </PageTitleWrapper>
       <Container maxWidth="xl">
         <TabsContainerWrapper>
