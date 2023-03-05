@@ -33,7 +33,6 @@ function KiteCreator() {
   async function configServer(server: string) {
     store.dispatch(setServer(server));
     store.dispatch(setState(KiteState.Init));
-    store.dispatch(setServer(server));
     store.dispatch(setServerState(KiteServerState.Disconnected));
     try {
       const res = [
@@ -228,7 +227,7 @@ function KiteCreator() {
         await deployServer();
       } else {
         await deployLocal();
-        Monitor.initiate();
+        // Monitor.initiate();
       }
     },
 
@@ -268,17 +267,6 @@ function KiteCreator() {
     getConfig: function (): any {
       return store.getState().config;
     },
-
-     /**
-     * If connected to kite server, gets the localhost port listening to spring app.
-     *
-    //  * @returns {number} // to do: implement ability to grab spring port
-    //  *
-    //  */
-    //  getSpringPort: function (): number {
-    //   const { port } = store.getState().config.kafka.spring;
-    //   return port;
-    // },
 
     /**
      * If connected to kite server, gets the config from the server.

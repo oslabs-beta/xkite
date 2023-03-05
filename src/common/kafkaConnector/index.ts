@@ -120,7 +120,6 @@ export default class KafkaConnector {
   public async disconnectProducer() {
     try {
       await this.producer.disconnect();
-      console.log('Disconnected successfully');
     } catch (error) {
       console.log('Error disconnecting producer: ', error);
     }
