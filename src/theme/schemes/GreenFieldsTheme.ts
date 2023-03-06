@@ -6,11 +6,11 @@ import '@mui/lab/themeAugmentation';
 const themeColors = {
   primary: '#44a574',
   secondary: '#a2a8ab',
-  success: '#57CA22',
+  success: '#2a7109',
   warning: '#FFA319',
   error: '#FF1943',
   info: '#33C2FF',
-  black: '#CBCCD2',
+  black: 'rgb(229 232 231)',
   white: '#232a2e',
   primaryAlt: '#232a2e',
   trueWhite: '#ffffff'

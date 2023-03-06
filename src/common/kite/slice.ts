@@ -67,6 +67,18 @@ export {
 export default kiteSlice.reducer;
 
 function readConfigFromFile(): any {
+  const defaultState = {
+    init: true,
+    packageBuild: false, //change to make pipeline.zip
+    config: defaultCfg, //Promise<KiteConfig> | KiteConfig
+    server: 'localhost:6661',
+    setup: {}, //Promise<KiteSetup> | KiteSetup;
+    kafkaSetup: {}, //KafkaSetup
+    dBSetup: {}, //dbCfg
+    state: KiteState.Init,
+    serverState: KiteServerState.Disconnected,
+    configFile: {}, //Promise<KiteConfigFile> | KiteConfigFile;
+  };
   try {
     const state = fs.readFileSync(
       path.resolve(configFilePath, 'cfg.json'),

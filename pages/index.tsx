@@ -33,7 +33,7 @@ function Overview() {
   return (
     <OverviewWrapper>
       <Head>
-        <title>Tokyo Free Black NextJS Typescript Admin Dashboard</title>
+        <title>xKite: A Kafka Prototyping, Testing, and Monitoring Suite</title>
       </Head>
       <HeaderWrapper>
         <Container maxWidth="lg">

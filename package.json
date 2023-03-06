@@ -1,11 +1,13 @@
 {
-  "name": "tokyo-free-black-nextjs-admin-dashboard",
+  "name": "xkite",
   "version": "1.0.0",
-  "title": "Tokyo Free Black NextJS Typescript Admin Dashboard",
-  "description": "High performance React template built with lots of powerful MUI (Material-UI) components across multiple product niches for fast & perfect apps development processes",
-  "author": {
-    "name": "BloomUI.com",
-    "url": "https://bloomui.com"
+  "title": "xKite: Kafka Integrated Testing Environment",
+  "description": "A comprehensive prototyping, testing, and monitoring toolset built for Apache Kafka.",
+  "author": "XKite Team- OpenSource Labs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oslabs-beta/xkite"
   },
   "scripts": {
     "spring": "mvn -f ./src/common/springApp/pom.xml spring-boot:run",
@@ -26,7 +28,9 @@
     "kafkajs",
     "docker",
     "react",
-    "nextjs"
+    "nextjs",
+    "typescript",
+    "zookeeper"
   ],
   "dependencies": {
     "@emotion/cache": "11.7.1",

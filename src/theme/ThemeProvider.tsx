@@ -6,11 +6,11 @@ import { StylesProvider } from '@mui/styles';
 export const ThemeContext = createContext((_themeName: string): void => {});
 
 const ThemeProviderWrapper: FC = (props) => {
-  const [themeName, _setThemeName] = useState('NebulaFighterTheme');
+  const [themeName, _setThemeName] = useState('GreenFieldsTheme');
 
   useEffect(() => {
     const curThemeName =
-      window.localStorage.getItem('appTheme') || 'NebulaFighterTheme';
+      window.localStorage.getItem('appTheme') || 'GreenFieldsTheme';
     _setThemeName(curThemeName);
   }, []);
 

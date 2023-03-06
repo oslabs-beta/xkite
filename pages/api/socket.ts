@@ -14,8 +14,9 @@ export const config = {
   },
 };
 
-// eslint-disable-next-line import/no-anonymous-default-export
+// eslint-disable-next-line import/no-anonymous-default-export 
 export default async (req: NextApiRequest, res: NextApiResponseServerIO) => {
+  console.log(req.body);
   const newConsumer = new ExampleConsumer(brokers, clientId);
   await newConsumer.listTopics();
   await newConsumer.startBatchConsumer(topic);
