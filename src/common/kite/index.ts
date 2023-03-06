@@ -310,7 +310,7 @@ function KiteCreator() {
           'Content-Type': 'application/zip',
           'Content-Length': fs.statSync(zipPath).size,
         };
-        const fileStream = fs.readFileSync(zipPath, 'utf-8');
+        const fileStream = fs.readFileSync(zipPath);
         res({ header, fileStream });
       });
     },
