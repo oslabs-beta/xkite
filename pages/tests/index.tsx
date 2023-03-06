@@ -3,7 +3,8 @@ import React, {
   SyntheticEvent,
   useRef,
   useEffect,
-  useCallback
+  useCallback,
+  ChangeEvent
 } from 'react';
 import {
   FormControl,
@@ -149,13 +150,18 @@ function Tests() {
   const pageMessage = () => {
     return (
       <PageTitle
-        heading="You Do Not Have an Active Deployment"
-        subHeading="Navigate to 'Create Data Pipeline' to configure and deploy a Kafka instance, or 'connect existing' to connect an existing deployment in order to view tests."
+        heading="Test Your Kafka Instance"
+        subHeading="Add or remove topics, send messages, configure your load balancing strategy, and more."
       />
     );
   };
 
-  const tabs = [{ value: 'ksql-streams', label: 'KSQL Streams' }];
+  const tabs = [
+    { value: 'ksql-streams', label: 'KSQL Streams' },
+    { value: 'topics', label: 'Topics' },
+    { value: 'messages', label: 'Messages' },
+    { value: 'distribution', label: 'Distribution' },
+  ];
 
   const handleTabsChange = (_event: ChangeEvent<{}>, value: string): void => {
     setCurrentTab(value);
@@ -179,7 +185,7 @@ function Tests() {
       <Head>
         <title>Create/View Streams</title>
       </Head>
-      <PageTitleWrapper>{!connected && pageMessage()}</PageTitleWrapper>
+      <PageTitleWrapper>{pageMessage()}</PageTitleWrapper>
       <Container maxWidth="xl">
         <TabsContainerWrapper>
           <Tabs
@@ -195,7 +201,7 @@ function Tests() {
             ))}
           </Tabs>
         </TabsContainerWrapper>
-        <h1 id="generalHeader">Create/View Streams</h1>
+        <h2 id="generalHeader">Create/View Streams</h2>
         <Card variant="outlined">
           <Grid
             container
@@ -207,8 +213,9 @@ function Tests() {
           >
             {currentTab === 'ksql-streams' && (
               <>
-                <FormControl id="sendingMessage">
-                  <FormGroup>
+              <Box p={4} height={'70vh'} >
+                <FormControl id="sendingMessage" sx={{ width: '100%', height: '50%' }} >
+                  <FormGroup >
                     <InputLabel>SQL Query</InputLabel>
                     <Input
                       id="textarea-query"
@@ -220,7 +227,7 @@ function Tests() {
                   </FormGroup>
                   <Button onClick={handleWork}>send</Button>
                 </FormControl>
-                <FormGroup>
+                <FormGroup sx={{ width: '100%', height: '50%' }}>
                   <InputLabel>Results:</InputLabel>
                   <Input
                     id="textarea-results"
@@ -229,6 +236,7 @@ function Tests() {
                     readOnly
                   />
                 </FormGroup>
+                </Box>
               </>
             )}
           </Grid>
