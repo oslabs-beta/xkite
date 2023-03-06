@@ -71,7 +71,7 @@ function Hero() {
             component="a"
             target="_blank"
             rel="noopener"
-            href="https://bloomui.com/product/tokyo-free-black-nextjs-typescript-material-ui-admin-dashboard/"
+            href="/connect"
             size="large"
             variant="text"
           >
