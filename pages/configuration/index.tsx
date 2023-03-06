@@ -5,7 +5,7 @@ import { useState, SyntheticEvent, CSSProperties, useEffect } from 'react';
 import defaultCfg from '@/common/kite/constants';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import HashLoader from "react-spinners/HashLoader";
+import HashLoader from 'react-spinners/HashLoader';
 import axios from 'axios';
 import {
   Container,
@@ -18,7 +18,7 @@ import {
   AccordionDetails,
   Accordion,
   AccordionSummary,
-  Typography,
+  Typography
 } from '@mui/material';
 import Footer from 'src/components/Footer';
 import Box from '@mui/material/Box';
@@ -39,9 +39,9 @@ export interface CheckPortOpen {
 }
 
 const override: CSSProperties = {
-  display: "block",
-  margin: "0 auto",
-  borderColor: "red",
+  display: 'block',
+  margin: '0 auto',
+  borderColor: 'red'
 };
 
 const dataSources = [
@@ -50,9 +50,9 @@ const dataSources = [
     label: 'PostgreSQL'
   },
   {
-    value: 'KSQL',
+    value: 'ksql',
     label: 'KSQL'
-  },
+  }
 ];
 
 const dataSinks = [
@@ -61,9 +61,9 @@ const dataSinks = [
     label: 'Jupyter'
   },
   {
-    value: 'Spark',
+    value: 'spark',
     label: 'Spark'
-  },
+  }
 ];
 
 const DEFAULT_BROKER_ID = 101;
@@ -82,23 +82,26 @@ function Forms() {
   }, []);
 
   const checkActive = async () => {
-      try {
-        const response = await fetch('http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk', {
+    try {
+      const response = await fetch(
+        'http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk',
+        {
           mode: 'no-cors',
           headers: {
-            'Access-Control-Allow-Origin':'*'
+            'Access-Control-Allow-Origin': '*'
           }
-        });
-        console.log(response.status, 'this is status')
-        if (response.status === 0) {
-          setActive(1);
-        } else {
-          setActive(0);
         }
-      } catch (err) {
-        console.log(err);
+      );
+      console.log(response.status, 'this is status');
+      if (response.status === 0) {
+        setActive(1);
+      } else {
+        setActive(0);
       }
-  }
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -109,7 +112,7 @@ function Forms() {
     setKiteConfigRequest((kiteConfigRequest) => {
       return {
         ...kiteConfigRequest,
-        ...update,
+        ...update
       };
     });
   }
@@ -117,49 +120,55 @@ function Forms() {
   const isActive = () => {
     return (
       <div className="sweet-loading">
-      <p>You have an active Kite deployment. To start over, select "Disconnect" below.</p>
+        <p>
+          You have an active Kite deployment. To start over, select "Disconnect"
+          below.
+        </p>
       </div>
-    )
-  }
+    );
+  };
 
   const isLoading = () => {
     return (
       <div className="sweet-loading">
-      <HashLoader
-        color={'#CBB6E6'}
-        cssOverride={override}
-        size={100}
-        aria-label="Loading Spinner"
-        data-testid="loader"
-      />
-      <p>Please stand by while containers are deployed</p>
+        <HashLoader
+          color={'#CBB6E6'}
+          cssOverride={override}
+          size={100}
+          aria-label="Loading Spinner"
+          data-testid="loader"
+        />
+        <p>Please stand by while containers are deployed</p>
       </div>
-    )
-  }
+    );
+  };
 
   const queryMetrics = () => {
     const interval = setInterval(async () => {
       try {
-        const response = await fetch('http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk', {
-          mode: 'no-cors',
-          headers: {
-            'Access-Control-Allow-Origin':'*'
+        const response = await fetch(
+          'http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk',
+          {
+            mode: 'no-cors',
+            headers: {
+              'Access-Control-Allow-Origin': '*'
+            }
           }
-        });
-        console.log(response.status, 'this is status')
+        );
+        console.log(response.status, 'this is status');
         if (response.status === 0) {
           clearInterval(interval);
-            window.location.href = '/metrics';
-        } 
+          window.location.href = '/metrics';
+        }
       } catch (err) {
         console.log(err);
       }
-    }, 1000)
-  }
+    }, 1000);
+  };
 
   function ShutDownBtn() {
     const [shuttingDown, setShuttingDown] = useState(false);
-  
+
     async function disconnectHandler(event: SyntheticEvent): Promise<void> {
       console.log(event);
       setShuttingDown(true);
@@ -172,25 +181,31 @@ function Forms() {
       }
       setActive(0);
     }
-  
+
     return (
-      
-        <Button size="large"  variant="outlined" sx={{ margin: 1 }} color="secondary" onClick={disconnectHandler} disabled={shuttingDown}>
+      <Button
+        size="large"
+        variant="outlined"
+        sx={{ margin: 1 }}
+        color="secondary"
+        onClick={disconnectHandler}
+        disabled={shuttingDown}
+      >
         Disconnect
-        </Button>
+      </Button>
     );
   }
 
   const checkPortOpen: CheckPortOpen = async (index, type, port) => {
     //console.log({ index, type, port });
     const isOpen = await isPortOpen(port);
-    console.log(portsOpen[`broker-0`], '187')
+    console.log(portsOpen[`broker-0`], '187');
     setPortsOpen((portsOpen) => ({
       ...portsOpen,
       [index]: {
         ...portsOpen[index],
-        [type]: isOpen,
-      },
+        [type]: isOpen
+      }
     }));
     //console.log(isOpen);
 
@@ -201,9 +216,9 @@ function Forms() {
     const { isOpen } = await fetch('/api/checkPort', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ port }),
+      body: JSON.stringify({ port })
     })
       .then((response) => response.json())
       .catch((error) => {
@@ -224,9 +239,9 @@ function Forms() {
     fetch('/api/kite/create', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify(kiteConfigRequest),
+      body: JSON.stringify(kiteConfigRequest)
     })
       .then((response) => {
         console.dir(response);
@@ -237,12 +252,11 @@ function Forms() {
     // setSubmit(false);
   }
 
-
   const handleData = (event) => {
     updateKiteConfigRequest({
       db: {
-        name: event.target.value,
-      },
+        name: event.target.value
+      }
     });
   };
 
@@ -254,9 +268,9 @@ function Forms() {
         ...kiteConfigRequest.kafka,
         brokers: {
           ...kiteConfigRequest.kafka.brokers,
-          size,
-        },
-      },
+          size
+        }
+      }
     };
     updateKiteConfigRequest(update);
   };
@@ -269,9 +283,9 @@ function Forms() {
         ...kiteConfigRequest.kafka,
         zookeepers: {
           ...kiteConfigRequest.kafka.zookeepers,
-          size,
-        },
-      },
+          size
+        }
+      }
     };
     updateKiteConfigRequest(update);
   };
@@ -279,130 +293,122 @@ function Forms() {
   const handleSink = (event) => {
     updateKiteConfigRequest({
       sink: {
-        name: event.target.value,
-      },
+        name: event.target.value
+      }
     });
   };
 
   const renderAdvanced = () => {
     const res: JSX.Element[] = [];
-    for(let i = 0; i < kiteConfigRequest.kafka.brokers.size; i++){
+    for (let i = 0; i < kiteConfigRequest.kafka.brokers.size; i++) {
       res.push(
-      <>
-        <p>Broker {i + 1}</p>
-        <TextField
-          id="filled-number"
-          label="ID"
-          type="number"
-          placeholder={(DEFAULT_BROKER_ID + i).toString()}
-          value={kiteConfigRequest.kafka.brokers?.id?.[i] || ''}
-          InputLabelProps={{
-            shrink: true
-          }}
-          variant="filled"
-          onChange={(e) => {
-            if (+e.target.value <= 0) return;
-            const id: number[] = kiteConfigRequest.kafka.brokers.id ?? [];
-            id[i] = +e.target.value;
+        <>
+          <p>Broker {i + 1}</p>
+          <TextField
+            id="filled-number"
+            label="ID"
+            type="number"
+            placeholder={(DEFAULT_BROKER_ID + i).toString()}
+            value={kiteConfigRequest.kafka.brokers?.id?.[i] || ''}
+            InputLabelProps={{
+              shrink: true
+            }}
+            variant="filled"
+            onChange={(e) => {
+              if (+e.target.value <= 0) return;
+              const id: number[] = kiteConfigRequest.kafka.brokers.id ?? [];
+              id[i] = +e.target.value;
 
-            const update = {
-              kafka: {
-                ...kiteConfigRequest.kafka,
-                brokers: {
-                  ...kiteConfigRequest.kafka.brokers,
-                  id,
-                },
-              },
-            };
-            updateKiteConfigRequest(update);
-          }}
-        />
-        <TextField
-          id="filled-number"
-         
-          placeholder={(DEFAULT_BROKER_PORT + i).toString()}
-          onChange={(e) => {
-            if (+e.target.value <= 0) return;
-            
-            const brokers: number[] =
-              kiteConfigRequest.kafka.brokers.ports?.brokers ?? [];
-            brokers[i] = +e.target.value;
+              const update = {
+                kafka: {
+                  ...kiteConfigRequest.kafka,
+                  brokers: {
+                    ...kiteConfigRequest.kafka.brokers,
+                    id
+                  }
+                }
+              };
+              updateKiteConfigRequest(update);
+            }}
+          />
+          <TextField
+            id="filled-number"
+            placeholder={(DEFAULT_BROKER_PORT + i).toString()}
+            onChange={(e) => {
+              if (+e.target.value <= 0) return;
 
-            const update = {
-              kafka: {
-                ...kiteConfigRequest.kafka,
-                brokers: {
-                  ...kiteConfigRequest.kafka.brokers,
-                  ports: {
-                    ...kiteConfigRequest.kafka.brokers.ports,
-                    brokers,
-                  },
-                },
-              },
-            };
-            updateKiteConfigRequest(update);
-          }}
-          value={
-            kiteConfigRequest.kafka.brokers?.ports?.brokers?.[i] || ''
-          }
-          label="Port"
-          type="number"
-          InputLabelProps={{
-            shrink: true
-          }}
-          
-          error={
-            portsOpen
-              ? Object.hasOwn(portsOpen, `broker-${i}`)
-              ?  !portsOpen[`broker-${i}`].port : false
-              : false
-          }
-          
-          onBlur={(e) =>
-            checkPortOpen(
-              `broker-${i}`,
-              'port',
-              Number(e.target.value)
-            )}
-          variant="filled"
-        />
-        <TextField
-          id="filled-number"
-          placeholder={(DEFAULT_JMX_PORT + i).toString()}
-          onChange={(e) => {
-            if (+e.target.value <= 0) return;
-            const jmx: number[] =
-              kiteConfigRequest.kafka.brokers?.ports?.jmx ?? [];
-            jmx[i] = +e.target.value;
+              const brokers: number[] =
+                kiteConfigRequest.kafka.brokers.ports?.brokers ?? [];
+              brokers[i] = +e.target.value;
 
-            const update = {
-              kafka: {
-                ...kiteConfigRequest.kafka,
-                brokers: {
-                  ...kiteConfigRequest.kafka.brokers,
-                  ports: {
-                    ...kiteConfigRequest.kafka.brokers.ports,
-                    jmx,
-                  },
-                },
-              },
-            };
-            updateKiteConfigRequest(update);
-          }}
-          value={
-            kiteConfigRequest.kafka.brokers?.ports?.jmx?.[i] || ''
-          }
-          label="JMX Port"
-          type="number"
-          InputLabelProps={{
-            shrink: true
-          }}
-          variant="filled"
-        />
-      </>)
+              const update = {
+                kafka: {
+                  ...kiteConfigRequest.kafka,
+                  brokers: {
+                    ...kiteConfigRequest.kafka.brokers,
+                    ports: {
+                      ...kiteConfigRequest.kafka.brokers.ports,
+                      brokers
+                    }
+                  }
+                }
+              };
+              updateKiteConfigRequest(update);
+            }}
+            value={kiteConfigRequest.kafka.brokers?.ports?.brokers?.[i] || ''}
+            label="Port"
+            type="number"
+            InputLabelProps={{
+              shrink: true
+            }}
+            error={
+              portsOpen
+                ? Object.hasOwn(portsOpen, `broker-${i}`)
+                  ? !portsOpen[`broker-${i}`].port
+                  : false
+                : false
+            }
+            onBlur={(e) =>
+              checkPortOpen(`broker-${i}`, 'port', Number(e.target.value))
+            }
+            variant="filled"
+          />
+          <TextField
+            id="filled-number"
+            placeholder={(DEFAULT_JMX_PORT + i).toString()}
+            onChange={(e) => {
+              if (+e.target.value <= 0) return;
+              const jmx: number[] =
+                kiteConfigRequest.kafka.brokers?.ports?.jmx ?? [];
+              jmx[i] = +e.target.value;
+
+              const update = {
+                kafka: {
+                  ...kiteConfigRequest.kafka,
+                  brokers: {
+                    ...kiteConfigRequest.kafka.brokers,
+                    ports: {
+                      ...kiteConfigRequest.kafka.brokers.ports,
+                      jmx
+                    }
+                  }
+                }
+              };
+              updateKiteConfigRequest(update);
+            }}
+            value={kiteConfigRequest.kafka.brokers?.ports?.jmx?.[i] || ''}
+            label="JMX Port"
+            type="number"
+            InputLabelProps={{
+              shrink: true
+            }}
+            variant="filled"
+          />
+        </>
+      );
     }
     return res;
-  }
+  };
 
   return (
     <>
@@ -468,7 +474,7 @@ function Forms() {
                       onChange={handleData}
                       helperText="Please select your data source"
                     >
-                     {dataSources.map((option) => (
+                      {dataSources.map((option) => (
                         <MenuItem key={option.value} value={option.value}>
                           {option.label}
                         </MenuItem>
@@ -482,57 +488,67 @@ function Forms() {
                       onChange={handleSink}
                       helperText="Please select your data sink"
                     >
-                     {dataSinks.map((option) => (
+                      {dataSinks.map((option) => (
                         <MenuItem key={option.value} value={option.value}>
                           {option.label}
                         </MenuItem>
                       ))}
                     </TextField>
-
                   </div>
                 </Box>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12}>
-          <Accordion expanded={expanded === 'panel4'} onChange={handleChange('panel4')}>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel4bh-content"
-          id="panel4bh-header"
-        >
-          <Typography sx={{ width: '33%', flexShrink: 0 }}>Advanced Settings</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Card >
-                <Divider />
-                <CardContent>
-                  <Box
-                    component="form"
-                    sx={{
-                      '& .MuiTextField-root': { m: 1, width: '42ch' }
-                    }}
-                    noValidate
-                    autoComplete="off"
-                  >
-                    {renderAdvanced()}
-                  </Box>
-                </CardContent>
-              </Card>
-        </AccordionDetails>
-      </Accordion>
+            <Accordion
+              expanded={expanded === 'panel4'}
+              onChange={handleChange('panel4')}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel4bh-content"
+                id="panel4bh-header"
+              >
+                <Typography sx={{ width: '33%', flexShrink: 0 }}>
+                  Advanced Settings
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Card>
+                  <Divider />
+                  <CardContent>
+                    <Box
+                      component="form"
+                      sx={{
+                        '& .MuiTextField-root': { m: 1, width: '42ch' }
+                      }}
+                      noValidate
+                      autoComplete="off"
+                    >
+                      {renderAdvanced()}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </AccordionDetails>
+            </Accordion>
           </Grid>
-          <Grid textAlign='center' item xs={12}>
-            {(active === 1) && isActive()}
-            {(active === 0) && (loader === 0) && <Button sx={{ margin: 2 }} variant="contained" onClick={submitHandler}>
-              Submit
-            </Button>}
-            {(active === 0) && (loader === 1) && isLoading()}
+          <Grid textAlign="center" item xs={12}>
+            {active === 1 && isActive()}
+            {active === 0 && loader === 0 && (
+              <Button
+                sx={{ margin: 2 }}
+                variant="contained"
+                onClick={submitHandler}
+              >
+                Submit
+              </Button>
+            )}
+            {active === 0 && loader === 1 && isLoading()}
             <Card>
-              <Box textAlign='center'>
+              <Box textAlign="center">
                 <ExportConfigBtn />
                 {ShutDownBtn()}
-                </Box>
+              </Box>
             </Card>
           </Grid>
         </Grid>
