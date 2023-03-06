@@ -13,7 +13,7 @@
     "build-spring": "mvn -f ./src/common/springApp clean package && mv ./src/common/springApp/target/*.jar ./src/common/kite/download/spring/app.jar",
     "next-dev": "next dev",
     "dev:6662": "next dev -p 6662",
-    "dev": "concurrently \"npm run dev:6662\" \"next dev\" \"open http://localhost:3000\"",
+    "dev": "concurrently \"next dev\" \"open http://localhost:3000\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

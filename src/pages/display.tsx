@@ -4,7 +4,8 @@ import React, {
   ChangeEvent,
   MouseEvent,
 } from 'react';
-import axios from 'axios';
+
+import Image from 'next/image';
 
 import Head from 'next/head';
 import Form from 'react-bootstrap/Form';
@@ -97,15 +98,25 @@ export default function Display() {
   // const submitHandler = (event: SyntheticEvent): void => {
   //   event.preventDefault();
 
-  //   axios
-  //     .post('http://localhost:8080/api/kafka/publish', {
-  //       timestamp: new Date().toISOString(),
-  //       message,
-  //     })
-  //     .then((data) => console.log(data))
-  //     .catch((error) => console.error(error));
+  //   const msg = JSON.stringify({
+  //     timestamp: 1,
+  //     message,
+  //   });
 
-  //   setMessage('');
+  //   fetch('http://localhost:8080/api/kafka/publish', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: msg,
+  //   })
+  //     .then((response) => {
+  //       console.log(response);
+  //       setMessage('');
+  //     })
+  //     .catch((error) => {
+  //       console.error(error);
+  //     });
   // };
 
   return (
@@ -203,18 +214,19 @@ export default function Display() {
           </Row>
           <Row className='align-items-center'>
             <FormGroup className='col-2 '>
-              <Button variant='primary' type='submit'>
+              <Button variant='primary' onClick={submitHandler}>
                 Send
               </Button>
             </FormGroup>
           </Row>
         </Form>
+
         <div className='buttons'>
           <Button
             variant='secondary'
             href='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&kiosk'
           >
-            View more metrics
+            View More Metrics
           </Button>
           <ShutDownBtn id='dangerDisplay' />
         </div>

@@ -56,6 +56,8 @@ body {
   }
   .buttons {
     display: flex;
+    padding-bottom: 5rem;
+    margin: auto 1rem;
   }
   .btn.btn-secondary {
     background: linear-gradient(to left, #9f9fed 50%, #736ced 50%) right;
@@ -173,6 +175,10 @@ body {
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
+  }
+
+  iframe {
+    border-radius: 1rem;
   }
 
   background: #00b4ff;
