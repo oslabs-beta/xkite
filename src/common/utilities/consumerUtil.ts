@@ -1,16 +1,14 @@
-import { Consumer, ConsumerSubscribeTopics, EachBatchPayload, Kafka, EachMessagePayload } from 'kafkajs'
-
-type ExampleMessageProcessor = {
-  processor: any
-}
+import { Consumer, ConsumerSubscribeTopics, EachBatchPayload, Kafka, EachMessagePayload, Admin } from 'kafkajs'
 
 export default class ExampleConsumer {
   private kafkaConsumer: Consumer
+  private admin: Admin
   //private messageProcessor: ExampleMessageProcessor
 
   public constructor(brokers: string[], clientId: string) {
     //this.messageProcessor = messageProcessor
     this.kafkaConsumer = this.createKafkaConsumer(brokers, clientId)
+    this.admin = this.createKafkaAdmin(brokers, clientId)
   }
 
   public async startConsumer(topicToFollow: string): Promise<void> {
@@ -59,6 +57,19 @@ export default class ExampleConsumer {
     }
   }
 
+  public async listTopics(): Promise<void | string[]> {
+
+    try {
+      await this.admin.connect()
+      const topics = await this.admin.listTopics()
+      await this.admin.disconnect()
+      console.log(topics);
+      return topics;
+    } catch (error) {
+      console.log('Error: ', error)
+    }
+  }
+
   public async shutdown(): Promise<void> {
     await this.kafkaConsumer.disconnect()
   }
@@ -70,5 +81,14 @@ export default class ExampleConsumer {
     })
     const consumer = kafka.consumer({ groupId: 'myGroup2' })
     return consumer
+  }
+
+  private createKafkaAdmin(brokers: string[], clientId: string): Admin {
+    const kafka = new Kafka({ 
+      clientId,
+      brokers
+    })
+    const admin = kafka.admin();
+    return admin;
   }
 }

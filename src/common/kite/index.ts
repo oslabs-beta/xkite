@@ -1,9 +1,9 @@
 import path from 'path';
 import fs from 'fs-extra';
 import compose from 'docker-compose';
-import ymlGenerator from '@/common/ymlgenerator';
+import ymlGenerator from '@/common/kite/ymlgenerator';
 const zipper = require('zip-local');
-import Monitor from '@/common/monitor/monitor';
+// import Monitor from '@/common/monitor/monitor';
 import { KiteState, KiteServerState } from '@/common/kite/constants';
 import defaultCfg, { configFilePath } from './constants';
 const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
@@ -33,7 +33,6 @@ function KiteCreator() {
   async function configServer(server: string) {
     store.dispatch(setServer(server));
     store.dispatch(setState(KiteState.Init));
-    store.dispatch(setServer(server));
     store.dispatch(setServerState(KiteServerState.Disconnected));
     try {
       const res = [
@@ -108,10 +107,11 @@ function KiteCreator() {
       await compose.upAll({
         cwd: downloadDir,
         log: true,
-        callback: (chunk: Buffer) => {
-          //progress report
-          console.log('job in progress: ', chunk.toString());
-        },
+        // commandOptions: '', // TBD set the name of container
+        // callback: (chunk: Buffer) => { //TODO remove
+        //   //progress report
+        //   console.log('job in progress: ', chunk.toString());
+        // },
       });
       store.dispatch(setState(KiteState.Running));
       console.log('docker deployment successful');
@@ -269,17 +269,6 @@ function KiteCreator() {
       return store.getState().config;
     },
 
-     /**
-     * If connected to kite server, gets the localhost port listening to spring app.
-     *
-    //  * @returns {number} // to do: implement ability to grab spring port
-    //  *
-    //  */
-    //  getSpringPort: function (): number {
-    //   const { port } = store.getState().config.kafka.spring;
-    //   return port;
-    // },
-
     /**
      * If connected to kite server, gets the config from the server.
      *
@@ -313,16 +302,15 @@ function KiteCreator() {
     },
 
     getPackageBuild: function (): Promise<KiteConfigFile> {
-      if (!fs.existsSync(zipPath)) {
-        zipper.sync.zip(downloadDir).compress().save(zipPath);
-      }
+      fs.removeSync(zipPath);
+      zipper.sync.zip(downloadDir).compress().save(zipPath);
 
       return new Promise((res, rej) => {
         const header = {
           'Content-Type': 'application/zip',
           'Content-Length': fs.statSync(zipPath).size,
         };
-        const fileStream = fs.readFileSync(zipPath, 'utf-8');
+        const fileStream = fs.readFileSync(zipPath);
         res({ header, fileStream });
       });
     },
@@ -341,7 +329,6 @@ function KiteCreator() {
         disconnectLocal();
       }
       store.dispatch(setState(KiteState.Shutdown));
-      fs.removeSync(zipPath);
     },
 
     /**
@@ -359,7 +346,6 @@ function KiteCreator() {
         shutdownLocal();
       }
       store.dispatch(setState(KiteState.Shutdown));
-      fs.removeSync(zipPath);
     },
   };
 }

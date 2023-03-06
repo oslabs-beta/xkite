@@ -69,6 +69,13 @@ interface KiteKafkaCfg {
 interface KiteSetup {
   dBSetup?: dbCfg;
   kafkaSetup: KafkaSetup;
+  spring?: { port: number };
+  prometheus?: { port: number };
+  grafana?: { port: number };
+  zookeeper?: { ports: number[] };
+  jmx?: { ports: number[] };
+  jupyter?: { port: number };
+  spark?: { port: number };
 }
 
 interface KiteConfigFile {
