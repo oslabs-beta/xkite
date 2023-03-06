@@ -203,7 +203,7 @@ src/common/springApp/target/*
 .vscode
 
 # generated config file
-src/common/kite/config/cfg.json
+src/common/kite/download/config/cfg.json
 
 # database file
 src/common/kite/postgres/*
