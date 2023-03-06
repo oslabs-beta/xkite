@@ -40,8 +40,8 @@ const kiteSlice = createSlice({
     setConfigFile: (state, action) => {
       state.configFile = Object.assign(action.payload);
       writeConfigToFile(state);
-    },
-  },
+    }
+  }
 });
 
 const {
@@ -51,7 +51,7 @@ const {
   setSetup,
   setState,
   setServerState,
-  setConfigFile,
+  setConfigFile
 } = kiteSlice.actions;
 
 export {
@@ -61,7 +61,7 @@ export {
   setSetup,
   setState,
   setServerState,
-  setConfigFile,
+  setConfigFile
 };
 
 export default kiteSlice.reducer;
@@ -77,9 +77,10 @@ function readConfigFromFile(): any {
     dBSetup: {}, //dbCfg
     state: KiteState.Init,
     serverState: KiteServerState.Disconnected,
-    configFile: {}, //Promise<KiteConfigFile> | KiteConfigFile;
+    configFile: {} //Promise<KiteConfigFile> | KiteConfigFile;
   };
   try {
+    fs.mkdirSync(path.resolve(configFilePath), { recursive: true });
     const state = fs.readFileSync(
       path.resolve(configFilePath, 'cfg.json'),
       'utf-8'
@@ -95,19 +96,6 @@ function readConfigFromFile(): any {
     return defaultState;
   }
 }
-
-const defaultState = {
-  init: true,
-  packageBuild: false, //change to make pipeline.zip
-  config: defaultCfg, //Promise<KiteConfig> | KiteConfig
-  server: 'localhost:6661',
-  setup: {}, //Promise<KiteSetup> | KiteSetup;
-  kafkaSetup: {}, //KafkaSetup
-  dBSetup: {}, //dbCfg
-  state: KiteState.Init,
-  serverState: KiteServerState.Disconnected,
-  configFile: {}, //Promise<KiteConfigFile> | KiteConfigFile;
-};
 
 function writeConfigToFile(state: any): void {
   try {
