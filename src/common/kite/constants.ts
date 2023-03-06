@@ -30,7 +30,7 @@ export enum KiteServerState {
 }
 export const configFilePath = path.join(
   process.cwd(),
-  'src/common/kite/config'
+  'src/common/kite/download/config'
 );
 
 export default defaultCfg;
