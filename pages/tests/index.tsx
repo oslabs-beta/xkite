@@ -239,6 +239,6 @@ function Tests() {
   );
 }
 
-Tests.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+Tests.getLayout = (page: any) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default Tests;
