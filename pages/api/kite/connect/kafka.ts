@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next/types';
 import Kite from '@/common/kite';
-import KafkaConnector from '@/common/kafkaConnector';
 import ProducerFactory from '@/common/kafkaConnector/ProducerFactory';
 type Data = {
   reply?: string;
@@ -28,7 +27,7 @@ export default async function handler(
       // );
       const producer = await ProducerFactory.create({
         ...kafkaSetup,
-        clientId: clientId ?? 'test',
+        clientId: clientId ?? 'test'
       });
 
       switch (method) {
