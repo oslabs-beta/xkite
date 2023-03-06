@@ -17,7 +17,6 @@ import DesignServicesTwoToneIcon from '@mui/icons-material/DesignServicesTwoTone
 import BrightnessLowTwoToneIcon from '@mui/icons-material/BrightnessLowTwoTone';
 import TableChartTwoToneIcon from '@mui/icons-material/TableChartTwoTone';
 
-
 const MenuWrapper = styled(Box)(
   ({ theme }) => `
   .MuiList-root {
@@ -228,9 +227,7 @@ function SidebarMenu() {
               <ListItem component="div">
                 <NextLink href="/metrics" passHref>
                   <Button
-                    className={
-                      currentRoute === '/metrics' ? 'active' : ''
-                    }
+                    className={currentRoute === '/metrics' ? 'active' : ''}
                     disableRipple
                     component="a"
                     onClick={closeSidebar}
@@ -240,7 +237,32 @@ function SidebarMenu() {
                   </Button>
                 </NextLink>
               </ListItem>
-
+            </List>
+          </SubMenuWrapper>
+        </List>
+        <List
+          component="div"
+          subheader={
+            <ListSubheader component="div" disableSticky>
+              Testing Dashboard
+            </ListSubheader>
+          }
+        >
+          <SubMenuWrapper>
+            <List component="div">
+              <ListItem component="div">
+                <NextLink href="/tests" passHref>
+                  <Button
+                    className={currentRoute === '/tests' ? 'active' : ''}
+                    disableRipple
+                    component="a"
+                    onClick={closeSidebar}
+                    startIcon={<TableChartTwoToneIcon />}
+                  >
+                    Tests
+                  </Button>
+                </NextLink>
+              </ListItem>
             </List>
           </SubMenuWrapper>
         </List>
@@ -257,11 +279,7 @@ function SidebarMenu() {
               <ListItem component="div">
                 <NextLink href="/connect" passHref>
                   <Button
-                    className={
-                      currentRoute === '/connect'
-                        ? 'active'
-                        : ''
-                    }
+                    className={currentRoute === '/connect' ? 'active' : ''}
                     disableRipple
                     component="a"
                     onClick={closeSidebar}
