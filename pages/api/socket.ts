@@ -2,8 +2,9 @@ import { NextApiRequest } from "next/types";
 import { NextApiResponseServerIO } from "src/common/types/io";
 import { Server as ServerIO } from "socket.io";
 import { Server as NetServer } from "http";
-import Kite from '@/common/kite';
-import ConsumerFactory from '@/common/kafkaConnector/ConsumerFactory';
+//import Kite from '@/common/kite';
+//import ConsumerFactory from '@/common/kafkaConnector/ConsumerFactory'; //note: socket API path is not currently being used in tests page
+//will remove altogether if we decide not to use it
 
 export const config = {
   api: {

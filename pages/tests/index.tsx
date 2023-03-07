@@ -33,7 +33,7 @@ import PageTitleWrapper from '@/components/PageTitleWrapper';
 import PageTitle from '@/components/PageTitle';
 import { KiteState } from '@../../src/common/kite/constants';
 import Footer from '@/components/Footer';
-import SocketIOClient from "socket.io-client";
+//import SocketIOClient from "socket.io-client"; TBD: remove if final version does not use sockets
 
 const TabsContainerWrapper = styled(Box)(
   ({ theme }) => `
