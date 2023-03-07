@@ -18,7 +18,8 @@ import {
   PROMCONFIG,
   downloadDir,
   network,
-  _ports_
+  _ports_,
+  KAFKA_CONNECT
 } from './constants';
 
 const dependencies: string[] = [];
@@ -57,6 +58,8 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
         YAML.services.spark = SPARK;
         setup.spark = { port: _ports_.spark.webui.external };
       }
+      // kafka-connect
+      YAML.services.kafka_connect = KAFKA_CONNECT;
       // prometheus
       const extPromPort = prometheus?.port ?? _ports_.prometheus.external;
       YAML.services.prometheus = {
@@ -340,8 +343,8 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           KAFKA_BROKER_ID: brokerID,
           KAFKA_JMX_PORT: jmxHostPort,
           // KAFKA_LISTENERS: `EXTERNAL://:${extPort}`,
-          KAFKA_LISTENERS: `METRICS://:${metricsPort},PLAINTEXT://:${extPort},INTERNAL://:${_ports_.kafka.spring},KSQL://${brokerName}:${_ports_.kafka.ksql}`,
-          KAFKA_ADVERTISED_LISTENERS: `METRICS://${brokerName}:${metricsPort},PLAINTEXT://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring},KSQL://${brokerName}:${_ports_.kafka.ksql}`,
+          KAFKA_LISTENERS: `METRICS://:${metricsPort},PLAINTEXT://:${extPort},INTERNAL://:${_ports_.kafka.spring},KSQL://${brokerName}:${_ports_.kafka.ksql},CONNECT://${brokerName}:${_ports_.kafka.connect}`,
+          KAFKA_ADVERTISED_LISTENERS: `METRICS://${brokerName}:${metricsPort},PLAINTEXT://${network}:${extPort},INTERNAL://${brokerName}:${_ports_.kafka.spring},KSQL://${brokerName}:${_ports_.kafka.ksql},CONNECT://${brokerName}:${_ports_.kafka.connect}`,
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR:
             (kafka.brokers.replicas ?? 1) > kafka.brokers.size
               ? kafka.brokers.size
@@ -406,6 +409,23 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
         depends_on: springDeps
       };
       setup.spring = { port: springPort };
+      // kafka-connect
+      const kcenv = YAML.services.kafka_connect.environment;
+      const kcdeps =
+        YAML.services.kafka_connect.depends_on.length === 0
+          ? [brokerName]
+          : [...YAML.services.kafka_connect.depends_on, brokerName];
+      YAML.services.kafka_connect = {
+        ...YAML.services.kafka_connect,
+        environment: {
+          ...kcenv,
+          CONNECT_BOOTSTRAP_SERVERS:
+            kcenv.CONNECT_BOOTSTRAP_SERVERS !== ''
+              ? `${kcenv.CONNECT_BOOTSTRAP_SERVERS},${brokerName}:${_ports_.kafka.connect}`
+              : `${brokerName}:${_ports_.kafka.connect}`
+        },
+        depends_on: kcdeps
+      };
     }
   }
 };

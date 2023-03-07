@@ -14,6 +14,7 @@ interface YAMLConfig {
     prometheus?: PrometheusConfig;
     grafana?: GrafanaCfg;
     jupyter?: BaseCfg;
+    kafka_connect?: KafkaConnectCfg;
   };
   volumes?: {
     [k: string]: VolumeCfg;
@@ -45,12 +46,14 @@ interface YAMLServicesDefaultSetup {
   grafana: PortForward;
   jupyter: PortForward;
   zookeeper: { client: PortForward; peer: PortForward };
+  kafkaconnect: PortForward;
   kafka: {
     jmx: number;
     broker: PortForward;
     spring: number;
     metrics: number;
     ksql: number;
+    connect: number;
   };
   jmx: PortForward;
 }
@@ -87,6 +90,25 @@ interface PROMConfig {
 }
 
 interface PrometheusConfig extends BaseCfg {}
+
+interface KafkaConnectCfg extends BaseCfg {
+  environment: {
+    CONNECT_BOOTSTRAP_SERVERS: string;
+    CONNECT_REST_PORT: number;
+    CONNECT_GROUP_ID: string;
+    CONNECT_CONFIG_STORAGE_TOPIC: string;
+    CONNECT_OFFSET_STORAGE_TOPIC: string;
+    CONNECT_STATUS_STORAGE_TOPIC: string;
+    CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: number;
+    CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: number;
+    CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: number;
+    CONNECT_KEY_CONVERTER: string; //org.apache.kafka.connect.json.JsonConverter
+    CONNECT_VALUE_CONVERTER: string; //org.apache.kafka.connect.json.JsonConverter
+    CONNECT_INTERNAL_KEY_CONVERTER: string; //org.apache.kafka.connect.json.JsonConverter
+    CONNECT_INTERNAL_VALUE_CONVERTER: string; //org.apache.kafka.connect.json.JsonConverter
+    CONNECT_REST_ADVERTISED_HOST_NAME: string; //localhost
+  };
+}
 
 interface KafkaBrokerCfg extends BaseCfg {
   environment: {
@@ -204,7 +226,7 @@ interface Juypter extends BaseCfg {
 // https://dev.to/mvillarrealb/creating-a-spark-standalone-cluster-with-docker-and-docker-compose-2021-update-6l4
 interface SparkCfg extends BaseCfg {
   environment: {
-    SPARK_LOCAL_IP: string;
+    SPARK_LOCAL_IP?: string;
     SPARK_MODE: 'master' | 'worker';
     SPARK_DAEMON_USER: string;
   };

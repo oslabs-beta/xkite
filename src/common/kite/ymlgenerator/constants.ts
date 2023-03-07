@@ -1,4 +1,5 @@
 import path from 'path';
+import { connect } from 'socket.io-client';
 
 export const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
 export const network = 'localhost'; //change to 0.0.0.0 to expose ports globally
@@ -18,12 +19,14 @@ export const _ports_: YAMLServicesDefaultSetup = {
     client: { internal: 2182, external: 2182 },
     peer: { internal: 2888, external: 3888 } // only internal docker net
   },
+  kafkaconnect: { internal: 8083, external: 8083 },
   kafka: {
     jmx: 9991, // only internal
     broker: { internal: 9092, external: 9092 },
     spring: 9095, // only internal
     metrics: 29092, // only internal
-    ksql: 9096 // only internal
+    ksql: 9096, // only internal
+    connect: 9097
   },
   jmx: { internal: 5556, external: 5566 }
 };
@@ -55,13 +58,38 @@ export const JMX: JMXConfg = {
   depends_on: []
 };
 
+export const KAFKA_CONNECT: KafkaConnectCfg = {
+  image: 'zforesta/kafka-connector:0.1',
+  ports: [`${_ports_.kafkaconnect.external}:${_ports_.kafkaconnect.internal}`],
+  environment: {
+    CONNECT_BOOTSTRAP_SERVERS: '', //kafka:9092
+    CONNECT_REST_PORT: _ports_.kafkaconnect.internal,
+    CONNECT_GROUP_ID: 'quickstart',
+    CONNECT_CONFIG_STORAGE_TOPIC: 'quickstart-config',
+    CONNECT_OFFSET_STORAGE_TOPIC: 'quickstart-offsets',
+    CONNECT_STATUS_STORAGE_TOPIC: 'quickstart-status',
+    CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1,
+    CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1,
+    CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1,
+    CONNECT_KEY_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter',
+    CONNECT_VALUE_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter',
+    CONNECT_INTERNAL_KEY_CONVERTER:
+      'org.apache.kafka.connect.json.JsonConverter',
+    CONNECT_INTERNAL_VALUE_CONVERTER:
+      'org.apache.kafka.connect.json.JsonConverter',
+    CONNECT_REST_ADVERTISED_HOST_NAME: network
+  },
+  container_name: 'kafka-connect',
+  depends_on: []
+};
+
 export const KAFKA_BROKER: KafkaBrokerCfg = {
   image: 'confluentinc/cp-kafka',
   restart: 'always',
   environment: {
     KAFKA_ZOOKEEPER_CONNECT: `zookeeper:${_ports_.zookeeper.peer.external}`,
     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:
-      'METRICS:PLAINTEXT,INTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT,KSQL:PLAINTEXT',
+      'METRICS:PLAINTEXT,INTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT,KSQL:PLAINTEXT,CONNECT:PLAINTEXT',
     KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL',
     CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: `zookeeper:${_ports_.zookeeper.peer.external}`,
     CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1,
@@ -69,8 +97,8 @@ export const KAFKA_BROKER: KafkaBrokerCfg = {
     KAFKA_HEAP_OPTS: '-Xmx512M -Xms512M',
     KAFKA_BROKER_ID: 101,
     KAFKA_JMX_PORT: _ports_.kafka.jmx,
-    KAFKA_LISTENERS: `METRICS://:${_ports_.kafka.metrics},PLAINTEXT://:${_ports_.kafka.broker.external},INTERNAL://:${_ports_.kafka.spring},KSQL://kafka:${_ports_.kafka.ksql}`,
-    KAFKA_ADVERTISED_LISTENERS: `METRICS://kafka:${_ports_.kafka.metrics},PLAINTEXT://${network}:${_ports_.kafka.broker.external},INTERNAL://kafka:${_ports_.kafka.spring},KSQL://kafka:${_ports_.kafka.ksql}`,
+    KAFKA_LISTENERS: `METRICS://:${_ports_.kafka.metrics},PLAINTEXT://:${_ports_.kafka.broker.external},INTERNAL://:${_ports_.kafka.spring},KSQL://kafka:${_ports_.kafka.ksql},CONNECT://kafka:${_ports_.kafka.connect}`,
+    KAFKA_ADVERTISED_LISTENERS: `METRICS://kafka:${_ports_.kafka.metrics},PLAINTEXT://${network}:${_ports_.kafka.broker.external},INTERNAL://kafka:${_ports_.kafka.spring},KSQL://kafka:${_ports_.kafka.ksql},CONNECT://kafka:${_ports_.kafka.connect}`,
     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1,
     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1,
     CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `kafka:${_ports_.kafka.metrics}`,
@@ -227,7 +255,7 @@ export const SPARK: SparkCfg = {
   ],
   container_name: 'spark',
   environment: {
-    SPARK_LOCAL_IP: 'spark-master',
+    // SPARK_LOCAL_IP: 'spark-master',
     SPARK_MODE: 'master', //don't change unless multiple spark config
     SPARK_DAEMON_USER: 'spark' //default
   },
