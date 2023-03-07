@@ -2,11 +2,8 @@ import { NextApiRequest } from "next/types";
 import { NextApiResponseServerIO } from "src/common/types/io";
 import { Server as ServerIO } from "socket.io";
 import { Server as NetServer } from "http";
-import ExampleConsumer from '../../src/common/utilities/consumerUtil';
-
-const clientId = 'json1';
-const brokers = ['localhost:9092', 'localhost:9093'];
-const topic = 'humanTopic';
+import Kite from '@/common/kite';
+import ConsumerFactory from '@/common/kafkaConnector/ConsumerFactory';
 
 export const config = {
   api: {
@@ -17,10 +14,11 @@ export const config = {
 // eslint-disable-next-line import/no-anonymous-default-export 
 export default async (req: NextApiRequest, res: NextApiResponseServerIO) => {
   console.log(req.body);
-  const newConsumer = new ExampleConsumer(brokers, clientId);
-  await newConsumer.listTopics();
-  await newConsumer.startBatchConsumer(topic);
-  console.log('...new consumer socket')
+  // const kafkaSetup = Kite.getKafkaSetup();
+  // const newConsumer = new ConsumerFactory(kafkaSetup);
+  // const topics = await newConsumer.listTopics();
+  // await newConsumer.startBatchConsumer(topics);
+  //console.log('...new consumer socket')
   if (!res.socket.server.io) {
     
     console.log("New Socket.io server...");
