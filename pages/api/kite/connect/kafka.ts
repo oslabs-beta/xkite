@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next/types';
 import Kite from '@/common/kite';
 import ProducerFactory from '@/common/kafkaConnector/ProducerFactory';
-import ConsumerFactory from '@/common/kafkaConnector/ConsumerFactory';
+// import ConsumerFactory from '@/common/kafkaConnector/ConsumerFactory'; --> potentially will be using to retrieve data on which partitions new messages are assigned to
+
 type Data = {
   reply?: string;
   err?: unknown;
