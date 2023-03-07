@@ -132,8 +132,8 @@ function Tests() {
 
   useEffect(() => {
     getSetup()
-    getTopics();
     checkActive();
+    getTopics();
     workerRef.current = new Worker(new URL('./worker.ts', import.meta.url));
     workerRef.current.onmessage = (event: MessageEvent<string>) => {
       console.log(event.data);
@@ -174,20 +174,22 @@ function Tests() {
 
   const getTopics = async () => {
     try {
-      const topicResponse = await fetch('/api/kite/connect/kafka', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          method: 'getTopics',
-        }),
-      })
-        .then((data) => data.json())
-        .catch((error) => console.error(error));
-      console.log(topicResponse)
-      setTopics(topicResponse)
-      setTopic('');
+      if(connected){
+        const topicResponse = await fetch('/api/kite/connect/kafka', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            method: 'getTopics',
+          }),
+        })
+          .then((data) => data.json())
+          .catch((error) => console.error(error));
+        console.log(topicResponse)
+        setTopics(topicResponse)
+        setTopic('');
+      }
     } catch (err) {
       setConnected(false);
       console.log(err);
@@ -421,7 +423,7 @@ function Tests() {
                       }}
                       helperText="Please select your topic"
                     >
-                      {topics.map((option) => (
+                      {topics && topics.map((option) => (
                         <MenuItem key={option} value={option}>
                           {option}
                         </MenuItem>
