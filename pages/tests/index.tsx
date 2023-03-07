@@ -218,22 +218,24 @@ function Tests() {
 
   const submitTopic = async (e: SyntheticEvent): Promise<void> => {
     e.preventDefault();
-    if(topic.length){
-      const topicResponse = await fetch('/api/kite/connect/kafka', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          method: 'createTopics',
-          topic,
-        }),
-      })
-        .then((data) => data.json())
-        .catch((error) => console.error(error));
-      console.log(topicResponse)
-      setTopics(topicResponse)
-      setTopic('');
+    if(connected){
+      if(topic.length){
+        const topicResponse = await fetch('/api/kite/connect/kafka', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            method: 'createTopics',
+            topic,
+          }),
+        })
+          .then((data) => data.json())
+          .catch((error) => console.error(error));
+        console.log(topicResponse)
+        setTopics(topicResponse)
+        setTopic('');
+      }
     }
   };
 
@@ -241,24 +243,27 @@ function Tests() {
 
   const sendMessage = async (e: SyntheticEvent): Promise<void> => {
     e.preventDefault();
-    if(message.length){
-      const messageResponse = await fetch('/api/kite/connect/kafka', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          method: 'sendMessage',
-          messages: [{value: message}],
-          topic,
-        }),
-      })
-        .then((data) => data.json())
-        .catch((error) => console.error(error));
-      console.log(messageResponse)
-      setTopic('');
-      setMessage('');
+    if(connected){
+      if(message.length){
+        const messageResponse = await fetch('/api/kite/connect/kafka', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            method: 'sendMessage',
+            messages: [{value: message}],
+            topic,
+          }),
+        })
+          .then((data) => data.json())
+          .catch((error) => console.error(error));
+        console.log(messageResponse)
+        setTopic('');
+        setMessage('');
+      }
     }
+    
   };
 
   const handleWork = useCallback(
