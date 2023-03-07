@@ -33,6 +33,7 @@
     "zookeeper"
   ],
   "dependencies": {
+    "@builder.io/partytown": "^0.7.5",
     "@emotion/cache": "11.7.1",
     "@emotion/react": "11.9.0",
     "@emotion/server": "11.4.0",
@@ -93,8 +94,8 @@
     "js-yaml": "^4.1.0",
     "kafkajs": "^2.2.3",
     "net": "^1.0.2",
-    "prettier": "^2.8.4",
     "next-transpile-modules": "9.0.0",
+    "prettier": "^2.8.4",
     "prettier-eslint": "^15.0.1",
     "sass": "^1.58.3",
     "web-worker": "^1.2.0",
