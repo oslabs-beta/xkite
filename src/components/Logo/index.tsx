@@ -92,7 +92,7 @@ const VersionBadge = styled(Box)(
         font-size: ${theme.typography.pxToRem(11)};
 `
 );
-
+// @ts-ignore 
 const LogoText = styled(Box)(
   ({ theme }) => `
         font-size: ${theme.typography.pxToRem(15)};
@@ -118,7 +118,7 @@ function Logo() {
           <Tooltip title="Version 1.0" arrow placement="right">
             <VersionBadge>1.0</VersionBadge>
           </Tooltip>
-          <LogoText>Tokyo Free Black</LogoText>
+          
         </LogoTextWrapper>
       </Box>
     </LogoWrapper>

@@ -99,7 +99,7 @@ function Logo() {
 
   return (
     <TooltipWrapper
-      title="Tokyo Free Black Next.js Typescript Admin Dashboard"
+      title="xKite: Kafka Integrated Testing Environment"
       arrow
     >
       <LogoWrapper href="/">
@@ -113,7 +113,6 @@ function Logo() {
           }}
           overlap="circular"
           color="success"
-          badgeContent="1.0"
         >
           <LogoSignWrapper>
             <LogoSign>

@@ -11,13 +11,19 @@ import Link from 'src/components/Link';
 
 const TypographyH1 = styled(Typography)(
   ({ theme }) => `
-    font-size: ${theme.typography.pxToRem(50)};
+    font-size: ${theme.typography.pxToRem(70)};
+`
+);
+
+const TypographyH12 = styled(Typography)(
+  ({ theme }) => `
+    font-size: ${theme.typography.pxToRem(55)};
 `
 );
 
 const TypographyH2 = styled(Typography)(
   ({ theme }) => `
-    font-size: ${theme.typography.pxToRem(17)};
+    font-size: ${theme.typography.pxToRem(22)};
 `
 );
 
@@ -47,8 +53,11 @@ function Hero() {
         <Grid item md={10} lg={8} mx="auto">
           <LabelWrapper color="success">Version 1.0.0</LabelWrapper>
           <TypographyH1 sx={{ mb: 2 }} variant="h1">
-            Welcome to xKite
+            xKite: 
           </TypographyH1>
+          <TypographyH12 sx={{ mb: 2 }} variant="h1">
+            Kafka Integrated Testing Environment
+          </TypographyH12>
           <TypographyH2
             sx={{ lineHeight: 1.5, pb: 4 }}
             variant="h4"
@@ -69,8 +78,6 @@ function Hero() {
           <Button
             sx={{ ml: 2 }}
             component="a"
-            target="_blank"
-            rel="noopener"
             href="/connect"
             size="large"
             variant="text"

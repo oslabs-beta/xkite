@@ -3,8 +3,8 @@
   "background_color": "#f2f5f9",
   "display": "standalone",
   "start_url": ".",
-  "short_name": "Tokyo",
-  "name": "Tokyo Free Black NextJS Typescript Admin Dashboard",
+  "short_name": "xKite",
+  "name": "xKite: Kafka Integrated Testing Environment",
   "icons": [
     {
       "src": "/icon-192x192.png",
