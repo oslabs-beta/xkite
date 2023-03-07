@@ -95,6 +95,6 @@ function Accordions() {
   );
 }
 
-Accordions.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+Accordions.getLayout = (page: any) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default Accordions;

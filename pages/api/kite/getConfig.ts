@@ -11,6 +11,7 @@ export default async function handler(
   if (req.method === 'GET') {
     try {
       const config = await Kite.getConfig();
+      console.log(config, 'from backend')
       if (!config) throw Error('Config not defined!');
       res.status(200).json(config);
     } catch (err) {

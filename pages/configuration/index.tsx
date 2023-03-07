@@ -558,6 +558,6 @@ function Forms() {
   );
 }
 
-Forms.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+Forms.getLayout = (page: any) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default Forms;
