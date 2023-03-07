@@ -15,7 +15,7 @@ export default class ProducerFactory {
   private producer: Producer;
   private isConnected: boolean = false;
 
-  constructor(brokers: string[], clientId: string) {
+constructor(brokers: string[], clientId: string) {
     this.producer = this.createProducer(brokers, clientId);
   }
 

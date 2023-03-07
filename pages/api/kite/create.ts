@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-import Kite from '@/common/kite';
+import Kite from '../../../src/common/kite';
 
 type Data = {
   reply?: string;
