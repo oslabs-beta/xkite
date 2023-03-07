@@ -3,7 +3,8 @@ import React, {
   SyntheticEvent,
   useRef,
   useEffect,
-  useCallback
+  useCallback,
+  ChangeEvent
 } from 'react';
 import {
   FormControl,
@@ -16,9 +17,13 @@ import {
   Container,
   Tab,
   Tabs,
+  MenuItem,
   styled,
   Box,
+  CardContent,
   Card,
+  Typography,
+  Divider,
   TextField
 } from '@mui/material';
 import Head from 'next/head';
@@ -27,6 +32,7 @@ import PageTitleWrapper from '@/components/PageTitleWrapper';
 import PageTitle from '@/components/PageTitle';
 import { KiteState } from '@../../src/common/kite/constants';
 import Footer from '@/components/Footer';
+//import SocketIOClient from "socket.io-client"; TBD: remove if final version does not use sockets
 
 const TabsContainerWrapper = styled(Box)(
   ({ theme }) => `
@@ -117,8 +123,14 @@ function Tests(props) {
   const [query, setQuery] = useState('');
   const [qResults, setQResults] = useState<string[]>([]);
   const [connected, setConnected] = useState(false);
+  const [topic, setTopic] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
+  const [grafanaPort, setGrafanaPort] = useState<string>('');
+  const [topics, setTopics] = useState<string[]>([]);
 
   useEffect(() => {
+    getSetup();
+    getTopics();
     checkActive();
     workerRef.current = new Worker(new URL('./worker.ts', import.meta.url));
     workerRef.current.onmessage = (event: MessageEvent<string>) => {
@@ -147,19 +159,101 @@ function Tests(props) {
     }
   };
 
+  const getSetup = async () => {
+    try {
+      const { grafana } = await fetch('/api/kite/getSetup').then((data) =>
+        data.json()
+      );
+      console.log(grafana.port);
+      setGrafanaPort(grafana.port.toString());
+    } catch (err) {
+      setConnected(false);
+      console.log(err);
+    }
+  };
+
+  const getTopics = async () => {
+    try {
+      const topicResponse = await fetch('/api/kite/connect/kafka', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          method: 'getTopics'
+        })
+      })
+        .then((data) => data.json())
+        .catch((error) => console.error(error));
+      console.log(topicResponse);
+      setTopics(topicResponse);
+      setTopic('');
+    } catch (err) {
+      setConnected(false);
+      console.log(err);
+    }
+  };
+
   const pageMessage = () => {
     return (
       <PageTitle
-        heading="You Do Not Have an Active Deployment"
-        subHeading="Navigate to 'Create Data Pipeline' to configure and deploy a Kafka instance, or 'connect existing' to connect an existing deployment in order to view tests."
+        heading="Test Your Kafka Instance"
+        subHeading="Add or remove topics, send messages, configure your load balancing strategy, and more."
       />
     );
   };
 
-  const tabs = [{ value: 'ksql-streams', label: 'KSQL Streams' }];
+  const tabs = [
+    { value: 'ksql-streams', label: 'KSQL Streams' },
+    { value: 'topics', label: 'Topics' },
+    { value: 'messages', label: 'Messages' }
+  ];
 
   const handleTabsChange = (_event: ChangeEvent<{}>, value: string): void => {
     setCurrentTab(value);
+  };
+
+  const submitTopic = async (e: SyntheticEvent): Promise<void> => {
+    e.preventDefault();
+    if (topic.length) {
+      const topicResponse = await fetch('/api/kite/connect/kafka', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          method: 'createTopics',
+          topic
+        })
+      })
+        .then((data) => data.json())
+        .catch((error) => console.error(error));
+      console.log(topicResponse);
+      setTopics(topicResponse);
+      setTopic('');
+    }
+  };
+
+  const sendMessage = async (e: SyntheticEvent): Promise<void> => {
+    e.preventDefault();
+    if (message.length) {
+      const messageResponse = await fetch('/api/kite/connect/kafka', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          method: 'sendMessage',
+          messages: [{ value: message }],
+          topic
+        })
+      })
+        .then((data) => data.json())
+        .catch((error) => console.error(error));
+      console.log(messageResponse);
+      setTopic('');
+      setMessage('');
+    }
   };
 
   const handleWork = useCallback(
@@ -178,9 +272,9 @@ function Tests(props) {
   return (
     <>
       <Head>
-        <title>Create/View Streams</title>
+        <title>Test Your Kafka Configuration</title>
       </Head>
-      <PageTitleWrapper>{!connected && pageMessage()}</PageTitleWrapper>
+      <PageTitleWrapper>{pageMessage()}</PageTitleWrapper>
       <Container maxWidth="xl">
         <TabsContainerWrapper>
           <Tabs
@@ -196,7 +290,7 @@ function Tests(props) {
             ))}
           </Tabs>
         </TabsContainerWrapper>
-        <h1 id="generalHeader">Create/View Streams</h1>
+        <h2 id="generalHeader">{currentTab}</h2>
         <Card variant="outlined">
           <Grid
             container
@@ -221,7 +315,7 @@ function Tests(props) {
                   </FormGroup>
                   <Button onClick={handleWork}>send</Button>
                 </FormControl>
-                <FormGroup>
+                <FormGroup sx={{ width: '100%', height: '50%' }}>
                   <InputLabel>Results:</InputLabel>
                   <Input
                     id="textarea-results"
@@ -242,6 +336,6 @@ function Tests(props) {
   );
 }
 
-Tests.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+Tests.getLayout = (page: any) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default Tests;

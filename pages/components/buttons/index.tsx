@@ -216,6 +216,6 @@ function Buttons() {
   );
 }
 
-Buttons.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+Buttons.getLayout = (page: any) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default Buttons;
