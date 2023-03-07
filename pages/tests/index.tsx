@@ -18,7 +18,8 @@ import {
   Tabs,
   styled,
   Box,
-  Card
+  Card,
+  TextField
 } from '@mui/material';
 import Head from 'next/head';
 import SidebarLayout from '@/layouts/SidebarLayout';
@@ -109,7 +110,7 @@ const TabsContainerWrapper = styled(Box)(
   `
 );
 
-function Tests() {
+function Tests(props) {
   const theme = useTheme();
   const [currentTab, setCurrentTab] = useState<string>('ksql-streams');
   const workerRef = useRef<Worker>();
@@ -166,10 +167,10 @@ function Tests() {
       // console.log('handling?');
       // e.preventDefault();
       setQResults(['']);
-      let type = 'query';
-      if (query.startsWith('CREATE')) type = 'create';
-      workerRef.current?.postMessage({ type, sql: query });
-      // setQuery('');
+      let type = 'ksql';
+      if (query.toUpperCase().startsWith('SELECT')) type = 'query';
+      workerRef.current?.postMessage({ type, ksql: query });
+      setQuery('');
     },
     [query]
   );
@@ -226,6 +227,8 @@ function Tests() {
                     id="textarea-results"
                     aria-label="With textarea"
                     value={qResults.slice(1)}
+                    multiline
+                    maxRows={25}
                     readOnly
                   />
                 </FormGroup>

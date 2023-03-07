@@ -46,12 +46,12 @@ const override: CSSProperties = {
 
 const dataSources = [
   {
-    value: 'postgresql',
-    label: 'PostgreSQL'
-  },
-  {
     value: 'ksql',
     label: 'KSQL'
+  },
+  {
+    value: 'postgresql',
+    label: 'PostgreSQL'
   }
 ];
 
@@ -76,6 +76,7 @@ function Forms() {
   const [expanded, setExpanded] = useState<string | false>(false);
   const [loader, setLoader] = useState(0);
   const [active, setActive] = useState(0);
+  const [shuttingDown, setShuttingDown] = useState(false);
 
   useEffect(() => {
     checkActive();
@@ -138,7 +139,11 @@ function Forms() {
           aria-label="Loading Spinner"
           data-testid="loader"
         />
-        <p>Please stand by while containers are deployed</p>
+        {shuttingDown ? (
+          <p>Please stand by while containers are being removed</p>
+        ) : (
+          <p>Please stand by while containers are deployed</p>
+        )}
       </div>
     );
   };
@@ -167,8 +172,6 @@ function Forms() {
   };
 
   function ShutDownBtn() {
-    const [shuttingDown, setShuttingDown] = useState(false);
-
     async function disconnectHandler(event: SyntheticEvent): Promise<void> {
       console.log(event);
       setShuttingDown(true);
@@ -180,6 +183,7 @@ function Forms() {
         console.error('Error occurred during shutdown:', error);
       }
       setActive(0);
+      setShuttingDown(false);
     }
 
     return (
@@ -533,7 +537,8 @@ function Forms() {
             </Accordion>
           </Grid>
           <Grid textAlign="center" item xs={12}>
-            {active === 1 && isActive()}
+            {active === 1 && shuttingDown && isLoading()}
+            {!shuttingDown && active === 1 && isActive()}
             {active === 0 && loader === 0 && (
               <Button
                 sx={{ margin: 2 }}

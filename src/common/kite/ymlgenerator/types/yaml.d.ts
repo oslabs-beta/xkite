@@ -163,6 +163,7 @@ interface KSQLConfig extends BaseCfg {
     KSQL_ACCESS_CONTROL_ALLOW_METHODS?: string;
     KSQL_ACCESS_CONTROL_ALLOW_HEADERS?: string;
     KSQL_ALLOW_AUTO_CREATE_TOPICS?: 'true' | 'false';
+    KSQL_OPTS?: string;
     // Growth:
     // KSQL_SECURITY_PROTOCOL:SASL_SSL
     // KSQL_SASL_MECHANISM:PLAIN

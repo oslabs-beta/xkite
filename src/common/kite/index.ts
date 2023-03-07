@@ -18,7 +18,7 @@ import {
   setSetup,
   setState,
   setServerState,
-  setConfigFile,
+  setConfigFile
 } from '@/common/kite/slice';
 
 function KiteCreator() {
@@ -39,7 +39,7 @@ function KiteCreator() {
         fetch(`${server}/api/kite/getConfig`),
         fetch(`${server}/api/kite/getSetup`),
         fetch(`${server}/api/kite/getConfigFile`),
-        fetch(`${server}/api/kite/getPackageBuild`),
+        fetch(`${server}/api/kite/getPackageBuild`)
       ];
       store.dispatch(setConfig((await res[0]).json()));
       store.dispatch(setSetup((await res[1]).json()));
@@ -71,7 +71,7 @@ function KiteCreator() {
       store.dispatch(setPackageBuild(zipPath));
       const header = {
         'Content-Type': 'text/yml',
-        'Content-Length': fs.statSync(configPath).size,
+        'Content-Length': fs.statSync(configPath).size
       };
       const fileStream = fs.readFileSync(configPath, 'utf-8');
       store.dispatch(setConfigFile({ header, fileStream }));
@@ -106,7 +106,7 @@ function KiteCreator() {
       console.log('deploying docker containers...');
       await compose.upAll({
         cwd: downloadDir,
-        log: true,
+        log: true
         // commandOptions: '', // TBD set the name of container
         // callback: (chunk: Buffer) => { //TODO remove
         //   //progress report
@@ -127,9 +127,9 @@ function KiteCreator() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Accept: 'application/json',
+          Accept: 'application/json'
         },
-        body: JSON.stringify({ disconnect: true }),
+        body: JSON.stringify({ disconnect: true })
       });
     } catch (err) {
       console.error(`Could not shutdown docker instances on server:\n${err}`);
@@ -141,7 +141,7 @@ function KiteCreator() {
       await compose.down({
         cwd: downloadDir,
         log: true,
-        commandOptions: ['--remove-orphans', '--volumes'], //force stop and delete volumes.
+        commandOptions: ['--remove-orphans', '--volumes'] //force stop and delete volumes.
       });
     } catch (err) {
       console.error(`Could not shutdown docker instances on local:\n${err}`);
@@ -157,9 +157,9 @@ function KiteCreator() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Accept: 'application/json',
+          Accept: 'application/json'
         },
-        body: JSON.stringify({ disconnect: true }),
+        body: JSON.stringify({ disconnect: true })
       });
     } catch (err) {
       console.error(`Could not disconnect docker instances on server:\n${err}`);
@@ -178,7 +178,7 @@ function KiteCreator() {
       await compose.down({
         cwd: downloadDir,
         log: true,
-        commandOptions: ['--remove-orphans', '--volumes'], //force stop and delete volumes.
+        commandOptions: ['--remove-orphans', '--volumes'] //force stop and delete volumes.
       });
     } catch (err) {
       console.error(`Could not disconnect docker instances on local:\n${err}`);
@@ -308,7 +308,7 @@ function KiteCreator() {
       return new Promise((res, rej) => {
         const header = {
           'Content-Type': 'application/zip',
-          'Content-Length': fs.statSync(zipPath).size,
+          'Content-Length': fs.statSync(zipPath).size
         };
         const fileStream = fs.readFileSync(zipPath);
         res({ header, fileStream });
@@ -341,12 +341,12 @@ function KiteCreator() {
       const { serverState } = store.getState();
       if (serverState === KiteServerState.Connected) {
         store.dispatch(setServerState(KiteServerState.Disconnected));
-        shutdownServer();
+        await shutdownServer();
       } else {
-        shutdownLocal();
+        await shutdownLocal();
       }
       store.dispatch(setState(KiteState.Shutdown));
-    },
+    }
   };
 }
 const Kite = KiteCreator();
