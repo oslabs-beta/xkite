@@ -1,6 +1,8 @@
 import yaml from 'js-yaml';
 import fs from 'fs-extra';
 import path from 'path';
+import os from 'os';
+
 import {
   YAML,
   SPRING,
@@ -18,18 +20,21 @@ import {
   PROMCONFIG,
   downloadDir,
   network,
-  _ports_,
+  _ports_
 } from './constants';
-import { KafkaConfig } from 'kafkajs';
 
 const dependencies: string[] = [];
 const setup: KiteSetup = {
   kafkaSetup: {
     clientId: '',
     brokers: [],
-    ssl: false,
-  },
+    ssl: false
+  }
 };
+const ipAddress = Object.values(os.networkInterfaces())
+  .flat()
+  .filter(({ family, internal }) => family === 'IPv4' && !internal)
+  .map(({ address }) => address)[0];
 /**
  * creates the pertinent yml configuration for docker
  * based on the input config
@@ -62,14 +67,14 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       const extPromPort = prometheus?.port ?? _ports_.prometheus.external;
       YAML.services.prometheus = {
         ...PROMETHEUS,
-        ports: [`${extPromPort}:${_ports_.prometheus.internal}`],
+        ports: [`${extPromPort}:${_ports_.prometheus.internal}`]
       };
       setup.prometheus = { port: extPromPort };
       // grafana
       const extGrafPort = grafana?.port ?? _ports_.grafana.external;
       YAML.services.grafana = {
         ...GRAFANA,
-        ports: [`${extGrafPort}:${_ports_.grafana.internal}`],
+        ports: [`${extGrafPort}:${_ports_.grafana.internal}`]
       };
       setup.grafana = { port: extGrafPort };
       // Checks if directories download, prometheus and jmx exist, if not, then it creates all of them
@@ -100,6 +105,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       );
 
       PROMCONFIG.scrape_configs[0].static_configs[0].targets = [];
+      PROMCONFIG.scrape_configs[1].static_configs[0].targets = [];
     } catch (error) {
       console.log(error);
     } finally {
@@ -124,14 +130,14 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           ...POSTGRES.environment,
           POSTGRES_USER: db.postgresql?.username ?? 'admin',
           POSTGRES_PASSWORD: db.postgresql?.password ?? 'admin',
-          POSTGRES_DB: db.postgresql?.dbname ?? 'xkiteDB',
-        },
+          POSTGRES_DB: db.postgresql?.dbname ?? 'xkiteDB'
+        }
       };
       YAML.volumes = {
         ...YAML.volumes,
         postgresql: {
-          driver: 'local',
-        },
+          driver: 'local'
+        }
       };
     } else if (db?.name === 'ksql') {
       YAML.services.ksql = {
@@ -142,20 +148,20 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           KSQL_LISTENERS: `http://0.0.0.0:${db.port ?? _ports_.ksql.external}`,
           KSQL_KSQL_SCHEMA_REGISTRY_URL: `http://schema-registry:${
             db.ksql?.schema_port ?? _ports_.ksql_schema.internal //TODO revisit/test
-          }`,
-        },
+          }`
+        }
       };
       YAML.services.ksql_schema = {
         ...KSQL_SCHEMA,
         ports: [
           `${db.ksql?.schema_port ?? _ports_.ksql_schema.external}:${
             _ports_.ksql_schema.internal
-          }`,
-        ],
+          }`
+        ]
       };
       YAML.services.ksql_cli = {
         ...KSQL_CLI,
-        depends_on: [YAML.services.ksql.container_name],
+        depends_on: [YAML.services.ksql.container_name]
       };
     }
     return db;
@@ -234,10 +240,10 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           ...ZOOKEEPER.environment,
           ZOOKEEPER_SERVER_ID: n,
           ZOOKEEPER_CLIENT_PORT: cport,
-          ZOOKEEPER_SERVERS: servers.zkPeers,
+          ZOOKEEPER_SERVERS: servers.zkPeers
         },
         ports: [`${cport}:${_ports_.zookeeper.client.internal}`],
-        container_name: name,
+        container_name: name
       };
       setup.zookeeper.ports.push(cport);
       // update the schema with the zk info
@@ -274,6 +280,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
     const springBSServers = [];
     const springDeps = [];
     setup.jmx = { ports: [] };
+    let userIP = '';
     for (let i = 0; i < kafka.brokers.size; i++) {
       const n = i + 1;
       // JMX Config:
@@ -289,16 +296,16 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
         ports: [`${jmxPort}:${_ports_.jmx.internal}`],
         environment: {
           ...JMX.environment,
-          SERVICE_PORT: _ports_.jmx.internal,
+          SERVICE_PORT: _ports_.jmx.internal
         },
         container_name: jmxName,
         volumes: [
           `${path.join(
             downloadDir,
             `/jmx/jmxConfigKafka${n}.yml`
-          )}:/etc/myconfig.yml`,
+          )}:/etc/myconfig.yml`
         ],
-        depends_on: [`kafka${n}`],
+        depends_on: [`kafka${n}`]
       };
       setup.jmx.ports.push(jmxPort);
       // Kafka Config:
@@ -353,9 +360,9 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
               : kafka.brokers.replicas ?? 1,
           CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `${brokerName}:${metricsPort}`,
           KAFKA_ZOOKEEPER_CONNECT: servers.zkClients,
-          CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: servers.zkClients,
+          CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: servers.zkClients
         },
-        depends_on: dependencies,
+        depends_on: dependencies
       };
       // requires port forwarding on host computer
       setup.kafkaSetup.brokers.push(`${network}:${extPort}`);
@@ -363,6 +370,9 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       PROMCONFIG.scrape_configs[0].static_configs[0].targets.push(
         `${jmxName}:${_ports_.jmx.internal}`
       );
+      PROMCONFIG.scrape_configs[1].static_configs[0].targets.push(
+        `${ipAddress}:${_ports_.docker.internal}`
+      ); //TO DO: IK: configure the port
 
       jmxExporterConfig.hostPort = `kafka${n}:${jmxHostPort}`;
       fs.writeFileSync(
@@ -380,17 +390,17 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
             ...YAML.services.ksql.environment,
             KSQL_BOOTSTRAP_SERVERS:
               YAML.services.ksql.environment.KSQL_BOOTSTRAP_SERVERS +
-              `${brokerName}:${_ports_.kafka.ksql},`,
-          },
+              `${brokerName}:${_ports_.kafka.ksql},`
+          }
         };
         if (YAML.services.ksql_cli !== undefined) {
           const deps = YAML.services.ksql_cli.depends_on ?? [
-            YAML.services.ksql.container_name,
+            YAML.services.ksql.container_name
           ];
           deps.push(`${brokerName}`);
           YAML.services.ksql_cli = {
             ...YAML.services.ksql_cli,
-            depends_on: deps,
+            depends_on: deps
           };
         }
       }
@@ -402,9 +412,9 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           ...SPRING.environment,
           'SPRING_KAFKA_BOOTSTRAP-SERVERS': springBSServers.join(','),
           'SPRING_KAFKA_CONSUMER_BOOTSTRAP-SERVERS': springBSServers.join(','),
-          'SPRING_KAFKA_PRODUCER_BOOTSTRAP-SERVERS': springBSServers.join(','),
+          'SPRING_KAFKA_PRODUCER_BOOTSTRAP-SERVERS': springBSServers.join(',')
         },
-        depends_on: springDeps,
+        depends_on: springDeps
       };
       setup.spring = { port: springPort };
     }
