@@ -344,7 +344,7 @@ function Tests() {
                     }
                     
                     {
-                      topics.map(topic => {
+                      topics && topics.map(topic => {
                         return <div key={topics.indexOf(topic)}>{topic}</div>
                       })
                     }
