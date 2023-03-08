@@ -1,6 +1,6 @@
 // types/common/kite.d.ts
 
-interface KiteConfig {
+export interface KiteConfig {
   kafka: KiteKafkaCfg;
   db?: dbCfg;
   sink?: sinkCfg;
@@ -8,7 +8,7 @@ interface KiteConfig {
   prometheus?: prometheusCfg;
 }
 
-interface dbCfg {
+export interface dbCfg {
   name: 'postgresql' | 'ksql';
   port?: number;
   postgresql?: {
@@ -21,7 +21,7 @@ interface dbCfg {
   };
 }
 
-interface sinkCfg {
+export interface sinkCfg {
   name: 'jupyter' | 'spark';
   port?: number;
 }

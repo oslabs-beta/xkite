@@ -250,5 +250,5 @@ interface BaseCfg {
   depends_on?: Array<string>;
   container_name: string;
   entrypoint?: string;
-  tty?: 'true' | 'false';
+  tty?: true | false;
 }

@@ -214,7 +214,7 @@ export const KSQL_CLI: BaseCfg = {
   // EOF`
   // ],
   volumes: [`${path.join(downloadDir, 'ksql/testscript.sql')}:/tmp/test.sql`],
-  tty: 'true'
+  tty: true
 };
 
 // # Schema Registry

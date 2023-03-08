@@ -1,6 +1,7 @@
 import Head from 'next/head';
-import SidebarLayout from '@/layouts/SidebarLayout';
-import PageTitle from '@/components/PageTitle';
+import SidebarLayout from '../../src/layouts/SidebarLayout';
+import PageTitle from '../../src/components/PageTitle';
+import { KiteConfig, dbCfg, sinkCfg } from '../../src/common/kite/types/kite';
 import {
   useState,
   SyntheticEvent,
@@ -8,11 +9,11 @@ import {
   useEffect,
   ChangeEvent
 } from 'react';
-import defaultCfg from '@/common/kite/constants';
-import PageTitleWrapper from '@/components/PageTitleWrapper';
+import defaultCfg from '../../src/common/kite/constants';
+import PageTitleWrapper from '../../src/components/PageTitleWrapper';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HashLoader from 'react-spinners/HashLoader';
-import { KiteState } from '@../../src/common/kite/constants';
+import { KiteState } from '../../src/common/kite/constants';
 import axios from 'axios';
 import {
   Container,
@@ -27,11 +28,12 @@ import {
   AccordionSummary,
   Typography
 } from '@mui/material';
-import Footer from 'src/components/Footer';
+import Footer from '../../src/components/Footer';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import ExportConfigBtn from '@/content/Dashboards/Tasks/ExportConfigBtn';
+import ExportConfigBtn from '../../src/content/Dashboards/Tasks/ExportConfigBtn';
+import React from 'react';
 
 export interface PortsOpen {
   [index: string]: PortOpen;
@@ -149,7 +151,7 @@ function Forms() {
     );
   };
 
-  const queryMetrics = () => {
+  const queryMetrics = async () => {
     const interval = setInterval(async () => {
       try {
         const response = await fetch('/api/kite/getKiteState');
@@ -195,7 +197,6 @@ function Forms() {
   }
 
   const checkPortOpen: CheckPortOpen = async (index, type, port) => {
-    //console.log({ index, type, port });
     const isOpen = await isPortOpen(port);
     console.log(portsOpen[`broker-0`], '187');
     setPortsOpen((portsOpen) => ({
@@ -205,8 +206,6 @@ function Forms() {
         [type]: isOpen
       }
     }));
-    //console.log(isOpen);
-
     return isOpen;
   };
 
@@ -246,24 +245,23 @@ function Forms() {
     } catch (error) {
       console.error(error);
     }
-    // .then((response) => {
-    //   console.dir(response);
-    // })
-    // .catch((error) => {
-    // });
-    // setSubmit(false);
   }
 
   const handleData = (event: ChangeEvent) => {
-    updateKiteConfigRequest({
-      db: {
-        name: event.target.value
-      }
-    });
+    const target = event.target as HTMLButtonElement;
+    if(target.value === 'postgresql' || target.value === 'ksql' ){
+      const name: dbCfg["name"] = target.value;
+      updateKiteConfigRequest({
+        db: {
+          name
+        }
+      });
+    }
   };
 
   const handleBrokers = (event: ChangeEvent) => {
-    const size = event.target.value;
+    const target = event.target as HTMLButtonElement;
+    const size = Number(target.value);
     if (size <= 0) return;
     const update = {
       kafka: {
@@ -278,7 +276,8 @@ function Forms() {
   };
 
   const handleZoo = (event: ChangeEvent) => {
-    const size = event.target.value;
+    const target = event.target as HTMLButtonElement;
+    const size = Number(target.value);
     if (size <= 0) return;
     const update = {
       kafka: {
@@ -293,11 +292,15 @@ function Forms() {
   };
 
   const handleSink = (event: ChangeEvent) => {
-    updateKiteConfigRequest({
-      sink: {
-        name: event.target.value
-      }
-    });
+    const target = event.target as HTMLButtonElement;
+    if(target.value === 'jupyter' || target.value === 'spark' ){
+      const name: sinkCfg["name"] = target.value;
+      updateKiteConfigRequest({
+        sink: {
+          name
+        }
+      });
+    };
   };
 
   const renderAdvanced = () => {
@@ -365,7 +368,7 @@ function Forms() {
             }}
             error={
               portsOpen
-                ? Object.hasOwn(portsOpen, `broker-${i}`)
+                ? portsOpen[`broker-${i}`]
                   ? !portsOpen[`broker-${i}`].port
                   : false
                 : false
