@@ -121,7 +121,11 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       dependencies.push(db.name);
       YAML.services.postgresql = {
         ...POSTGRES,
-        ports: [`${db.port}:${_ports_.postgresql.internal}`],
+        ports: [
+          `${db.port ?? _ports_.postgresql.external}:${
+            _ports_.postgresql.internal
+          }`
+        ],
         environment: {
           ...POSTGRES.environment,
           POSTGRES_USER: db.postgresql?.username ?? 'admin',
