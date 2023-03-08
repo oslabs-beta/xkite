@@ -129,9 +129,9 @@ function Tests(props) {
   const [topics, setTopics] = useState<string[]>([]);
 
   useEffect(() => {
+    checkActive();
     getSetup();
     getTopics();
-    checkActive();
     workerRef.current = new Worker(new URL('./worker.ts', import.meta.url));
     workerRef.current.onmessage = (event: MessageEvent<string>) => {
       console.log(event.data);
@@ -161,11 +161,11 @@ function Tests(props) {
 
   const getSetup = async () => {
     try {
-      const { grafana } = await fetch('/api/kite/getSetup').then((data) =>
-        data.json()
-      );
-      console.log(grafana.port);
-      setGrafanaPort(grafana.port.toString());
+      
+      const {grafana} = await fetch('/api/kite/getSetup').then(data => data.json());
+      console.log(grafana.port) 
+      setGrafanaPort(grafana.port.toString())
+      
     } catch (err) {
       setConnected(false);
       console.log(err);
@@ -174,20 +174,22 @@ function Tests(props) {
 
   const getTopics = async () => {
     try {
-      const topicResponse = await fetch('/api/kite/connect/kafka', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          method: 'getTopics'
+      if(connected){
+        const topicResponse = await fetch('/api/kite/connect/kafka', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            method: 'getTopics',
+          }),
         })
-      })
-        .then((data) => data.json())
-        .catch((error) => console.error(error));
-      console.log(topicResponse);
-      setTopics(topicResponse);
-      setTopic('');
+          .then((data) => data.json())
+          .catch((error) => console.error(error));
+        console.log(topicResponse)
+        setTopics(topicResponse)
+        setTopic('');
+      }
     } catch (err) {
       setConnected(false);
       console.log(err);
@@ -215,45 +217,50 @@ function Tests(props) {
 
   const submitTopic = async (e: SyntheticEvent): Promise<void> => {
     e.preventDefault();
-    if (topic.length) {
-      const topicResponse = await fetch('/api/kite/connect/kafka', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          method: 'createTopics',
-          topic
+    if(connected){
+      if(topic.length){
+        const topicResponse = await fetch('/api/kite/connect/kafka', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            method: 'createTopics',
+            topic,
+          }),
         })
-      })
-        .then((data) => data.json())
-        .catch((error) => console.error(error));
-      console.log(topicResponse);
-      setTopics(topicResponse);
-      setTopic('');
+          .then((data) => data.json())
+          .catch((error) => console.error(error));
+        console.log(topicResponse)
+        setTopics(topicResponse)
+        setTopic('');
+      }
     }
   };
 
   const sendMessage = async (e: SyntheticEvent): Promise<void> => {
     e.preventDefault();
-    if (message.length) {
-      const messageResponse = await fetch('/api/kite/connect/kafka', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          method: 'sendMessage',
-          messages: [{ value: message }],
-          topic
+    if(connected){
+      if(message.length){
+        const messageResponse = await fetch('/api/kite/connect/kafka', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            method: 'sendMessage',
+            messages: [{value: message}],
+            topic,
+          }),
         })
-      })
-        .then((data) => data.json())
-        .catch((error) => console.error(error));
-      console.log(messageResponse);
-      setTopic('');
-      setMessage('');
+          .then((data) => data.json())
+          .catch((error) => console.error(error));
+        console.log(messageResponse)
+        setTopic('');
+        setMessage('');
+      }
     }
+    
   };
 
   const handleWork = useCallback(
@@ -326,6 +333,133 @@ function Tests(props) {
                     readOnly
                   />
                 </FormGroup>
+                </Box>
+              </>
+            )}
+            {currentTab === 'topics' && (
+              <>
+              <Box p={4} height={'70vh'} >
+                  <div style={{display: 'flex', flexDirection: 'column'}}>
+                    <h3 className='metric-header'>Total Topics</h3>
+                    <iframe src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=625&kiosk`}></iframe>
+                  </div>
+                  <div style={{display: 'flex', flexDirection: 'column', margin: 10}}>
+                    {
+                    (topics.length > 0) && <h3 className='metric-header'>Current Topics:</h3>
+                    }
+                    
+                    {
+                      (topics.length > 0) && topics.map(topic => {
+                        return <div key={topics.indexOf(topic)}>{topic}</div>
+                      })
+                    }
+                  </div>
+
+            <Card>
+              <CardContent>
+                <Box
+                  component="form"
+                  sx={{
+                    '& .MuiTextField-root': { m: 2, width: '100%' }
+                  }}
+                  noValidate
+                  autoComplete="off"
+                >
+                  <div>
+                    <TextField
+                      id="outlined-number"
+                      label="New Topic"
+                      defaultValue="2"
+                      onChange={(e) => {
+                        setTopic(e.target.value);
+                        console.log(topic)
+                      }}
+                      value={topic}
+                      InputLabelProps={{
+                        shrink: true
+                      }}
+                    />
+                      <Button
+                        size="large"
+                        variant="outlined"
+                        sx={{ margin: 1 }}
+                        color="secondary"
+                        onClick={submitTopic}
+                      >
+                        Submit New Topic
+                      </Button>
+                  </div>
+                </Box>
+              </CardContent>
+            </Card>
+
+          <Grid item xs={12}>
+          </Grid>
+      </Box>
+              </>
+            )}
+            {currentTab === 'messages' && (
+              <>
+              <Box p={4} height={'70vh'} >
+                  <div style={{display: 'flex', flexDirection: 'column'}}>
+                    <h3 className='metric-header'>Test Sending Messages</h3>
+                    <iframe style={{height: '20vh', flexDirection: 'column'}} src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=152&kiosk`}></iframe>
+                  </div>
+            <Card>
+              <CardContent>
+                <Box
+                  component="form"
+                  sx={{
+                    '& .MuiTextField-root': { m: 2, width: '100%' }
+                  }}
+                  noValidate
+                  autoComplete="off"
+                >
+                  <div>
+                  <TextField
+                      id="outlined-select-source-native"
+                      select
+                      label="Topic to send the message to"
+                      value={topic}
+                      onChange={(e) => {
+                        setTopic(e.target.value);
+                      }}
+                      helperText="Please select your topic"
+                    >
+                      {(topics.length > 0) && topics.map((option) => (
+                        <MenuItem key={option} value={option}>
+                          {option}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                    <TextField
+                      id="outlined-number"
+                      label="New Message"
+                      onChange={(e) => {
+                        setMessage(e.target.value);
+                      }}
+                      value={message}
+                      InputLabelProps={{
+                        shrink: true
+                      }}
+                    />
+                      <Button
+                        size="large"
+                        variant="outlined"
+                        sx={{ margin: 1 }}
+                        color="secondary"
+                        onClick={sendMessage}
+                      >
+                        Submit Message
+                      </Button>
+                  </div>
+                </Box>
+              </CardContent>
+            </Card>
+
+          <Grid item xs={12}>
+          </Grid>
+      </Box>
               </>
             )}
           </Grid>

@@ -6,6 +6,7 @@ import defaultCfg from '@/common/kite/constants';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HashLoader from 'react-spinners/HashLoader';
+import { KiteState } from '@../../src/common/kite/constants';
 import axios from 'axios';
 import {
   Container,
@@ -84,25 +85,20 @@ function Forms() {
 
   const checkActive = async () => {
     try {
-      const response = await fetch(
-        'http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk',
-        {
-          mode: 'no-cors',
-          headers: {
-            'Access-Control-Allow-Origin': '*'
-          }
-        }
-      );
-      console.log(response.status, 'this is status');
-      if (response.status === 0) {
+      const response = await fetch('/api/kite/getKiteState');
+      const data = await response.text();
+      console.log(data)
+      if (data === KiteState.Running) {
         setActive(1);
       } else {
         setActive(0);
       }
     } catch (err) {
+      setActive(0);
       console.log(err);
     }
   };
+  
 
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -151,20 +147,13 @@ function Forms() {
   const queryMetrics = () => {
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(
-          'http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk',
-          {
-            mode: 'no-cors',
-            headers: {
-              'Access-Control-Allow-Origin': '*'
-            }
+        const response = await fetch('/api/kite/getKiteState');
+        const data = await response.text();
+        console.log(data)
+          if (data === KiteState.Running) {
+            clearInterval(interval);
+            window.location.href = '/metrics';
           }
-        );
-        console.log(response.status, 'this is status');
-        if (response.status === 0) {
-          clearInterval(interval);
-          window.location.href = '/metrics';
-        }
       } catch (err) {
         console.log(err);
       }

@@ -3,6 +3,7 @@ import SidebarLayout from '@/layouts/SidebarLayout';
 import { ChangeEvent, useState, useEffect } from 'react';
 import PageTitle from '@/components/PageTitle';
 import Footer from '@/components/Footer';
+import { KiteState } from '@../../src/common/kite/constants';
 import {
   Grid,
   Tab,
@@ -103,30 +104,41 @@ function DashboardTasks() {
   const theme = useTheme();
   const [currentTab, setCurrentTab] = useState<string>('analytics');
   const [connected, setConnected] = useState(2);
+  const [grafanaPort, setGrafanaPort] = useState<string>('');
 
   useEffect(() => {
     checkActive();
+    getSetup();
   }, []);
 
   const checkActive = async () => {
-      try {
-        const response = await fetch('http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk', {
-          mode: 'no-cors',
-          headers: {
-            'Access-Control-Allow-Origin':'*'
-          }
-        });
-        console.log(response.status, 'this is status')
-        if (response.status === 0) {
-          setConnected(0);
-        } else {
-          setConnected(1);
-        }
-      } catch (err) {
+    try {
+      const response = await fetch('/api/kite/getKiteState');
+      const data = await response.text();
+      if (data === KiteState.Running) {
+        setConnected(0);
+      } else {
         setConnected(1);
-        console.log(err);
       }
-  }
+    } catch (err) {
+      setConnected(1);
+      console.log(err);
+    }
+  };
+
+  const getSetup = async () => {
+    try {
+      if(connected){
+      const {grafana} = await fetch('/api/kite/getSetup').then(data => data.json());
+      console.log(grafana.port) 
+      setGrafanaPort(grafana.port.toString())
+      }
+    } catch (err) {
+      setConnected(1);
+      console.log(err);
+    }
+  };
+
 
   const pageMessage = () => {
     return (
@@ -188,25 +200,25 @@ function DashboardTasks() {
                   <Grid item xs={3}>
                   <div>
                     <h3 className='metric-header'>Brokers Online</h3>
-                    <iframe src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=647&kiosk'></iframe>
+                    <iframe src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=647&kiosk`}></iframe>
                   </div>
                   </Grid>
                   <Grid item xs={3}>
                   <div>
                     <h3 className='metric-header'>Active Controllers</h3>
-                    <iframe src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=233&kiosk'></iframe>
+                    <iframe src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=233&kiosk`}></iframe>
                   </div>
                   </Grid>
                   <Grid item xs={3}>
                   <div>
                     <h3 className='metric-header'>Total Topics</h3>
-                    <iframe src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=625&kiosk'></iframe>
+                    <iframe src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=625&kiosk`}></iframe>
                   </div>
                   </Grid>
                   <Grid item xs={3}>
                   <div>
                     <h3 className='metric-header'>Online Partitions</h3>
-                    <iframe src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=40&kiosk'></iframe>
+                    <iframe src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=40&kiosk`}></iframe>
                   </div>
                   </Grid>
                   </Grid>
@@ -231,7 +243,7 @@ function DashboardTasks() {
                         <div>
                           <h3 className='metric-header'>Message Throughput</h3>
                           <iframe
-                            src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&kiosk&viewPanel=152'
+                            src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&kiosk&viewPanel=152`}
                             width='800'
                             height='300'
                           ></iframe>
@@ -242,7 +254,7 @@ function DashboardTasks() {
                       <div>
                         <h3 className='metric-header'>Producer Latency</h3>
                         <iframe
-                          src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=192&kiosk'
+                          src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=192&kiosk`}
                           width='400'
                           height='300'
                         ></iframe>
@@ -264,7 +276,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Failed Produce Requests Per Broker</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=612&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=612&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -276,7 +288,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Failed Produce Requests Per Topic</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=614&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=614&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -288,7 +300,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Failed Fetch Requests Per Broker</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=613&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=613&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -300,7 +312,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Failed Fetch Requests Per Topic</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=615&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=615&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -322,7 +334,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Total Fetch Consumer Latency</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=677&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=677&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -334,7 +346,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Fetch Consumer Latency Per Broker</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=666&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=666&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -346,7 +358,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Fetch Consumer Requests Per Broker</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=178&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=178&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -358,7 +370,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Total Fetch Requests Per Broker</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=56&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=56&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -380,7 +392,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Total Time Producer Latency</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=192&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=192&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -392,7 +404,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Producer Latency Per Broker</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=665&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=665&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -404,7 +416,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Total Produce Request Rate Per Topic</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=50&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=50&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -416,7 +428,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Produce Requests Per Broker</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=176&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=176&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -438,7 +450,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Under-Replicated Partitions</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=30&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=30&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -450,7 +462,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Partitions Leader and Replica Per Broker</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=619&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=619&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -462,7 +474,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Partitions Leader Per Broker </h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=628&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=628&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>
@@ -474,7 +486,7 @@ function DashboardTasks() {
                     <div>
                     <h3 className='metric-header'>Count of Partitions Per Broker</h3>
                     <iframe
-                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk'
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk`}
                       width='600'
                       height='300'
                     ></iframe>

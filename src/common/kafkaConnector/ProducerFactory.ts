@@ -10,6 +10,7 @@ import {
   TopicMessages,
 } from 'kafkajs';
 
+
 export default class ProducerFactory extends Kafka {
   private static instance: ProducerFactory;
   private static topicCache: Map<string, boolean>;
@@ -43,6 +44,20 @@ export default class ProducerFactory extends Kafka {
     } catch (error) {
       await this._producer.disconnect();
       console.log('Error connecting the producer: ', error);
+    }
+  }
+
+  public async listTopics(): Promise<string[]> {
+    try {
+      if (!this.isAdminConnected) {
+        await this._admin.connect();
+        this.isAdminConnected = true;
+      }
+      const topics = await this._admin.listTopics()
+      //console.log(topics)
+      return topics
+    } catch (error) {
+      console.log('Error: ', error)
     }
   }
 
