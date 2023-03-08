@@ -20,9 +20,8 @@ import {
   MenuItem,
   styled,
   Box,
-  Card,
   CardContent,
-  CardHeader,
+  Card,
   Typography,
   Divider,
   TextField
@@ -121,6 +120,7 @@ function Tests() {
   const theme = useTheme();
   const [currentTab, setCurrentTab] = useState<string>('ksql-streams');
   const workerRef = useRef<Worker>();
+  const kiteWorkerRef = useRef<Worker>();
   const [query, setQuery] = useState('');
   const [qResults, setQResults] = useState<string[]>([]);
   const [connected, setConnected] = useState(false);
@@ -128,76 +128,37 @@ function Tests() {
   const [message, setMessage] = useState<string>('');
   const [grafanaPort, setGrafanaPort] = useState<string>('');
   const [topics, setTopics] = useState<string[]>([]);
-  
 
   useEffect(() => {
-    checkActive();
-    getSetup()
-    getTopics();
+    kiteWorkerRef.current = new Worker(
+      new URL('./kiteWorker.ts', import.meta.url)
+    );
+    kiteWorkerRef.current.onmessage = (
+      event: MessageEvent<{
+        state: KiteState;
+        setup: KiteSetup;
+        topics: string[];
+      }>
+    ) => {
+      // console.log(event.data);
+      const { state, setup, topics } = event.data;
+      setConnected(state === KiteState.Running);
+      setTopics(topics);
+      setGrafanaPort(event.data.setup.grafana.port.toString());
+    };
     workerRef.current = new Worker(new URL('./worker.ts', import.meta.url));
     workerRef.current.onmessage = (event: MessageEvent<string>) => {
-      console.log(event.data);
+      // console.log(event.data);
       setQResults((prev) =>
         prev.length > 0 ? [...prev, event.data] : [event.data]
       );
     };
+    kiteWorkerRef.current?.postMessage(true);
     return () => {
       workerRef.current?.terminate();
+      kiteWorkerRef.current?.terminate();
     };
   }, []);
-
-  const checkActive = async () => {
-    try {
-      const response = await fetch('/api/kite/getKiteState');
-      const data = await response.text();
-      if (data === KiteState.Running) {
-        setConnected(true);
-      } else {
-        setConnected(false);
-      }
-    } catch (err) {
-      setConnected(false);
-      console.log(err);
-    }
-  };
-
-  const getSetup = async () => {
-    try {
-      
-      const {grafana} = await fetch('/api/kite/getSetup').then(data => data.json());
-      console.log(grafana.port) 
-      setGrafanaPort(grafana.port.toString())
-      
-    } catch (err) {
-      setConnected(false);
-      console.log(err);
-    }
-  };
-
-  const getTopics = async () => {
-    try {
-      if(connected){
-        const topicResponse = await fetch('/api/kite/connect/kafka', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            method: 'getTopics',
-          }),
-        })
-          .then((data) => data.json())
-          .catch((error) => console.error(error));
-        console.log(topicResponse)
-        setTopics(topicResponse)
-        setTopic('');
-      }
-    } catch (err) {
-      setConnected(false);
-      console.log(err);
-    }
-  };
-  
 
   const pageMessage = () => {
     return (
@@ -220,63 +181,58 @@ function Tests() {
 
   const submitTopic = async (e: SyntheticEvent): Promise<void> => {
     e.preventDefault();
-    if(connected){
-      if(topic.length){
+    if (connected) {
+      if (topic.length) {
         const topicResponse = await fetch('/api/kite/connect/kafka', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             method: 'createTopics',
-            topic,
-          }),
+            topic
+          })
         })
           .then((data) => data.json())
           .catch((error) => console.error(error));
-        console.log(topicResponse)
-        setTopics(topicResponse)
+        // console.log(topicResponse);
+        setTopics(topicResponse);
         setTopic('');
       }
     }
   };
 
-  
-
   const sendMessage = async (e: SyntheticEvent): Promise<void> => {
     e.preventDefault();
-    if(connected){
-      if(message.length){
+    if (connected) {
+      if (message.length) {
         const messageResponse = await fetch('/api/kite/connect/kafka', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             method: 'sendMessage',
-            messages: [{value: message}],
-            topic,
-          }),
+            messages: [{ value: message }],
+            topic
+          })
         })
           .then((data) => data.json())
           .catch((error) => console.error(error));
-        console.log(messageResponse)
+        console.log(messageResponse);
         setTopic('');
         setMessage('');
       }
     }
-    
   };
 
   const handleWork = useCallback(
     async (e: SyntheticEvent) => {
-      // console.log('handling?');
-      // e.preventDefault();
       setQResults(['']);
-      let type = 'query';
-      if (query.startsWith('CREATE')) type = 'create';
-      workerRef.current?.postMessage({ type, sql: query });
-      // setQuery('');
+      let type = 'ksql';
+      if (query.toUpperCase().startsWith('SELECT')) type = 'query';
+      workerRef.current?.postMessage({ type, ksql: query });
+      setQuery('');
     },
     [query]
   );
@@ -312,11 +268,10 @@ function Tests() {
             padding="1rem"
             spacing={0}
           >
-            {currentTab === 'ksql-streams' && (
+            {currentTab === 'ksql-streams' ? (
               <>
-              <Box p={4} height={'70vh'} >
-                <FormControl id="sendingMessage" sx={{ width: '100%', height: '50%' }} >
-                  <FormGroup >
+                <FormControl id="sendingMessage">
+                  <FormGroup>
                     <InputLabel>SQL Query</InputLabel>
                     <Input
                       id="textarea-query"
@@ -334,137 +289,153 @@ function Tests() {
                     id="textarea-results"
                     aria-label="With textarea"
                     value={qResults.slice(1)}
+                    multiline
+                    maxRows={25}
                     readOnly
                   />
                 </FormGroup>
-                </Box>
               </>
+            ) : (
+              <></>
             )}
-            {currentTab === 'topics' && (
+            {currentTab === 'topics' ? (
               <>
-              <Box p={4} height={'70vh'} >
-                  <div style={{display: 'flex', flexDirection: 'column'}}>
-                    <h3 className='metric-header'>Total Topics</h3>
-                    <iframe src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=625&kiosk`}></iframe>
+                <Box p={4} height={'70vh'}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <h3 className="metric-header">Total Topics</h3>
+                    <iframe
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=625&kiosk`}
+                    ></iframe>
                   </div>
-                  <div style={{display: 'flex', flexDirection: 'column', margin: 10}}>
-                    {
-                    (topics.length > 0) && <h3 className='metric-header'>Current Topics:</h3>
-                    }
-                    
-                    {
-                      (topics.length > 0) && topics.map(topic => {
-                        return <div key={topics.indexOf(topic)}>{topic}</div>
-                      })
-                    }
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      margin: 10
+                    }}
+                  >
+                    {topics.length > 0 && (
+                      <h3 className="metric-header">Current Topics:</h3>
+                    )}
+
+                    {topics.length > 0 &&
+                      topics.map((topic) => {
+                        return <div key={topics.indexOf(topic)}>{topic}</div>;
+                      })}
                   </div>
 
-            <Card>
-              <CardContent>
-                <Box
-                  component="form"
-                  sx={{
-                    '& .MuiTextField-root': { m: 2, width: '100%' }
-                  }}
-                  noValidate
-                  autoComplete="off"
-                >
-                  <div>
-                    <TextField
-                      id="outlined-number"
-                      label="New Topic"
-                      defaultValue="2"
-                      onChange={(e) => {
-                        setTopic(e.target.value);
-                        console.log(topic)
-                      }}
-                      value={topic}
-                      InputLabelProps={{
-                        shrink: true
-                      }}
-                    />
-                      <Button
-                        size="large"
-                        variant="outlined"
-                        sx={{ margin: 1 }}
-                        color="secondary"
-                        onClick={submitTopic}
+                  <Card>
+                    <CardContent>
+                      <Box
+                        component="form"
+                        sx={{
+                          '& .MuiTextField-root': { m: 2, width: '100%' }
+                        }}
+                        noValidate
+                        autoComplete="off"
                       >
-                        Submit New Topic
-                      </Button>
-                  </div>
-                </Box>
-              </CardContent>
-            </Card>
+                        <div>
+                          <TextField
+                            id="outlined-number"
+                            label="New Topic"
+                            defaultValue="2"
+                            onChange={(e) => {
+                              setTopic(e.target.value);
+                              // console.log(topic);
+                            }}
+                            value={topic}
+                            InputLabelProps={{
+                              shrink: true
+                            }}
+                          />
+                          <Button
+                            size="large"
+                            variant="outlined"
+                            sx={{ margin: 1 }}
+                            color="secondary"
+                            onClick={submitTopic}
+                          >
+                            Submit New Topic
+                          </Button>
+                        </div>
+                      </Box>
+                    </CardContent>
+                  </Card>
 
-          <Grid item xs={12}>
-          </Grid>
-      </Box>
+                  <Grid item xs={12}></Grid>
+                </Box>
               </>
+            ) : (
+              <></>
             )}
-            {currentTab === 'messages' && (
+            {currentTab === 'messages' ? (
               <>
-              <Box p={4} height={'70vh'} >
-                  <div style={{display: 'flex', flexDirection: 'column'}}>
-                    <h3 className='metric-header'>Test Sending Messages</h3>
-                    <iframe style={{height: '20vh', flexDirection: 'column'}} src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=152&kiosk`}></iframe>
+                <Box p={4} height={'70vh'}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <h3 className="metric-header">Test Sending Messages</h3>
+                    <iframe
+                      style={{ height: '20vh', flexDirection: 'column' }}
+                      src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=152&kiosk`}
+                    ></iframe>
                   </div>
-            <Card>
-              <CardContent>
-                <Box
-                  component="form"
-                  sx={{
-                    '& .MuiTextField-root': { m: 2, width: '100%' }
-                  }}
-                  noValidate
-                  autoComplete="off"
-                >
-                  <div>
-                  <TextField
-                      id="outlined-select-source-native"
-                      select
-                      label="Topic to send the message to"
-                      value={topic}
-                      onChange={(e) => {
-                        setTopic(e.target.value);
-                      }}
-                      helperText="Please select your topic"
-                    >
-                      {(topics.length > 0) && topics.map((option) => (
-                        <MenuItem key={option} value={option}>
-                          {option}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                    <TextField
-                      id="outlined-number"
-                      label="New Message"
-                      onChange={(e) => {
-                        setMessage(e.target.value);
-                      }}
-                      value={message}
-                      InputLabelProps={{
-                        shrink: true
-                      }}
-                    />
-                      <Button
-                        size="large"
-                        variant="outlined"
-                        sx={{ margin: 1 }}
-                        color="secondary"
-                        onClick={sendMessage}
+                  <Card>
+                    <CardContent>
+                      <Box
+                        component="form"
+                        sx={{
+                          '& .MuiTextField-root': { m: 2, width: '100%' }
+                        }}
+                        noValidate
+                        autoComplete="off"
                       >
-                        Submit Message
-                      </Button>
-                  </div>
-                </Box>
-              </CardContent>
-            </Card>
+                        <div>
+                          <TextField
+                            id="outlined-select-source-native"
+                            select
+                            label="Topic to send the message to"
+                            value={topic}
+                            onChange={(e) => {
+                              setTopic(e.target.value);
+                            }}
+                            helperText="Please select your topic"
+                          >
+                            {topics.length > 0 &&
+                              topics.map((option) => (
+                                <MenuItem key={option} value={option}>
+                                  {option}
+                                </MenuItem>
+                              ))}
+                          </TextField>
+                          <TextField
+                            id="outlined-number"
+                            label="New Message"
+                            onChange={(e) => {
+                              setMessage(e.target.value);
+                            }}
+                            value={message}
+                            InputLabelProps={{
+                              shrink: true
+                            }}
+                          />
+                          <Button
+                            size="large"
+                            variant="outlined"
+                            sx={{ margin: 1 }}
+                            color="secondary"
+                            onClick={sendMessage}
+                          >
+                            Submit Message
+                          </Button>
+                        </div>
+                      </Box>
+                    </CardContent>
+                  </Card>
 
-          <Grid item xs={12}>
-          </Grid>
-      </Box>
+                  <Grid item xs={12}></Grid>
+                </Box>
               </>
+            ) : (
+              <></>
             )}
           </Grid>
         </Card>
@@ -473,7 +444,6 @@ function Tests() {
     </>
   );
 }
-
 Tests.getLayout = (page: any) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default Tests;

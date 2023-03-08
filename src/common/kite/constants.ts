@@ -4,29 +4,29 @@ const defaultCfg: KiteConfig = {
   kafka: {
     brokers: {
       size: 2,
-      replicas: 2,
+      replicas: 2
     },
     zookeepers: {
-      size: 2,
-    },
+      size: 2
+    }
   },
   db: {
-    name: 'postgresql',
-    port: 5432,
+    name: 'ksql',
+    port: 8088
   },
-  sink: { name: 'jupyter' },
+  sink: { name: 'jupyter' }
 };
 
 export enum KiteState {
   Init = 'Init',
   Configured = 'Configured',
   Running = 'Running',
-  Shutdown = 'Shutdown',
+  Shutdown = 'Shutdown'
 }
 
 export enum KiteServerState {
   Disconnected = 'Disconnected',
-  Connected = 'Connected',
+  Connected = 'Connected'
 }
 export const configFilePath = path.join(
   process.cwd(),
