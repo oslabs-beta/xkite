@@ -20,7 +20,7 @@ export default async function handler(
     console.log('config is: ', JSON.stringify(config));
     Kite.configure(config);
     console.log('deploying kite...');
-    Kite.deploy();
+    await Kite.deploy();
 
     res.status(200).json({ reply: 'success' });
     //TO DO: uncomment when you connecting to the front-end

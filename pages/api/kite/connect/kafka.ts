@@ -33,17 +33,17 @@ export default async function handler(
       });
 
       let topics: string[] = undefined;
-      console.log(method)
+      console.log(method);
 
       switch (method) {
         case 'createTopics':
           await producer.createTopics([topic]);
           topics = await producer.listTopics();
-          console.log(topics, 'from post')
+          console.log(topics, 'from post');
           break;
         case 'getTopics':
           topics = await producer.listTopics();
-          console.log(topics, 'from post')
+          console.log(topics, 'from post');
           break;
         case 'sendMessage':
           await producer.sendBatch(messages, topic);
@@ -59,13 +59,12 @@ export default async function handler(
           break;
       }
       console.log('produced successfully');
-      if(topics.length){
+      if (topics !== undefined) {
         res.status(201).json(topics);
-      }
-      else {
+      } else {
         res.status(200).json({ reply: 'success' });
       }
-      
+
       //TO DO: uncomment when you connecting to the front-end
       // res.redirect('/display');
     } catch (err) {

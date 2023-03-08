@@ -1,7 +1,13 @@
 import Head from 'next/head';
 import SidebarLayout from '@/layouts/SidebarLayout';
 import PageTitle from '@/components/PageTitle';
-import { useState, SyntheticEvent, CSSProperties, useEffect } from 'react';
+import {
+  useState,
+  SyntheticEvent,
+  CSSProperties,
+  useEffect,
+  ChangeEvent
+} from 'react';
 import defaultCfg from '@/common/kite/constants';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -87,7 +93,7 @@ function Forms() {
     try {
       const response = await fetch('/api/kite/getKiteState');
       const data = await response.text();
-      console.log(data)
+      console.log(data);
       if (data === KiteState.Running) {
         setActive(1);
       } else {
@@ -98,7 +104,6 @@ function Forms() {
       console.log(err);
     }
   };
-  
 
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -149,11 +154,11 @@ function Forms() {
       try {
         const response = await fetch('/api/kite/getKiteState');
         const data = await response.text();
-        console.log(data)
-          if (data === KiteState.Running) {
-            clearInterval(interval);
-            window.location.href = '/metrics';
-          }
+        console.log(data);
+        if (data === KiteState.Running) {
+          clearInterval(interval);
+          window.location.href = '/metrics';
+        }
       } catch (err) {
         console.log(err);
       }
@@ -221,31 +226,35 @@ function Forms() {
     return isOpen;
   }
 
-  function submitHandler(event: SyntheticEvent) {
-    event.preventDefault();
-    setLoader(1);
-    queryMetrics();
-    // TODO: Prevent state for deleted brokers from being submitted
-    //console.log(kiteConfigRequest)
-    console.log('sending configuration…');
-    //console.log(defaultCfg);
-    fetch('/api/kite/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(kiteConfigRequest)
-    })
-      .then((response) => {
-        console.dir(response);
-      })
-      .catch((error) => {
-        console.error(error.message);
+  async function submitHandler(event: SyntheticEvent) {
+    try {
+      event.preventDefault();
+      setLoader(1);
+      queryMetrics();
+      // TODO: Prevent state for deleted brokers from being submitted
+      //console.log(kiteConfigRequest)
+      console.log('sending configuration…');
+      //console.log(defaultCfg);
+      const response = await fetch('/api/kite/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(kiteConfigRequest)
       });
+      console.dir(response);
+    } catch (error) {
+      console.error(error);
+    }
+    // .then((response) => {
+    //   console.dir(response);
+    // })
+    // .catch((error) => {
+    // });
     // setSubmit(false);
   }
 
-  const handleData = (event) => {
+  const handleData = (event: ChangeEvent) => {
     updateKiteConfigRequest({
       db: {
         name: event.target.value
@@ -253,7 +262,7 @@ function Forms() {
     });
   };
 
-  const handleBrokers = (event) => {
+  const handleBrokers = (event: ChangeEvent) => {
     const size = event.target.value;
     if (size <= 0) return;
     const update = {
@@ -268,7 +277,7 @@ function Forms() {
     updateKiteConfigRequest(update);
   };
 
-  const handleZoo = (event) => {
+  const handleZoo = (event: ChangeEvent) => {
     const size = event.target.value;
     if (size <= 0) return;
     const update = {
@@ -283,7 +292,7 @@ function Forms() {
     updateKiteConfigRequest(update);
   };
 
-  const handleSink = (event) => {
+  const handleSink = (event: ChangeEvent) => {
     updateKiteConfigRequest({
       sink: {
         name: event.target.value
