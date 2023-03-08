@@ -131,8 +131,8 @@ function Tests() {
   
 
   useEffect(() => {
-    getSetup()
     checkActive();
+    getSetup()
     getTopics();
     workerRef.current = new Worker(new URL('./worker.ts', import.meta.url));
     workerRef.current.onmessage = (event: MessageEvent<string>) => {
@@ -163,9 +163,11 @@ function Tests() {
 
   const getSetup = async () => {
     try {
+      
       const {grafana} = await fetch('/api/kite/getSetup').then(data => data.json());
       console.log(grafana.port) 
       setGrafanaPort(grafana.port.toString())
+      
     } catch (err) {
       setConnected(false);
       console.log(err);
@@ -347,11 +349,11 @@ function Tests() {
                   </div>
                   <div style={{display: 'flex', flexDirection: 'column', margin: 10}}>
                     {
-                    topics && <h3 className='metric-header'>Current Topics:</h3>
+                    (topics.length > 0) && <h3 className='metric-header'>Current Topics:</h3>
                     }
                     
                     {
-                      topics && topics.map(topic => {
+                      (topics.length > 0) && topics.map(topic => {
                         return <div key={topics.indexOf(topic)}>{topic}</div>
                       })
                     }
@@ -428,7 +430,7 @@ function Tests() {
                       }}
                       helperText="Please select your topic"
                     >
-                      {topics && topics.map((option) => (
+                      {(topics.length > 0) && topics.map((option) => (
                         <MenuItem key={option} value={option}>
                           {option}
                         </MenuItem>
