@@ -162,6 +162,6 @@ function Avatars() {
   );
 }
 
-Avatars.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+Avatars.getLayout = (page: any) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default Avatars;

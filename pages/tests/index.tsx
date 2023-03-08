@@ -3,7 +3,8 @@ import React, {
   SyntheticEvent,
   useRef,
   useEffect,
-  useCallback
+  useCallback,
+  ChangeEvent
 } from 'react';
 import {
   FormControl,
@@ -16,9 +17,15 @@ import {
   Container,
   Tab,
   Tabs,
+  MenuItem,
   styled,
   Box,
-  Card
+  Card,
+  CardContent,
+  CardHeader,
+  Typography,
+  Divider,
+  TextField
 } from '@mui/material';
 import Head from 'next/head';
 import SidebarLayout from '@/layouts/SidebarLayout';
@@ -26,6 +33,7 @@ import PageTitleWrapper from '@/components/PageTitleWrapper';
 import PageTitle from '@/components/PageTitle';
 import { KiteState } from '@../../src/common/kite/constants';
 import Footer from '@/components/Footer';
+//import SocketIOClient from "socket.io-client"; TBD: remove if final version does not use sockets
 
 const TabsContainerWrapper = styled(Box)(
   ({ theme }) => `
@@ -116,8 +124,15 @@ function Tests() {
   const [query, setQuery] = useState('');
   const [qResults, setQResults] = useState<string[]>([]);
   const [connected, setConnected] = useState(false);
+  const [topic, setTopic] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
+  const [grafanaPort, setGrafanaPort] = useState<string>('');
+  const [topics, setTopics] = useState<string[]>([]);
+  
 
   useEffect(() => {
+    getSetup()
+    getTopics();
     checkActive();
     workerRef.current = new Worker(new URL('./worker.ts', import.meta.url));
     workerRef.current.onmessage = (event: MessageEvent<string>) => {
@@ -146,19 +161,102 @@ function Tests() {
     }
   };
 
+  const getSetup = async () => {
+    try {
+      const {grafana} = await fetch('/api/kite/getSetup').then(data => data.json());
+      console.log(grafana.port) 
+      setGrafanaPort(grafana.port.toString())
+    } catch (err) {
+      setConnected(false);
+      console.log(err);
+    }
+  };
+
+  const getTopics = async () => {
+    try {
+      const topicResponse = await fetch('/api/kite/connect/kafka', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          method: 'getTopics',
+        }),
+      })
+        .then((data) => data.json())
+        .catch((error) => console.error(error));
+      console.log(topicResponse)
+      setTopics(topicResponse)
+      setTopic('');
+    } catch (err) {
+      setConnected(false);
+      console.log(err);
+    }
+  };
+  
+
   const pageMessage = () => {
     return (
       <PageTitle
-        heading="You Do Not Have an Active Deployment"
-        subHeading="Navigate to 'Create Data Pipeline' to configure and deploy a Kafka instance, or 'connect existing' to connect an existing deployment in order to view tests."
+        heading="Test Your Kafka Instance"
+        subHeading="Add or remove topics, send messages, configure your load balancing strategy, and more."
       />
     );
   };
 
-  const tabs = [{ value: 'ksql-streams', label: 'KSQL Streams' }];
+  const tabs = [
+    { value: 'ksql-streams', label: 'KSQL Streams' },
+    { value: 'topics', label: 'Topics' },
+    { value: 'messages', label: 'Messages' }
+  ];
 
   const handleTabsChange = (_event: ChangeEvent<{}>, value: string): void => {
     setCurrentTab(value);
+  };
+
+  const submitTopic = async (e: SyntheticEvent): Promise<void> => {
+    e.preventDefault();
+    if(topic.length){
+      const topicResponse = await fetch('/api/kite/connect/kafka', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          method: 'createTopics',
+          topic,
+        }),
+      })
+        .then((data) => data.json())
+        .catch((error) => console.error(error));
+      console.log(topicResponse)
+      setTopics(topicResponse)
+      setTopic('');
+    }
+  };
+
+  
+
+  const sendMessage = async (e: SyntheticEvent): Promise<void> => {
+    e.preventDefault();
+    if(message.length){
+      const messageResponse = await fetch('/api/kite/connect/kafka', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          method: 'sendMessage',
+          messages: [{value: message}],
+          topic,
+        }),
+      })
+        .then((data) => data.json())
+        .catch((error) => console.error(error));
+      console.log(messageResponse)
+      setTopic('');
+      setMessage('');
+    }
   };
 
   const handleWork = useCallback(
@@ -177,9 +275,9 @@ function Tests() {
   return (
     <>
       <Head>
-        <title>Create/View Streams</title>
+        <title>Test Your Kafka Configuration</title>
       </Head>
-      <PageTitleWrapper>{!connected && pageMessage()}</PageTitleWrapper>
+      <PageTitleWrapper>{pageMessage()}</PageTitleWrapper>
       <Container maxWidth="xl">
         <TabsContainerWrapper>
           <Tabs
@@ -195,7 +293,7 @@ function Tests() {
             ))}
           </Tabs>
         </TabsContainerWrapper>
-        <h1 id="generalHeader">Create/View Streams</h1>
+        <h2 id="generalHeader">{currentTab}</h2>
         <Card variant="outlined">
           <Grid
             container
@@ -207,8 +305,9 @@ function Tests() {
           >
             {currentTab === 'ksql-streams' && (
               <>
-                <FormControl id="sendingMessage">
-                  <FormGroup>
+              <Box p={4} height={'70vh'} >
+                <FormControl id="sendingMessage" sx={{ width: '100%', height: '50%' }} >
+                  <FormGroup >
                     <InputLabel>SQL Query</InputLabel>
                     <Input
                       id="textarea-query"
@@ -220,7 +319,7 @@ function Tests() {
                   </FormGroup>
                   <Button onClick={handleWork}>send</Button>
                 </FormControl>
-                <FormGroup>
+                <FormGroup sx={{ width: '100%', height: '50%' }}>
                   <InputLabel>Results:</InputLabel>
                   <Input
                     id="textarea-results"
@@ -229,6 +328,133 @@ function Tests() {
                     readOnly
                   />
                 </FormGroup>
+                </Box>
+              </>
+            )}
+            {currentTab === 'topics' && (
+              <>
+              <Box p={4} height={'70vh'} >
+                  <div style={{display: 'flex', flexDirection: 'column'}}>
+                    <h3 className='metric-header'>Total Topics</h3>
+                    <iframe src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=625&kiosk`}></iframe>
+                  </div>
+                  <div style={{display: 'flex', flexDirection: 'column', margin: 10}}>
+                    {
+                    topics && <h3 className='metric-header'>Current Topics:</h3>
+                    }
+                    
+                    {
+                      topics.map(topic => {
+                        return <div key={topics.indexOf(topic)}>{topic}</div>
+                      })
+                    }
+                  </div>
+
+            <Card>
+              <CardContent>
+                <Box
+                  component="form"
+                  sx={{
+                    '& .MuiTextField-root': { m: 2, width: '100%' }
+                  }}
+                  noValidate
+                  autoComplete="off"
+                >
+                  <div>
+                    <TextField
+                      id="outlined-number"
+                      label="New Topic"
+                      defaultValue="2"
+                      onChange={(e) => {
+                        setTopic(e.target.value);
+                        console.log(topic)
+                      }}
+                      value={topic}
+                      InputLabelProps={{
+                        shrink: true
+                      }}
+                    />
+                      <Button
+                        size="large"
+                        variant="outlined"
+                        sx={{ margin: 1 }}
+                        color="secondary"
+                        onClick={submitTopic}
+                      >
+                        Submit New Topic
+                      </Button>
+                  </div>
+                </Box>
+              </CardContent>
+            </Card>
+
+          <Grid item xs={12}>
+          </Grid>
+      </Box>
+              </>
+            )}
+            {currentTab === 'messages' && (
+              <>
+              <Box p={4} height={'70vh'} >
+                  <div style={{display: 'flex', flexDirection: 'column'}}>
+                    <h3 className='metric-header'>Test Sending Messages</h3>
+                    <iframe style={{height: '20vh', flexDirection: 'column'}} src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=152&kiosk`}></iframe>
+                  </div>
+            <Card>
+              <CardContent>
+                <Box
+                  component="form"
+                  sx={{
+                    '& .MuiTextField-root': { m: 2, width: '100%' }
+                  }}
+                  noValidate
+                  autoComplete="off"
+                >
+                  <div>
+                  <TextField
+                      id="outlined-select-source-native"
+                      select
+                      label="Topic to send the message to"
+                      value={topic}
+                      onChange={(e) => {
+                        setTopic(e.target.value);
+                      }}
+                      helperText="Please select your topic"
+                    >
+                      {topics.map((option) => (
+                        <MenuItem key={option} value={option}>
+                          {option}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                    <TextField
+                      id="outlined-number"
+                      label="New Message"
+                      onChange={(e) => {
+                        setMessage(e.target.value);
+                      }}
+                      value={message}
+                      InputLabelProps={{
+                        shrink: true
+                      }}
+                    />
+                      <Button
+                        size="large"
+                        variant="outlined"
+                        sx={{ margin: 1 }}
+                        color="secondary"
+                        onClick={sendMessage}
+                      >
+                        Submit Message
+                      </Button>
+                  </div>
+                </Box>
+              </CardContent>
+            </Card>
+
+          <Grid item xs={12}>
+          </Grid>
+      </Box>
               </>
             )}
           </Grid>
@@ -239,6 +465,6 @@ function Tests() {
   );
 }
 
-Tests.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+Tests.getLayout = (page: any) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default Tests;

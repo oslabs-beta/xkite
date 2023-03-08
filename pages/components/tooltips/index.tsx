@@ -117,6 +117,6 @@ function Tooltips() {
   );
 }
 
-Tooltips.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+Tooltips.getLayout = (page: any) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default Tooltips;

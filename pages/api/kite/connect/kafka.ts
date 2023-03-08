@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next/types';
 import Kite from '@/common/kite';
 import ProducerFactory from '@/common/kafkaConnector/ProducerFactory';
+// import ConsumerFactory from '@/common/kafkaConnector/ConsumerFactory'; --> potentially will be using to retrieve data on which partitions new messages are assigned to
+
 type Data = {
   reply?: string;
   err?: unknown;
@@ -8,7 +10,7 @@ type Data = {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data>
+  res: NextApiResponse<Data | string[]>
 ) {
   if (req.method === 'POST') {
     /*
@@ -30,9 +32,18 @@ export default async function handler(
         clientId: clientId ?? 'test'
       });
 
+      let topics: string[] = undefined;
+      console.log(method)
+
       switch (method) {
         case 'createTopics':
           await producer.createTopics([topic]);
+          topics = await producer.listTopics();
+          console.log(topics, 'from post')
+          break;
+        case 'getTopics':
+          topics = await producer.listTopics();
+          console.log(topics, 'from post')
           break;
         case 'sendMessage':
           await producer.sendBatch(messages, topic);
@@ -47,9 +58,14 @@ export default async function handler(
           return res.status(405).send({ reply: 'Invalid Msg Body' });
           break;
       }
-      // await producer.shutdown();
       console.log('produced successfully');
-      res.status(200).json({ reply: 'success' });
+      if(topics.length){
+        res.status(201).json(topics);
+      }
+      else {
+        res.status(200).json({ reply: 'success' });
+      }
+      
       //TO DO: uncomment when you connecting to the front-end
       // res.redirect('/display');
     } catch (err) {

@@ -174,6 +174,6 @@ function Badges() {
   );
 }
 
-Badges.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+Badges.getLayout = (page: any) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default Badges;

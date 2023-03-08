@@ -117,6 +117,6 @@ function TabsDemo() {
   );
 }
 
-TabsDemo.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+TabsDemo.getLayout = (page: any) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default TabsDemo;
