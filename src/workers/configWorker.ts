@@ -13,6 +13,7 @@
 //   postMessage(client.getData);
 // });
 import { KiteState } from '@kite/constants';
+import { KiteSetup } from '@kite/types';
 
 globalThis.onmessage = async (event: MessageEvent<boolean>) => {
   try {

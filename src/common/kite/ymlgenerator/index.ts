@@ -21,7 +21,7 @@ import {
   _ports_,
   KAFKA_CONNECT_SRC,
   KAFKA_CONNECT_SINK
-} from './constants';
+} from '@kite/ymlgenerator/constants';
 import { dbCfg, KiteConfig, KiteKafkaCfg, KiteSetup } from '../types';
 
 const dependencies: string[] = [];
@@ -50,7 +50,8 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
 
     try {
       // database
-      setup.dBSetup = createDB(db);
+      const dBSetup = createDB(db);
+      if (dBSetup !== undefined) setup.dBSetup = dBSetup;
       console.log(`dataSetup= ${JSON.stringify(setup.dBSetup)}`);
       // sink //TODO make and call createSink() method
       if (sink?.name === 'jupyter') {
@@ -281,6 +282,8 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
     servers: { zkClients: string; zkPeers: string }
   ) {
     console.log('creating brokers...');
+    // console.log(JSON.stringify(kafka));
+    // console.log(JSON.stringify(servers));
     const jmxExporterConfig: any = yaml.load(
       fs.readFileSync(
         path.resolve(downloadDir, 'jmx/exporter/template.yml'),
@@ -353,6 +356,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
         ...KAFKA_BROKER,
         ports: [`${extPort}:${_ports_.kafka.broker.internal}`],
         container_name: brokerName,
+        depends_on: dependencies,
         environment: {
           ...KAFKA_BROKER.environment,
           KAFKA_BROKER_ID: brokerID,
@@ -371,8 +375,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: `${brokerName}:${metricsPort}`,
           KAFKA_ZOOKEEPER_CONNECT: servers.zkClients,
           CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: servers.zkClients
-        },
-        depends_on: dependencies
+        }
       };
       // requires port forwarding on host computer
       setup.kafkaSetup.brokers.push(`${network}:${extPort}`);
@@ -425,38 +428,42 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       };
       setup.spring = { port: springPort };
       // kafka-connect
-      const kcenv = YAML.services.kafka_connect_src.environment;
-      const kcdeps =
-        YAML.services.kafka_connect.depends_on.length === 0
-          ? [brokerName]
-          : [...YAML.services.kafka_connect_src.depends_on, brokerName];
-      YAML.services.kafka_connect_src = {
-        ...YAML.services.kafka_connect_src,
-        environment: {
-          ...kcenv,
-          CONNECT_BOOTSTRAP_SERVERS:
-            kcenv.CONNECT_BOOTSTRAP_SERVERS !== ''
-              ? `${kcenv.CONNECT_BOOTSTRAP_SERVERS},${brokerName}:${_ports_.kafka.connect}`
-              : `${brokerName}:${_ports_.kafka.connect}`
-        },
-        depends_on: kcdeps
-      };
-      const kcsenv = YAML.services.kafka_connect_sink.environment;
-      const kcsdeps =
-        YAML.services.kafka_connect_sink.depends_on.length === 0
-          ? [brokerName]
-          : [...YAML.services.kafka_connect_sink.depends_on, brokerName];
-      YAML.services.kafka_connect_sink = {
-        ...YAML.services.kafka_connect_sink,
-        environment: {
-          ...kcsenv,
-          CONNECT_BOOTSTRAP_SERVERS:
-            kcenv.CONNECT_BOOTSTRAP_SERVERS !== ''
-              ? `${kcenv.CONNECT_BOOTSTRAP_SERVERS},${brokerName}:${_ports_.kafka.connect}`
-              : `${brokerName}:${_ports_.kafka.connect}`
-        },
-        depends_on: kcsdeps
-      };
+      if (YAML.services.kafka_connect_src !== undefined) {
+        const kcenv = YAML.services.kafka_connect_src.environment;
+        const kcdeps =
+          YAML.services.kafka_connect_src.depends_on.length === 0
+            ? [brokerName]
+            : [...YAML.services.kafka_connect_src.depends_on, brokerName];
+        YAML.services.kafka_connect_src = {
+          ...YAML.services.kafka_connect_src,
+          environment: {
+            ...kcenv,
+            CONNECT_BOOTSTRAP_SERVERS:
+              kcenv.CONNECT_BOOTSTRAP_SERVERS !== ''
+                ? `${kcenv.CONNECT_BOOTSTRAP_SERVERS},${brokerName}:${_ports_.kafka.connect}`
+                : `${brokerName}:${_ports_.kafka.connect}`
+          },
+          depends_on: kcdeps
+        };
+      }
+      if (YAML.services.kafka_connect_sink !== undefined) {
+        const kcenv = YAML.services.kafka_connect_sink.environment;
+        const kcdeps =
+          YAML.services.kafka_connect_sink.depends_on.length === 0
+            ? [brokerName]
+            : [...YAML.services.kafka_connect_sink.depends_on, brokerName];
+        YAML.services.kafka_connect_sink = {
+          ...YAML.services.kafka_connect_sink,
+          environment: {
+            ...kcenv,
+            CONNECT_BOOTSTRAP_SERVERS:
+              kcenv.CONNECT_BOOTSTRAP_SERVERS !== ''
+                ? `${kcenv.CONNECT_BOOTSTRAP_SERVERS},${brokerName}:${_ports_.kafka.connect}`
+                : `${brokerName}:${_ports_.kafka.connect}`
+          },
+          depends_on: kcdeps
+        };
+      }
     }
   }
 };

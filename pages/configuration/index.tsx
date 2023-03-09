@@ -103,11 +103,11 @@ function Forms() {
       }>
     ) => {
       // console.log(event.data);
-      const { state, setup, metricsReady } = event.data;
+      // const { state, setup, metricsReady } = event.data;
       console.log(event.data);
       const { state, setup } = event.data;
       setActive(state === KiteState.Running);
-      setIsMetricsReady(metricsReady);
+      // setIsMetricsReady(metricsReady);
     };
     kiteWorkerRef.current?.postMessage(true);
     return () => {
