@@ -18,6 +18,7 @@ import {
   setSetup,
   setState,
   setServerState,
+  setServiceState,
   setConfigFile
 } from '@/common/kite/slice';
 import { KiteConfig, KiteConfigFile } from './types';
@@ -121,16 +122,72 @@ function KiteCreator() {
     }
   }
 
+  async function pauseServer(service: string[]) {
+    try {
+      const { server } = store.getState();
+      await fetch(`${server}/api/kite/pause`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({ service })
+      });
+    } catch (err) {
+      console.error(`Could not pause docker instances on server:\n${err}`);
+    }
+  }
+
+  async function pauseLocal(service: string[]) {
+    for (const name of service) {
+      try {
+        await compose.pauseOne(name, {
+          cwd: downloadDir,
+          log: true
+        });
+      } catch (err) {
+        console.error(`Could not pause docker instances on local:\n${err}`);
+      }
+    }
+  }
+
+  async function unpauseServer(service: string[]) {
+    try {
+      const { server } = store.getState();
+      await fetch(`${server}/api/kite/unpause`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({ service })
+      });
+    } catch (err) {
+      console.error(`Could not unpause docker instances on server:\n${err}`);
+    }
+  }
+
+  async function unpauseLocal(service: string[]) {
+    for (const name of service) {
+      try {
+        await compose.unpauseOne(name, {
+          cwd: downloadDir,
+          log: true
+        });
+      } catch (err) {
+        console.error(`Could not unpause docker instances on local:\n${err}`);
+      }
+    }
+  }
+
   async function shutdownServer() {
     try {
       const { server } = store.getState();
       await fetch(`${server}/api/kite/shutdown`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Accept: 'application/json'
-        },
-        body: JSON.stringify({ disconnect: true })
+        }
       });
     } catch (err) {
       console.error(`Could not shutdown docker instances on server:\n${err}`);
@@ -157,10 +214,8 @@ function KiteCreator() {
       await fetch(`${server}/api/kite/disconnect`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Accept: 'application/json'
-        },
-        body: JSON.stringify({ disconnect: true })
+        }
       });
     } catch (err) {
       console.error(`Could not disconnect docker instances on server:\n${err}`);
@@ -308,15 +363,15 @@ function KiteCreator() {
 
       return new Promise((res, rej) => {
         try {
-        const header = {
-          'Content-Type': 'application/zip',
-          'Content-Length': fs.statSync(zipPath).size
-        };
-        const fileStream = fs.readFileSync(zipPath);
-        res({ header, fileStream });
-      } catch(err) {
-        rej(err);
-      }
+          const header = {
+            'Content-Type': 'application/zip',
+            'Content-Length': fs.statSync(zipPath).size
+          };
+          const fileStream = fs.readFileSync(zipPath);
+          res({ header, fileStream });
+        } catch (err) {
+          rej(err);
+        }
       });
     },
     /**
@@ -351,6 +406,34 @@ function KiteCreator() {
         await shutdownLocal();
       }
       store.dispatch(setState(KiteState.Shutdown));
+    },
+    /**
+     *
+     */
+    pause: async function (service?: string[]): Promise<any> {
+      const { serverState, services } = store.getState();
+      if (service === undefined) service = services; // default to use all.
+      if (serverState === KiteServerState.Connected) {
+        store.dispatch(setServerState(KiteServerState.Disconnected));
+        await pauseServer(service);
+      } else {
+        await pauseLocal(service);
+      }
+      store.dispatch(setServiceState({ type: 'pause', service }));
+    },
+    /**
+     *
+     */
+    unpause: async function (service?: string[]): Promise<any> {
+      const { serverState, services } = store.getState();
+      if (service === undefined) service = services; // default to use all.
+      if (serverState === KiteServerState.Connected) {
+        store.dispatch(setServerState(KiteServerState.Disconnected));
+        await unpauseServer(service);
+      } else {
+        await unpauseLocal(service);
+      }
+      store.dispatch(setServiceState({ type: 'unpause', service }));
     }
   };
 }

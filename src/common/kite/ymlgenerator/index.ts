@@ -22,7 +22,7 @@ import {
   KAFKA_CONNECT_SRC,
   KAFKA_CONNECT_SINK
 } from '@kite/ymlgenerator/constants';
-import { dbCfg, KiteConfig, KiteKafkaCfg, KiteSetup } from '../types';
+import { dbCfg, KiteConfig, KiteKafkaCfg, KiteSetup } from '@kite/types';
 
 const dependencies: string[] = [];
 const setup: KiteSetup = {
@@ -111,6 +111,13 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
     } catch (error) {
       console.log(error);
     } finally {
+      for (const service in YAML.services) {
+        if ('docker' in setup) {
+          setup.docker.services.push(service);
+        } else {
+          setup.docker = { services: [service] };
+        }
+      }
       return setup;
     }
   };
