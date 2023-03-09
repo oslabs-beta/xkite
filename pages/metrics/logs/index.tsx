@@ -117,22 +117,22 @@ function DashboardTasks() {
 
   useEffect(() => {
 
-    const socket = SocketIOClient.connect(window.location.host, {
-      path: "/api/socket",
-      });
+    // const socket = SocketIOClient.connect(window.location.host, {
+    //   path: "/api/socket",
+    //   });
 
-    // log socket connection
-      socket.on("connect", () => {
-      console.log("SOCKET CONNECTED!");
+    // // log socket connection
+    //   socket.on("connect", () => {
+    //   console.log("SOCKET CONNECTED!");
         
-    });
+    // });
 
-    // update chat on new message dispatched
-      socket.on("message", (message: string) => {
-      if (message) {
-        console.log(message)
-        }
-    });
+    // // update chat on new message dispatched
+    //   socket.on("message", (message: string) => {
+    //   if (message) {
+    //     console.log(message)
+    //     }
+    // });
 
 
   }, []);
@@ -419,6 +419,6 @@ function DashboardTasks() {
   );
 }
 
-DashboardTasks.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+DashboardTasks.getLayout = (page: any) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default DashboardTasks;
