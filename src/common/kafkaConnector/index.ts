@@ -1,6 +1,7 @@
 // this is a kafka connector class that uses kafkajs to simplify the process of connecting to a kafka instance. The constructor takes in a kafka setup object that constructs a kafka instance via kafkajs
 
 import { Kafka, logLevel, Consumer, Producer, Admin, Message } from 'kafkajs';
+import { KafkaSetup } from './types/kafkaConnector';
 
 export default class KafkaConnector {
   kafka: Kafka;

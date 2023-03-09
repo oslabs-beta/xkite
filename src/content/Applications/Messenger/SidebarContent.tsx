@@ -103,7 +103,7 @@ function SidebarContent() {
     invisible: true
   });
 
-  const handleChange = (event) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setState({
       ...state,
       [event.target.name]: event.target.checked

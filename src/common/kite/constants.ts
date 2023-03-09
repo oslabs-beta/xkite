@@ -1,4 +1,5 @@
 import path from 'path';
+import { KiteConfig } from './types';
 
 const defaultCfg: KiteConfig = {
   kafka: {

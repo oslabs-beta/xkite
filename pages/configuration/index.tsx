@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import SidebarLayout from '@/layouts/SidebarLayout';
 import PageTitle from '@/components/PageTitle';
+import { KiteConfig, KiteSetup } from '@/common/kite/types';
 import {
   useState,
   SyntheticEvent,
@@ -9,11 +10,10 @@ import {
   useRef,
   ChangeEvent
 } from 'react';
-import defaultCfg from '@/common/kite/constants';
+import defaultCfg from '@kite/constants';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HashLoader from 'react-spinners/HashLoader';
-
 import axios from 'axios';
 import {
   Container,
@@ -28,12 +28,13 @@ import {
   AccordionSummary,
   Typography
 } from '@mui/material';
-import Footer from 'src/components/Footer';
+import Footer from '@/components/Footer';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import ExportConfigBtn from '@/content/Dashboards/Tasks/ExportConfigBtn';
-import { KiteState } from '@../../src/common/kite/constants';
+import { KiteState } from '@kite/constants';
+import React from 'react';
 
 export interface PortsOpen {
   [index: string]: PortOpen;
@@ -81,7 +82,8 @@ const DEFAULT_BROKER_PORT = 9091;
 
 function Forms() {
   const [portsOpen, setPortsOpen] = useState<PortsOpen>({});
-  const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultCfg);
+  const [kiteConfigRequest, setKiteConfigRequest] =
+    useState<KiteConfig>(defaultCfg);
   const [expanded, setExpanded] = useState<string | false>(false);
   const [loader, setLoader] = useState(0);
   const [active, setActive] = useState(false);
@@ -91,7 +93,7 @@ function Forms() {
 
   useEffect(() => {
     kiteWorkerRef.current = new Worker(
-      new URL('./kiteWorker.ts', import.meta.url)
+      new URL('@/workers/configWorker.ts', import.meta.url)
     );
     kiteWorkerRef.current.onmessage = (
       event: MessageEvent<{
@@ -102,6 +104,8 @@ function Forms() {
     ) => {
       // console.log(event.data);
       const { state, setup, metricsReady } = event.data;
+      console.log(event.data);
+      const { state, setup } = event.data;
       setActive(state === KiteState.Running);
       setIsMetricsReady(metricsReady);
     };
@@ -110,10 +114,6 @@ function Forms() {
       kiteWorkerRef.current?.terminate();
     };
   }, []);
-
-  const checkActive = async () => {
-    kiteWorkerRef.current?.postMessage(true);
-  };
 
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -159,21 +159,23 @@ function Forms() {
     );
   };
 
-  const queryMetrics = () => {
-    const interval = setInterval(async () => {
-      try {
-        kiteWorkerRef.current?.postMessage(true);
-        // const response = await fetch('/api/kite/getKiteState');
-        // const data = await response.text();
-        // console.log(data);
-        if (isMetricsReady) {
-          clearInterval(interval);
-          window.location.href = '/metrics';
+  const queryMetrics = (active: boolean) => {
+    const interval = setInterval(
+      () => {
+        console.log(active, '158');
+        try {
+          kiteWorkerRef.current?.postMessage(true);
+          if (active) {
+            clearInterval(interval);
+            window.location.href = '/metrics';
+          }
+        } catch (err) {
+          console.log(err);
         }
-      } catch (err) {
-        console.log(err);
-      }
-    }, 1000);
+      },
+      1000,
+      active
+    );
   };
 
   function ShutDownBtn() {
@@ -206,7 +208,6 @@ function Forms() {
   }
 
   const checkPortOpen: CheckPortOpen = async (index, type, port) => {
-    //console.log({ index, type, port });
     const isOpen = await isPortOpen(port);
     console.log(portsOpen[`broker-0`], '187');
     setPortsOpen((portsOpen) => ({
@@ -216,8 +217,6 @@ function Forms() {
         [type]: isOpen
       }
     }));
-    //console.log(isOpen);
-
     return isOpen;
   };
 
@@ -241,7 +240,6 @@ function Forms() {
     try {
       event.preventDefault();
       setLoader(1);
-      queryMetrics();
       // TODO: Prevent state for deleted brokers from being submitted
       //console.log(kiteConfigRequest)
       console.log('sending configuration…');
@@ -253,16 +251,11 @@ function Forms() {
         },
         body: JSON.stringify(kiteConfigRequest)
       });
+      queryMetrics(active);
       console.dir(response);
     } catch (error) {
       console.error(error);
     }
-    // .then((response) => {
-    //   console.dir(response);
-    // })
-    // .catch((error) => {
-    // });
-    // setSubmit(false);
   }
 
   const handleData = (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -376,7 +369,7 @@ function Forms() {
             }}
             error={
               portsOpen
-                ? Object.hasOwn(portsOpen, `broker-${i}`)
+                ? portsOpen[`broker-${i}`]
                   ? !portsOpen[`broker-${i}`].port
                   : false
                 : false
@@ -482,6 +475,7 @@ function Forms() {
                     <TextField
                       id="outlined-select-source-native"
                       select
+                      defaultValue={kiteConfigRequest.db?.name}
                       label="Data Source"
                       value={kiteConfigRequest.db?.name}
                       onChange={handleData}
@@ -497,6 +491,7 @@ function Forms() {
                       id="outlined-select-sink-native"
                       select
                       label="Data Sink"
+                      defaultValue={kiteConfigRequest.sink?.name}
                       value={kiteConfigRequest.sink?.name}
                       onChange={handleSink}
                       helperText="Please select your data sink"

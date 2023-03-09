@@ -1,5 +1,9 @@
 // types/common/kite.d.ts
 
+import { KafkaSetup } from "../../kafkaConnector/types/kafkaConnector";
+import { KiteState, KiteServerState } from "../constants";
+import * as fs from 'fs';
+
 interface KiteConfig {
   kafka: KiteKafkaCfg;
   db?: dbCfg;
@@ -8,7 +12,7 @@ interface KiteConfig {
   prometheus?: prometheusCfg;
 }
 
-interface dbCfg {
+export interface dbCfg {
   name: 'postgresql' | 'ksql';
   port?: number;
   postgresql?: {
@@ -21,7 +25,7 @@ interface dbCfg {
   };
 }
 
-interface sinkCfg {
+export interface sinkCfg {
   name: 'jupyter' | 'spark';
   port?: number;
 }
@@ -30,13 +34,13 @@ interface grafanaCfg {
   port: number;
 }
 
-interface prometheusCfg {
+export interface prometheusCfg {
   port: number;
   scrape_interval: number; //seconds
   evaluation_interval: number; //seconds
 }
 
-interface KiteKafkaCfg {
+export interface KiteKafkaCfg {
   brokers: {
     size: number;
     id?: number[]; // [101, 102,...]
@@ -66,7 +70,7 @@ interface KiteKafkaCfg {
   };
 }
 
-interface KiteSetup {
+export interface KiteSetup {
   dBSetup?: dbCfg;
   kafkaSetup: KafkaSetup;
   spring?: { port: number };
@@ -78,20 +82,24 @@ interface KiteSetup {
   spark?: { port: number };
 }
 
-interface KiteConfigFile {
+export interface KiteConfigFile {
   header?: any;
-  fileStream: fs.ReadStream;
+  fileStream: Buffer;
 }
 
-interface Kite {
-  defaultCfg: KiteConfig;
-  configure: (arg?: string | KiteConfig) => void;
-  deploy: (arg?: any) => void;
-  getSetup: () => Promise<KiteSetup | undefined>;
-  getConfig: () => Promise<KiteConfig | undefined>;
-  getConfigFile: () => Promise<KiteConfigFile | undefined>;
-  getKiteState: () => KiteState;
-  getKiteServerState: () => KiteServerState;
-  disconnect: () => Promise<any>;
-  shutdown: () => Promise<any>;
-}
+// export interface Kite {
+//   defaultCfg: KiteConfig;
+//   configure: (arg?: string | KiteConfig) => void;
+//   deploy: (arg?: any) => void;
+//   getSetup: () => Promise<KiteSetup | undefined>;
+//   getConfig: () => Promise<KiteConfig | undefined>;
+//   getConfigFile: () => Promise<KiteConfigFile | undefined>;
+//   getKiteState: () => KiteState;
+//   getKiteServerState: () => KiteServerState;
+//   disconnect: () => Promise<any>;
+//   shutdown: () => Promise<any>;
+// }
+// export function getConfig() {
+//   throw new Error('Function not implemented.');
+// }
+

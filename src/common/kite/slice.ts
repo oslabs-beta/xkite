@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { KiteState, KiteServerState } from '@/common/kite/constants';
+import { KiteState, KiteServerState } from '@kite/constants';
 import defaultCfg, { configFilePath } from './constants';
 import path from 'path';
 import fs from 'fs-extra';

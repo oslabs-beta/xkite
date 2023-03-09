@@ -1,12 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next/types';
 import Kite from '@/common/kite';
+import { KiteConfig } from '@/common/kite/types';
 
 type Data = {
   reply?: string;
   err?: unknown;
 };
 
-const kiteHost = 'localhost:6661';
+//const kiteHost = 'localhost:6661';
 
 export default async function handler(
   req: NextApiRequest,
