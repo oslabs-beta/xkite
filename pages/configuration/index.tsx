@@ -103,13 +103,13 @@ function Forms() {
       }>
     ) => {
       // console.log(event.data);
-      // const { state, setup, metricsReady } = event.data;
+      const { state, setup, metricsReady } = event.data;
       console.log(event.data);
-      const { state, setup } = event.data;
-      setActive(state === KiteState.Running);
-      // setIsMetricsReady(metricsReady);
+      // const { state, setup } = event.data;
+      if (state !== undefined) setActive(state === KiteState.Running);
+      if (metricsReady !== undefined) setIsMetricsReady(metricsReady);
     };
-    kiteWorkerRef.current?.postMessage(true);
+    kiteWorkerRef.current?.postMessage(1000);
     return () => {
       kiteWorkerRef.current?.terminate();
     };
@@ -159,24 +159,21 @@ function Forms() {
     );
   };
 
-  const queryMetrics = (active: boolean) => {
-    const interval = setInterval(
-      () => {
-        console.log(active, '158');
-        try {
-          kiteWorkerRef.current?.postMessage(true);
-          if (active) {
-            clearInterval(interval);
-            window.location.href = '/metrics';
-          }
-        } catch (err) {
-          console.log(err);
-        }
-      },
-      1000,
-      active
-    );
-  };
+  // const queryMetrics = (active: boolean) => {
+  //   const interval = setInterval(
+  //     () => {
+  //       console.log(active, '158');
+  //       try {
+  //         kiteWorkerRef.current?.postMessage(true);
+
+  //       } catch (err) {
+  //         console.log(err);
+  //       }
+  //     },
+  //     1000,
+  //     active
+  //   );
+  // };
 
   function ShutDownBtn() {
     async function disconnectHandler(event: SyntheticEvent): Promise<void> {
@@ -251,7 +248,9 @@ function Forms() {
         },
         body: JSON.stringify(kiteConfigRequest)
       });
-      queryMetrics(active);
+      // queryMetrics(active);
+      kiteWorkerRef.current?.postMessage(true);
+
       console.dir(response);
     } catch (error) {
       console.error(error);
@@ -308,7 +307,7 @@ function Forms() {
     const res: JSX.Element[] = [];
     for (let i = 0; i < kiteConfigRequest.kafka.brokers.size; i++) {
       res.push(
-        <>
+        <div key={i}>
           <p>Broker {i + 1}</p>
           <TextField
             id="filled-number"
@@ -410,7 +409,7 @@ function Forms() {
             }}
             variant="filled"
           />
-        </>
+        </div>
       );
     }
     return res;
@@ -418,6 +417,11 @@ function Forms() {
 
   return (
     <>
+      {loader && active && isMetricsReady ? (
+        <>{(window.location.href = '/metrics')} </>
+      ) : (
+        <></>
+      )}
       <Head>
         <title>Configure Your Kafka Cluster</title>
       </Head>
@@ -454,7 +458,7 @@ function Forms() {
                       id="outlined-number"
                       label="Brokers"
                       type="number"
-                      defaultValue="2"
+                      // defaultValue="2"
                       onChange={handleBrokers}
                       value={kiteConfigRequest.kafka.brokers.size}
                       InputLabelProps={{
@@ -463,7 +467,7 @@ function Forms() {
                     />
                     <TextField
                       id="outlined-number"
-                      defaultValue="2"
+                      // defaultValue="2"
                       label="Zookeepers"
                       type="number"
                       onChange={handleZoo}
@@ -475,7 +479,7 @@ function Forms() {
                     <TextField
                       id="outlined-select-source-native"
                       select
-                      defaultValue={kiteConfigRequest.db?.name}
+                      // defaultValue={kiteConfigRequest.db?.name}
                       label="Data Source"
                       value={kiteConfigRequest.db?.name}
                       onChange={handleData}
@@ -491,7 +495,7 @@ function Forms() {
                       id="outlined-select-sink-native"
                       select
                       label="Data Sink"
-                      defaultValue={kiteConfigRequest.sink?.name}
+                      // defaultValue={kiteConfigRequest.sink?.name}
                       value={kiteConfigRequest.sink?.name}
                       onChange={handleSink}
                       helperText="Please select your data sink"
