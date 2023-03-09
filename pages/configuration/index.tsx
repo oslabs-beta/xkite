@@ -15,7 +15,6 @@ import PageTitleWrapper from '@/components/PageTitleWrapper';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HashLoader from 'react-spinners/HashLoader';
 import axios from 'axios';
-import { useInterval } from 'usehooks-ts'
 import {
   Container,
   Grid,
@@ -117,28 +116,6 @@ function Forms() {
 
     
   }, []);
-
-  
-  useInterval(
-    async () => {
-      // kiteWorkerRef.current?.postMessage(true);
-      // console.log('check125', active)
-      // if(active){
-      //   window.location.href = "/metrics";
-      //   setLoader(0);
-      // }
-
-      const state = await fetch('/api/kite/getKiteState').then((data) =>
-      data.text()
-      );
-      console.log(state)
-      if(state === KiteState.Running){
-        window.location.href = "/metrics";
-        setLoader(0);
-      }
-    },
-    loader ? 1000 : null,
-  )
   
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
