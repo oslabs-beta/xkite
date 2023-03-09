@@ -113,10 +113,8 @@ function Forms() {
     return () => {
       kiteWorkerRef.current?.terminate();
     };
-
-    
   }, []);
-  
+
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
