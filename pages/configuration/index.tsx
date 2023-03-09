@@ -1,19 +1,19 @@
 import Head from 'next/head';
 import SidebarLayout from '../../src/layouts/SidebarLayout';
 import PageTitle from '../../src/components/PageTitle';
-import { KiteConfig, dbCfg, sinkCfg } from '../../src/common/kite/types/kite';
+import { KiteConfig, KiteSetup } from '../../src/common/kite/types/kite';
 import {
   useState,
   SyntheticEvent,
   CSSProperties,
   useEffect,
+  useRef,
   ChangeEvent
 } from 'react';
 import defaultCfg from '../../src/common/kite/constants';
 import PageTitleWrapper from '../../src/components/PageTitleWrapper';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HashLoader from 'react-spinners/HashLoader';
-import { KiteState } from '../../src/common/kite/constants';
 import axios from 'axios';
 import {
   Container,
@@ -32,7 +32,8 @@ import Footer from '../../src/components/Footer';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import ExportConfigBtn from '../../src/content/Dashboards/Tasks/ExportConfigBtn';
+import ExportConfigBtn from '../../src/content/Dashboards/Tasks/ExportConfigBtn'; 
+import { KiteState } from '../../src/common/kite/constants';
 import React from 'react';
 
 export interface PortsOpen {
@@ -84,27 +85,32 @@ function Forms() {
   const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultCfg);
   const [expanded, setExpanded] = useState<string | false>(false);
   const [loader, setLoader] = useState(0);
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(false);
   const [shuttingDown, setShuttingDown] = useState(false);
+  const kiteWorkerRef = useRef<Worker>();
 
   useEffect(() => {
-    checkActive();
+    kiteWorkerRef.current = new Worker(
+      new URL('./kiteWorker.ts', import.meta.url)
+    );
+    kiteWorkerRef.current.onmessage = (
+      event: MessageEvent<{
+        state: KiteState;
+        setup: KiteSetup;
+      }>
+    ) => {
+      // console.log(event.data);
+      const { state, setup } = event.data;
+      setActive(state === KiteState.Running);
+    };
+    kiteWorkerRef.current?.postMessage(true);
+    return () => {
+      kiteWorkerRef.current?.terminate();
+    };
   }, []);
 
   const checkActive = async () => {
-    try {
-      const response = await fetch('/api/kite/getKiteState');
-      const data = await response.text();
-      console.log(data);
-      if (data === KiteState.Running) {
-        setActive(1);
-      } else {
-        setActive(0);
-      }
-    } catch (err) {
-      setActive(0);
-      console.log(err);
-    }
+    kiteWorkerRef.current?.postMessage(true);
   };
 
   const handleChange =
@@ -151,7 +157,7 @@ function Forms() {
     );
   };
 
-  const queryMetrics = async () => {
+  const queryMetrics = () => {
     const interval = setInterval(async () => {
       try {
         const response = await fetch('/api/kite/getKiteState');
@@ -178,7 +184,7 @@ function Forms() {
       } catch (error) {
         console.error('Error occurred during shutdown:', error);
       }
-      setActive(0);
+      setActive(false);
       setShuttingDown(false);
     }
 
@@ -247,21 +253,16 @@ function Forms() {
     }
   }
 
-  const handleData = (event: ChangeEvent) => {
-    const target = event.target as HTMLButtonElement;
-    if(target.value === 'postgresql' || target.value === 'ksql' ){
-      const name: dbCfg["name"] = target.value;
-      updateKiteConfigRequest({
-        db: {
-          name
-        }
-      });
-    }
+  const handleData = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    updateKiteConfigRequest({
+      db: {
+        name: event.target.value === 'ksql' ? 'ksql' : 'postgresql'
+      }
+    });
   };
 
-  const handleBrokers = (event: ChangeEvent) => {
-    const target = event.target as HTMLButtonElement;
-    const size = Number(target.value);
+  const handleBrokers = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    const size = Number(event.target.value);
     if (size <= 0) return;
     const update = {
       kafka: {
@@ -275,9 +276,8 @@ function Forms() {
     updateKiteConfigRequest(update);
   };
 
-  const handleZoo = (event: ChangeEvent) => {
-    const target = event.target as HTMLButtonElement;
-    const size = Number(target.value);
+  const handleZoo = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    const size = Number(event.target.value);
     if (size <= 0) return;
     const update = {
       kafka: {
@@ -291,16 +291,12 @@ function Forms() {
     updateKiteConfigRequest(update);
   };
 
-  const handleSink = (event: ChangeEvent) => {
-    const target = event.target as HTMLButtonElement;
-    if(target.value === 'jupyter' || target.value === 'spark' ){
-      const name: sinkCfg["name"] = target.value;
-      updateKiteConfigRequest({
-        sink: {
-          name
-        }
-      });
-    };
+  const handleSink = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    updateKiteConfigRequest({
+      sink: {
+        name: event.target.value === 'jupyter' ? 'jupyter' : 'spark'
+      }
+    });
   };
 
   const renderAdvanced = () => {
@@ -538,9 +534,9 @@ function Forms() {
             </Accordion>
           </Grid>
           <Grid textAlign="center" item xs={12}>
-            {active === 1 && shuttingDown && isLoading()}
-            {!shuttingDown && active === 1 && isActive()}
-            {active === 0 && loader === 0 && (
+            {active && shuttingDown && isLoading()}
+            {!shuttingDown && active && isActive()}
+            {!active && loader === 0 && (
               <Button
                 sx={{ margin: 2 }}
                 variant="contained"
@@ -549,7 +545,7 @@ function Forms() {
                 Submit
               </Button>
             )}
-            {active === 0 && loader === 1 && isLoading()}
+            {!active && loader === 1 && isLoading()}
             <Card>
               <Box textAlign="center">
                 <ExportConfigBtn />

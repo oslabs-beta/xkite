@@ -22,8 +22,6 @@ import {
   Box,
   CardContent,
   Card,
-  Typography,
-  Divider,
   TextField
 } from '@mui/material';
 import Head from 'next/head';

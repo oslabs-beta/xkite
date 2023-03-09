@@ -66,7 +66,7 @@ interface KiteKafkaCfg {
   };
 }
 
-interface KiteSetup {
+export interface KiteSetup {
   dBSetup?: dbCfg;
   kafkaSetup: KafkaSetup;
   spring?: { port: number };
