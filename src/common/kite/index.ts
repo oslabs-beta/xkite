@@ -4,7 +4,7 @@ import compose from 'docker-compose';
 import ymlGenerator from '@/common/kite/ymlgenerator';
 const zipper = require('zip-local');
 // import Monitor from '@/common/monitor/monitor';
-import { KiteState, KiteServerState } from '@/common/kite/constants';
+import { KiteState, KiteServerState } from '@kite/constants';
 import defaultCfg, { configFilePath } from './constants';
 const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
 const configPath = path.join(downloadDir, 'docker-compose.yml');
@@ -20,6 +20,7 @@ import {
   setServerState,
   setConfigFile
 } from '@/common/kite/slice';
+import { KiteConfig, KiteConfigFile } from './types';
 
 function KiteCreator() {
   //Private Variable / Methods:
@@ -306,12 +307,16 @@ function KiteCreator() {
       zipper.sync.zip(downloadDir).compress().save(zipPath);
 
       return new Promise((res, rej) => {
+        try {
         const header = {
           'Content-Type': 'application/zip',
           'Content-Length': fs.statSync(zipPath).size
         };
         const fileStream = fs.readFileSync(zipPath);
         res({ header, fileStream });
+      } catch(err) {
+        rej(err);
+      }
       });
     },
     /**

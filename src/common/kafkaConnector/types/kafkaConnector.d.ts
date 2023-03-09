@@ -1,10 +1,10 @@
-interface KafkaSetup {
+export interface KafkaSetup {
   clientId: string;
   brokers: Array<string>;
   ssl?: boolean;
 }
 
-interface msg {
+export interface msg {
   value: string;
   partition?: number | 0;
 }

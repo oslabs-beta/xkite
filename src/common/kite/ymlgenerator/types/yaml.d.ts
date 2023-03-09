@@ -1,5 +1,7 @@
 // types/common/yaml.d.ts
 
+import { KiteSetup } from "../../types";
+
 type YAMLGenerator = (KiteConfig) => KiteSetup;
 
 interface YAMLConfig {
@@ -242,7 +244,7 @@ interface JMXConfg extends BaseCfg {
 }
 
 interface BaseCfg {
-  command?: Array<string>;
+  command?: Array<string> | string;
   restart?: string;
   image: string;
   ports: Array<string>;

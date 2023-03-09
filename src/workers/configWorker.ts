@@ -12,27 +12,18 @@
 //   client.request(event.data);
 //   postMessage(client.getData);
 // });
-import { KiteState } from '@../../src/common/kite/constants';
+import { KiteState } from '@kite/constants';
 
-addEventListener('message', async (event: MessageEvent<boolean>) => {
+globalThis.onmessage = async (event: MessageEvent<boolean>) => {
   try {
     const state = await fetch('/api/kite/getKiteState').then((data) =>
       data.text()
     );
     const setup = await fetch('/api/kite/getSetup').then((data) => data.json());
-    const topics = await fetch('/api/kite/connect/kafka', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'getTopics'
-      })
-    }).then((data) => data.json());
-    postMessage({ state, setup, topics });
+    postMessage({ state, setup });
   } catch (err) {
     console.log(err);
   }
-});
+};
 
 export {};

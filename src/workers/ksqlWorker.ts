@@ -13,9 +13,7 @@
 //   postMessage(client.getData);
 // });
 
-addEventListener(
-  'message',
-  async (event: MessageEvent<{ type: string; ksql: string }>) => {
+globalThis.onmessage = async (event: MessageEvent<{ type: string; ksql: string }>) => {
     try {
       const resp = await fetch('/api/kite/getSetup');
       const setup = await resp.json();
@@ -60,6 +58,5 @@ addEventListener(
       console.log(err);
     }
   }
-);
 
 export {};

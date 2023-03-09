@@ -4,7 +4,9 @@
     "typeRoots": ["./src/common/types", "node_modules/@types"],
     "paths": {
       "@/*": ["./src/*"],
-      "@/public/*": ["./public/*"]
+      "@/public/*": ["./public/*"],
+      "@kite/*": ["./src/common/kite/*"],
+      "@kafkaConnector/*": ["./src/common/kafkaConnector/*"]
     },
     "allowJs": true,
     "allowSyntheticDefaultImports": true,

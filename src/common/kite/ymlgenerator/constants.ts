@@ -1,5 +1,6 @@
 import path from 'path';
 import { connect } from 'socket.io-client';
+import { YAMLServicesDefaultSetup, PROMConfig, JMXConfg, KafkaConnectCfg, KafkaBrokerCfg, ZooKeeperCfg, PrometheusConfig, GrafanaCfg, PGConfig, KSQLConfig, BaseCfg, KSQLSchemaCfg, Juypter, SparkCfg, SpringCfg, YAMLConfig } from './types/yaml';
 
 export const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
 export const network = 'localhost'; //change to 0.0.0.0 to expose ports globally

@@ -25,12 +25,12 @@ import {
   TextField
 } from '@mui/material';
 import Head from 'next/head';
-import SidebarLayout from '../../src/layouts/SidebarLayout';
-import PageTitleWrapper from '../../src/components/PageTitleWrapper';
-import PageTitle from '../../src/components/PageTitle';
-import { KiteState } from '../../src/common/kite/constants';
-import { KiteSetup } from '../../src/common/kite/types/kite';
-import Footer from '../../src/components/Footer';
+import SidebarLayout from '@/layouts/SidebarLayout';
+import PageTitleWrapper from '@/components/PageTitleWrapper';
+import PageTitle from '@/components/PageTitle';
+import { KiteState } from '@kite/constants';
+import { KiteSetup } from '@kite/types';
+import Footer from '@/components/Footer';
 //import SocketIOClient from "socket.io-client"; TBD: remove if final version does not use sockets
 
 const TabsContainerWrapper = styled(Box)(
@@ -116,10 +116,10 @@ const TabsContainerWrapper = styled(Box)(
 );
 
 function Tests() {
-  const theme = useTheme();
+  //const theme = useTheme();
   const [currentTab, setCurrentTab] = useState<string>('ksql-streams');
-  const workerRef = useRef<Worker>();
-  const kiteWorkerRef = useRef<Worker>();
+  const ksqlWorkerRef = useRef<Worker>();
+  const testWorkerRef = useRef<Worker>();
   const [query, setQuery] = useState('');
   const [qResults, setQResults] = useState<string[]>([]);
   const [connected, setConnected] = useState(false);
@@ -129,10 +129,10 @@ function Tests() {
   const [topics, setTopics] = useState<string[]>([]);
 
   useEffect(() => {
-    kiteWorkerRef.current = new Worker(
-      new URL('./kiteWorker.ts', import.meta.url)
+    testWorkerRef.current = new Worker(
+      new URL('@/workers/testWorker.ts', import.meta.url)
     );
-    kiteWorkerRef.current.onmessage = (
+    testWorkerRef.current.onmessage = (
       event: MessageEvent<{
         state: KiteState;
         setup: KiteSetup;
@@ -147,17 +147,17 @@ function Tests() {
         setGrafanaPort(setup.grafana.port.toString());
       }
     };
-    workerRef.current = new Worker(new URL('./worker.ts', import.meta.url));
-    workerRef.current.onmessage = (event: MessageEvent<string>) => {
+    ksqlWorkerRef.current = new Worker(new URL('@/workers/ksqlWorker.ts', import.meta.url));
+    ksqlWorkerRef.current.onmessage = (event: MessageEvent<string>) => {
       // console.log(event.data);
       setQResults((prev) =>
         prev.length > 0 ? [...prev, event.data] : [event.data]
       );
     };
-    kiteWorkerRef.current?.postMessage(true);
+    testWorkerRef.current?.postMessage(true);
     return () => {
-      workerRef.current?.terminate();
-      kiteWorkerRef.current?.terminate();
+      ksqlWorkerRef.current?.terminate();
+      testWorkerRef.current?.terminate();
     };
   }, []);
 
@@ -232,7 +232,7 @@ function Tests() {
       setQResults(['']);
       let type = 'ksql';
       if (query.toUpperCase().startsWith('SELECT')) type = 'query';
-      workerRef.current?.postMessage({ type, ksql: query });
+      ksqlWorkerRef.current?.postMessage({ type, ksql: query });
       setQuery('');
     },
     [query]

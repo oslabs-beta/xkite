@@ -1,7 +1,7 @@
 import Head from 'next/head';
-import SidebarLayout from '../../src/layouts/SidebarLayout';
-import PageTitle from '../../src/components/PageTitle';
-import { KiteConfig, KiteSetup } from '../../src/common/kite/types/kite';
+import SidebarLayout from '@/layouts/SidebarLayout';
+import PageTitle from '@/components/PageTitle';
+import { KiteConfig, KiteSetup } from '@/common/kite/types';
 import {
   useState,
   SyntheticEvent,
@@ -10,8 +10,8 @@ import {
   useRef,
   ChangeEvent
 } from 'react';
-import defaultCfg from '../../src/common/kite/constants';
-import PageTitleWrapper from '../../src/components/PageTitleWrapper';
+import defaultCfg from '@kite/constants';
+import PageTitleWrapper from '@/components/PageTitleWrapper';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HashLoader from 'react-spinners/HashLoader';
 import axios from 'axios';
@@ -28,12 +28,12 @@ import {
   AccordionSummary,
   Typography
 } from '@mui/material';
-import Footer from '../../src/components/Footer';
+import Footer from '@/components/Footer';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import ExportConfigBtn from '../../src/content/Dashboards/Tasks/ExportConfigBtn'; 
-import { KiteState } from '../../src/common/kite/constants';
+import ExportConfigBtn from '@/content/Dashboards/Tasks/ExportConfigBtn'; 
+import { KiteState } from '@kite/constants';
 import React from 'react';
 
 export interface PortsOpen {
@@ -82,7 +82,7 @@ const DEFAULT_BROKER_PORT = 9091;
 
 function Forms() {
   const [portsOpen, setPortsOpen] = useState<PortsOpen>({});
-  const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultCfg);
+  const [kiteConfigRequest, setKiteConfigRequest] = useState<KiteConfig>(defaultCfg);
   const [expanded, setExpanded] = useState<string | false>(false);
   const [loader, setLoader] = useState(0);
   const [active, setActive] = useState(false);
@@ -91,7 +91,7 @@ function Forms() {
 
   useEffect(() => {
     kiteWorkerRef.current = new Worker(
-      new URL('./kiteWorker.ts', import.meta.url)
+      new URL('@/workers/configWorker.ts', import.meta.url)
     );
     kiteWorkerRef.current.onmessage = (
       event: MessageEvent<{
@@ -99,7 +99,7 @@ function Forms() {
         setup: KiteSetup;
       }>
     ) => {
-      // console.log(event.data);
+      console.log(event.data);
       const { state, setup } = event.data;
       setActive(state === KiteState.Running);
     };
@@ -108,10 +108,6 @@ function Forms() {
       kiteWorkerRef.current?.terminate();
     };
   }, []);
-
-  const checkActive = async () => {
-    kiteWorkerRef.current?.postMessage(true);
-  };
 
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -157,20 +153,19 @@ function Forms() {
     );
   };
 
-  const queryMetrics = () => {
-    const interval = setInterval(async () => {
+  const queryMetrics = (active: boolean) => {
+    const interval = setInterval(() => {
+      console.log(active, '158')
       try {
-        const response = await fetch('/api/kite/getKiteState');
-        const data = await response.text();
-        console.log(data);
-        if (data === KiteState.Running) {
+        kiteWorkerRef.current?.postMessage(true);
+        if (active) {
           clearInterval(interval);
           window.location.href = '/metrics';
         }
       } catch (err) {
         console.log(err);
       }
-    }, 1000);
+    }, 1000, active);
   };
 
   function ShutDownBtn() {
@@ -235,7 +230,6 @@ function Forms() {
     try {
       event.preventDefault();
       setLoader(1);
-      queryMetrics();
       // TODO: Prevent state for deleted brokers from being submitted
       //console.log(kiteConfigRequest)
       console.log('sending configuration…');
@@ -247,6 +241,7 @@ function Forms() {
         },
         body: JSON.stringify(kiteConfigRequest)
       });
+      queryMetrics(active);
       console.dir(response);
     } catch (error) {
       console.error(error);
@@ -470,6 +465,7 @@ function Forms() {
                     <TextField
                       id="outlined-select-source-native"
                       select
+                      defaultValue={kiteConfigRequest.db?.name}
                       label="Data Source"
                       value={kiteConfigRequest.db?.name}
                       onChange={handleData}
@@ -485,6 +481,7 @@ function Forms() {
                       id="outlined-select-sink-native"
                       select
                       label="Data Sink"
+                      defaultValue={kiteConfigRequest.sink?.name}
                       value={kiteConfigRequest.sink?.name}
                       onChange={handleSink}
                       helperText="Please select your data sink"

@@ -21,6 +21,7 @@ import {
   _ports_,
   KAFKA_CONNECT
 } from './constants';
+import { dbCfg, KiteConfig, KiteKafkaCfg, KiteSetup } from '../types';
 
 const dependencies: string[] = [];
 const setup: KiteSetup = {
