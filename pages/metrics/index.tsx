@@ -1,9 +1,9 @@
 import Head from 'next/head';
-import SidebarLayout from '@/layouts/SidebarLayout';
+import SidebarLayout from '../../src/layouts/SidebarLayout';
 import { ChangeEvent, useState, useEffect } from 'react';
-import PageTitle from '@/components/PageTitle';
-import Footer from '@/components/Footer';
-import { KiteState } from '@../../src/common/kite/constants';
+import PageTitle from '../../src/components/PageTitle';
+import Footer from '../../src/components/Footer';
+import { KiteState } from '../../src/common/kite/constants';
 import {
   Grid,
   Tab,
@@ -16,7 +16,8 @@ import {
   styled,
   ListItem
 } from '@mui/material';
-import PageTitleWrapper from '@/components/PageTitleWrapper';
+import PageTitleWrapper from '../../src/components/PageTitleWrapper';
+import React from 'react';
 
 const TabsContainerWrapper = styled(Box)(
   ({ theme }) => `
