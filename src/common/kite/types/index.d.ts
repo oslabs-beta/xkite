@@ -1,7 +1,7 @@
 // types/common/kite.d.ts
 
-import { KafkaSetup } from "../../kafkaConnector/types/kafkaConnector";
-import { KiteState, KiteServerState } from "../constants";
+import { KafkaSetup } from '@/kite/kafkaConnector/types/kafkaConnector';
+import { KiteState, KiteServerState } from '@kite/constants';
 import * as fs from 'fs';
 
 interface KiteConfig {
@@ -80,6 +80,7 @@ export interface KiteSetup {
   jmx?: { ports: number[] };
   jupyter?: { port: number };
   spark?: { port: number };
+  docker?: { services: string[] };
 }
 
 export interface KiteConfigFile {
@@ -102,4 +103,3 @@ export interface KiteConfigFile {
 // export function getConfig() {
 //   throw new Error('Function not implemented.');
 // }
-

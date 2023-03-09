@@ -33,7 +33,7 @@ import Footer from '@/components/Footer';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import ExportConfigBtn from '@/content/Dashboards/Tasks/ExportConfigBtn'; 
+import ExportConfigBtn from '@/content/Dashboards/Tasks/ExportConfigBtn';
 import { KiteState } from '@kite/constants';
 import React from 'react';
 
@@ -83,12 +83,14 @@ const DEFAULT_BROKER_PORT = 9091;
 
 function Forms() {
   const [portsOpen, setPortsOpen] = useState<PortsOpen>({});
-  const [kiteConfigRequest, setKiteConfigRequest] = useState<KiteConfig>(defaultCfg);
+  const [kiteConfigRequest, setKiteConfigRequest] =
+    useState<KiteConfig>(defaultCfg);
   const [expanded, setExpanded] = useState<string | false>(false);
   const [loader, setLoader] = useState(0);
   const [active, setActive] = useState(false);
   const [shuttingDown, setShuttingDown] = useState(false);
   const kiteWorkerRef = useRef<Worker>();
+  const [isMetricsReady, setIsMetricsReady] = useState(false);
 
   useEffect(() => {
     kiteWorkerRef.current = new Worker(
@@ -101,15 +103,14 @@ function Forms() {
         metricsReady: boolean;
       }>
     ) => {
-      //console.log(event.data);
+      // console.log(event.data);
       const { state, setup, metricsReady } = event.data;
-      console.log(state)
-
-      if(state === KiteState.Running){
-        setActive(true);
-      }
+      console.log(event.data);
+      // const { state, setup } = event.data;
+      if (state !== undefined) setActive(state === KiteState.Running);
+      if (metricsReady !== undefined) setIsMetricsReady(metricsReady);
     };
-    kiteWorkerRef.current?.postMessage(true);
+    kiteWorkerRef.current?.postMessage(1000);
     return () => {
       kiteWorkerRef.current?.terminate();
     };
@@ -182,6 +183,22 @@ function Forms() {
       </div>
     );
   };
+
+  // const queryMetrics = (active: boolean) => {
+  //   const interval = setInterval(
+  //     () => {
+  //       console.log(active, '158');
+  //       try {
+  //         kiteWorkerRef.current?.postMessage(true);
+
+  //       } catch (err) {
+  //         console.log(err);
+  //       }
+  //     },
+  //     1000,
+  //     active
+  //   );
+  // };
 
   function ShutDownBtn() {
     async function disconnectHandler(event: SyntheticEvent): Promise<void> {
@@ -256,6 +273,9 @@ function Forms() {
         },
         body: JSON.stringify(kiteConfigRequest)
       });
+      // queryMetrics(active);
+      kiteWorkerRef.current?.postMessage(true);
+
       console.dir(response);
     } catch (error) {
       console.error(error);
@@ -312,7 +332,7 @@ function Forms() {
     const res: JSX.Element[] = [];
     for (let i = 0; i < kiteConfigRequest.kafka.brokers.size; i++) {
       res.push(
-        <>
+        <div key={i}>
           <p>Broker {i + 1}</p>
           <TextField
             id="filled-number"
@@ -414,7 +434,7 @@ function Forms() {
             }}
             variant="filled"
           />
-        </>
+        </div>
       );
     }
     return res;
@@ -422,6 +442,11 @@ function Forms() {
 
   return (
     <>
+      {loader && active && isMetricsReady ? (
+        <>{(window.location.href = '/metrics')} </>
+      ) : (
+        <></>
+      )}
       <Head>
         <title>Configure Your Kafka Cluster</title>
       </Head>
@@ -458,7 +483,7 @@ function Forms() {
                       id="outlined-number"
                       label="Brokers"
                       type="number"
-                      defaultValue="2"
+                      // defaultValue="2"
                       onChange={handleBrokers}
                       value={kiteConfigRequest.kafka.brokers.size}
                       InputLabelProps={{
@@ -467,7 +492,7 @@ function Forms() {
                     />
                     <TextField
                       id="outlined-number"
-                      defaultValue="2"
+                      // defaultValue="2"
                       label="Zookeepers"
                       type="number"
                       onChange={handleZoo}
@@ -479,7 +504,7 @@ function Forms() {
                     <TextField
                       id="outlined-select-source-native"
                       select
-                      defaultValue={kiteConfigRequest.db?.name}
+                      // defaultValue={kiteConfigRequest.db?.name}
                       label="Data Source"
                       value={kiteConfigRequest.db?.name}
                       onChange={handleData}
@@ -495,7 +520,7 @@ function Forms() {
                       id="outlined-select-sink-native"
                       select
                       label="Data Sink"
-                      defaultValue={kiteConfigRequest.sink?.name}
+                      // defaultValue={kiteConfigRequest.sink?.name}
                       value={kiteConfigRequest.sink?.name}
                       onChange={handleSink}
                       helperText="Please select your data sink"
