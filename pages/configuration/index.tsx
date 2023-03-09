@@ -15,6 +15,7 @@ import PageTitleWrapper from '@/components/PageTitleWrapper';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HashLoader from 'react-spinners/HashLoader';
 import axios from 'axios';
+import { useInterval } from 'usehooks-ts'
 import {
   Container,
   Grid,
@@ -97,18 +98,47 @@ function Forms() {
       event: MessageEvent<{
         state: KiteState;
         setup: KiteSetup;
+        metricsReady: boolean;
       }>
     ) => {
-      console.log(event.data);
-      const { state, setup } = event.data;
-      setActive(state === KiteState.Running);
+      //console.log(event.data);
+      const { state, setup, metricsReady } = event.data;
+      console.log(state)
+
+      if(state === KiteState.Running){
+        setActive(true);
+      }
     };
     kiteWorkerRef.current?.postMessage(true);
     return () => {
       kiteWorkerRef.current?.terminate();
     };
+
+    
   }, []);
 
+  
+  useInterval(
+    async () => {
+      // kiteWorkerRef.current?.postMessage(true);
+      // console.log('check125', active)
+      // if(active){
+      //   window.location.href = "/metrics";
+      //   setLoader(0);
+      // }
+
+      const state = await fetch('/api/kite/getKiteState').then((data) =>
+      data.text()
+      );
+      console.log(state)
+      if(state === KiteState.Running){
+        window.location.href = "/metrics";
+        setLoader(0);
+      }
+    },
+    loader ? 1000 : null,
+  )
+  
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
@@ -151,21 +181,6 @@ function Forms() {
         )}
       </div>
     );
-  };
-
-  const queryMetrics = (active: boolean) => {
-    const interval = setInterval(() => {
-      console.log(active, '158')
-      try {
-        kiteWorkerRef.current?.postMessage(true);
-        if (active) {
-          clearInterval(interval);
-          window.location.href = '/metrics';
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    }, 1000, active);
   };
 
   function ShutDownBtn() {
@@ -241,7 +256,6 @@ function Forms() {
         },
         body: JSON.stringify(kiteConfigRequest)
       });
-      queryMetrics(active);
       console.dir(response);
     } catch (error) {
       console.error(error);
