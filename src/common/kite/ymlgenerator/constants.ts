@@ -58,8 +58,9 @@ export const JMX: JMXConfg = {
   depends_on: []
 };
 
-export const KAFKA_CONNECT: KafkaConnectCfg = {
-  image: 'zforesta/kafka-connector:0.1',
+//TODO: Make KEY CONVERTER dynamic based off source
+export const KAFKA_CONNECT_SRC: KafkaConnectCfg = {
+  image: 'xkite/kafka-connector:latest',
   ports: [`${_ports_.kafkaconnect.external}:${_ports_.kafkaconnect.internal}`],
   environment: {
     CONNECT_BOOTSTRAP_SERVERS: '', //kafka:9092
@@ -79,7 +80,33 @@ export const KAFKA_CONNECT: KafkaConnectCfg = {
       'org.apache.kafka.connect.json.JsonConverter',
     CONNECT_REST_ADVERTISED_HOST_NAME: network
   },
-  container_name: 'kafka-connect',
+  container_name: 'kafka-connect-source',
+  depends_on: []
+};
+
+//TODO: Make KEY CONVERTER dynamic based off sink
+export const KAFKA_CONNECT_SINK: KafkaConnectCfg = {
+  image: 'xkite/kafka-connector:latest',
+  ports: [`${_ports_.kafkaconnect.external}:${_ports_.kafkaconnect.internal}`],
+  environment: {
+    CONNECT_BOOTSTRAP_SERVERS: '', //kafka:9092
+    CONNECT_REST_PORT: _ports_.kafkaconnect.internal,
+    CONNECT_GROUP_ID: 'quickstart',
+    CONNECT_CONFIG_STORAGE_TOPIC: 'quickstart-config',
+    CONNECT_OFFSET_STORAGE_TOPIC: 'quickstart-offsets',
+    CONNECT_STATUS_STORAGE_TOPIC: 'quickstart-status',
+    CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1,
+    CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1,
+    CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1,
+    CONNECT_KEY_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter',
+    CONNECT_VALUE_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter',
+    CONNECT_INTERNAL_KEY_CONVERTER:
+      'org.apache.kafka.connect.json.JsonConverter',
+    CONNECT_INTERNAL_VALUE_CONVERTER:
+      'org.apache.kafka.connect.json.JsonConverter',
+    CONNECT_REST_ADVERTISED_HOST_NAME: network
+  },
+  container_name: 'kafka-connect-sink',
   depends_on: []
 };
 
@@ -168,7 +195,14 @@ export const POSTGRES: PGConfig = {
     POSTGRES_DB: 'xkiteDB',
     PGDATA: '/data/postgres'
   },
-  volumes: ['postgresql:/var/lib/postgresql/data'],
+  // added init.sql for testing purposes...
+  volumes: [
+    'postgresql:/var/lib/postgresql/data',
+    `${path.join(
+      downloadDir,
+      'postgresql/init.sql'
+    )}:/docker-entrypoint-initdb.d/init.sql`
+  ],
   ports: [`${_ports_.postgresql.internal}:${_ports_.postgresql.internal}`],
   container_name: 'postgresql'
 };

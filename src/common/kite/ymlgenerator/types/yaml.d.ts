@@ -14,7 +14,8 @@ interface YAMLConfig {
     prometheus?: PrometheusConfig;
     grafana?: GrafanaCfg;
     jupyter?: BaseCfg;
-    kafka_connect?: KafkaConnectCfg;
+    kafka_connect_src?: KafkaConnectCfg;
+    kafka_connect_sink?: KafkaConnectCfg;
   };
   volumes?: {
     [k: string]: VolumeCfg;

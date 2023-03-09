@@ -19,7 +19,8 @@ import {
   downloadDir,
   network,
   _ports_,
-  KAFKA_CONNECT
+  KAFKA_CONNECT_SRC,
+  KAFKA_CONNECT_SINK
 } from './constants';
 
 const dependencies: string[] = [];
@@ -54,12 +55,15 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       if (sink?.name === 'jupyter') {
         YAML.services.jupyter = JUPYTER;
         setup.jupyter = { port: _ports_.jupyter.external };
+        //TODO set connector for sink
+        YAML.services.kafka_connect_sink = KAFKA_CONNECT_SINK;
       } else if (sink?.name === 'spark') {
         YAML.services.spark = SPARK;
         setup.spark = { port: _ports_.spark.webui.external };
-      }
-      // kafka-connect
-      YAML.services.kafka_connect = KAFKA_CONNECT;
+        //TODO set connector for sink
+        YAML.services.kafka_connect_sink = KAFKA_CONNECT_SINK;
+      } // TODO add psql ksql as sink options...
+
       // prometheus
       const extPromPort = prometheus?.port ?? _ports_.prometheus.external;
       YAML.services.prometheus = {
@@ -139,6 +143,9 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
           driver: 'local'
         }
       };
+      // kafka-connect source
+      // TODO: Set connector for PSQL
+      YAML.services.kafka_connect_src = KAFKA_CONNECT_SRC;
     } else if (db?.name === 'ksql') {
       YAML.services.ksql = {
         ...KSQL,
@@ -163,6 +170,9 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
         ...KSQL_CLI,
         depends_on: [YAML.services.ksql.container_name]
       };
+      // kafka-connect source
+      YAML.services.kafka_connect_src = KAFKA_CONNECT_SRC;
+      // TODO: Set connector for KSQL
     }
     return db;
   }
@@ -414,13 +424,13 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       };
       setup.spring = { port: springPort };
       // kafka-connect
-      const kcenv = YAML.services.kafka_connect.environment;
+      const kcenv = YAML.services.kafka_connect_src.environment;
       const kcdeps =
         YAML.services.kafka_connect.depends_on.length === 0
           ? [brokerName]
-          : [...YAML.services.kafka_connect.depends_on, brokerName];
-      YAML.services.kafka_connect = {
-        ...YAML.services.kafka_connect,
+          : [...YAML.services.kafka_connect_src.depends_on, brokerName];
+      YAML.services.kafka_connect_src = {
+        ...YAML.services.kafka_connect_src,
         environment: {
           ...kcenv,
           CONNECT_BOOTSTRAP_SERVERS:
@@ -429,6 +439,22 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
               : `${brokerName}:${_ports_.kafka.connect}`
         },
         depends_on: kcdeps
+      };
+      const kcsenv = YAML.services.kafka_connect_sink.environment;
+      const kcsdeps =
+        YAML.services.kafka_connect_sink.depends_on.length === 0
+          ? [brokerName]
+          : [...YAML.services.kafka_connect_sink.depends_on, brokerName];
+      YAML.services.kafka_connect_sink = {
+        ...YAML.services.kafka_connect_sink,
+        environment: {
+          ...kcsenv,
+          CONNECT_BOOTSTRAP_SERVERS:
+            kcenv.CONNECT_BOOTSTRAP_SERVERS !== ''
+              ? `${kcenv.CONNECT_BOOTSTRAP_SERVERS},${brokerName}:${_ports_.kafka.connect}`
+              : `${brokerName}:${_ports_.kafka.connect}`
+        },
+        depends_on: kcsdeps
       };
     }
   }

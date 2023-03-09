@@ -87,6 +87,7 @@ function Forms() {
   const [active, setActive] = useState(false);
   const [shuttingDown, setShuttingDown] = useState(false);
   const kiteWorkerRef = useRef<Worker>();
+  const [isMetricsReady, setIsMetricsReady] = useState(false);
 
   useEffect(() => {
     kiteWorkerRef.current = new Worker(
@@ -96,11 +97,13 @@ function Forms() {
       event: MessageEvent<{
         state: KiteState;
         setup: KiteSetup;
+        metricsReady: boolean;
       }>
     ) => {
       // console.log(event.data);
-      const { state, setup } = event.data;
+      const { state, setup, metricsReady } = event.data;
       setActive(state === KiteState.Running);
+      setIsMetricsReady(metricsReady);
     };
     kiteWorkerRef.current?.postMessage(true);
     return () => {
@@ -159,10 +162,11 @@ function Forms() {
   const queryMetrics = () => {
     const interval = setInterval(async () => {
       try {
-        const response = await fetch('/api/kite/getKiteState');
-        const data = await response.text();
-        console.log(data);
-        if (data === KiteState.Running) {
+        kiteWorkerRef.current?.postMessage(true);
+        // const response = await fetch('/api/kite/getKiteState');
+        // const data = await response.text();
+        // console.log(data);
+        if (isMetricsReady) {
           clearInterval(interval);
           window.location.href = '/metrics';
         }

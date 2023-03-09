@@ -19,8 +19,26 @@ addEventListener('message', async (event: MessageEvent<boolean>) => {
     const state = await fetch('/api/kite/getKiteState').then((data) =>
       data.text()
     );
-    const setup = await fetch('/api/kite/getSetup').then((data) => data.json());
-    postMessage({ state, setup });
+    const setup: KiteSetup = await fetch('/api/kite/getSetup').then((data) =>
+      data.json()
+    );
+
+    let metricsReady = false;
+    if (state === KiteState.Running) {
+      if (setup.jmx !== undefined) {
+        console.log(`http://localhost:${setup.jmx.ports[0]}`);
+        const resp = await fetch(`http://localhost:${setup.jmx.ports[0]}`, {
+          method: 'GET',
+          mode: 'no-cors'
+        });
+        const text = await resp.text();
+        console.log(text);
+        const expression = /jmx_scrape_error(\d+)./i;
+        const match = expression.exec(text);
+        metricsReady = match[1] === '0';
+      }
+    }
+    postMessage({ state, setup, metricsReady });
   } catch (err) {
     console.log(err);
   }
