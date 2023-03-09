@@ -25,11 +25,12 @@ import {
   TextField
 } from '@mui/material';
 import Head from 'next/head';
-import SidebarLayout from '@/layouts/SidebarLayout';
-import PageTitleWrapper from '@/components/PageTitleWrapper';
-import PageTitle from '@/components/PageTitle';
-import { KiteState } from '@../../src/common/kite/constants';
-import Footer from '@/components/Footer';
+import SidebarLayout from '../../src/layouts/SidebarLayout';
+import PageTitleWrapper from '../../src/components/PageTitleWrapper';
+import PageTitle from '../../src/components/PageTitle';
+import { KiteState } from '../../src/common/kite/constants';
+import { KiteSetup } from '../../src/common/kite/types/kite';
+import Footer from '../../src/components/Footer';
 //import SocketIOClient from "socket.io-client"; TBD: remove if final version does not use sockets
 
 const TabsContainerWrapper = styled(Box)(
@@ -61,7 +62,7 @@ const TabsContainerWrapper = styled(Box)(
             width: 28px;
             content: ' ';
             margin-left: -14px;
-            background: ${theme.colors.primary.main};
+            background: ${theme.palette.primary.main};
             border-radius: inherit;
             height: 100%;
           }
@@ -142,7 +143,9 @@ function Tests() {
       const { state, setup, topics } = event.data;
       setConnected(state === KiteState.Running);
       setTopics(topics);
-      setGrafanaPort(event.data.setup.grafana.port.toString());
+      if(setup.grafana){
+        setGrafanaPort(setup.grafana.port.toString());
+      }
     };
     workerRef.current = new Worker(new URL('./worker.ts', import.meta.url));
     workerRef.current.onmessage = (event: MessageEvent<string>) => {
