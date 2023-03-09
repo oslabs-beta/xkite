@@ -1,6 +1,6 @@
 // types/common/yaml.d.ts
 
-import { KiteSetup } from "../../types";
+import { KiteSetup } from '@kite/types';
 
 type YAMLGenerator = (KiteConfig) => KiteSetup;
 
@@ -16,7 +16,8 @@ interface YAMLConfig {
     prometheus?: PrometheusConfig;
     grafana?: GrafanaCfg;
     jupyter?: BaseCfg;
-    kafka_connect?: KafkaConnectCfg;
+    kafka_connect_src?: KafkaConnectCfg;
+    kafka_connect_sink?: KafkaConnectCfg;
   };
   volumes?: {
     [k: string]: VolumeCfg;
@@ -48,7 +49,8 @@ interface YAMLServicesDefaultSetup {
   grafana: PortForward;
   jupyter: PortForward;
   zookeeper: { client: PortForward; peer: PortForward };
-  kafkaconnect: PortForward;
+  kafkaconnect_src: PortForward;
+  kafkaconnect_sink: PortForward;
   kafka: {
     jmx: number;
     broker: PortForward;
@@ -252,5 +254,5 @@ interface BaseCfg {
   depends_on?: Array<string>;
   container_name: string;
   entrypoint?: string;
-  tty?: true | false;
+  tty?: boolean;
 }

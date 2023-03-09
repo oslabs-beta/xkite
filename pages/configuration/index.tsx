@@ -32,7 +32,7 @@ import Footer from '@/components/Footer';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import ExportConfigBtn from '@/content/Dashboards/Tasks/ExportConfigBtn'; 
+import ExportConfigBtn from '@/content/Dashboards/Tasks/ExportConfigBtn';
 import { KiteState } from '@kite/constants';
 import React from 'react';
 
@@ -82,12 +82,14 @@ const DEFAULT_BROKER_PORT = 9091;
 
 function Forms() {
   const [portsOpen, setPortsOpen] = useState<PortsOpen>({});
-  const [kiteConfigRequest, setKiteConfigRequest] = useState<KiteConfig>(defaultCfg);
+  const [kiteConfigRequest, setKiteConfigRequest] =
+    useState<KiteConfig>(defaultCfg);
   const [expanded, setExpanded] = useState<string | false>(false);
   const [loader, setLoader] = useState(0);
   const [active, setActive] = useState(false);
   const [shuttingDown, setShuttingDown] = useState(false);
   const kiteWorkerRef = useRef<Worker>();
+  const [isMetricsReady, setIsMetricsReady] = useState(false);
 
   useEffect(() => {
     kiteWorkerRef.current = new Worker(
@@ -97,11 +99,15 @@ function Forms() {
       event: MessageEvent<{
         state: KiteState;
         setup: KiteSetup;
+        metricsReady: boolean;
       }>
     ) => {
+      // console.log(event.data);
+      // const { state, setup, metricsReady } = event.data;
       console.log(event.data);
       const { state, setup } = event.data;
       setActive(state === KiteState.Running);
+      // setIsMetricsReady(metricsReady);
     };
     kiteWorkerRef.current?.postMessage(true);
     return () => {
@@ -154,18 +160,22 @@ function Forms() {
   };
 
   const queryMetrics = (active: boolean) => {
-    const interval = setInterval(() => {
-      console.log(active, '158')
-      try {
-        kiteWorkerRef.current?.postMessage(true);
-        if (active) {
-          clearInterval(interval);
-          window.location.href = '/metrics';
+    const interval = setInterval(
+      () => {
+        console.log(active, '158');
+        try {
+          kiteWorkerRef.current?.postMessage(true);
+          if (active) {
+            clearInterval(interval);
+            window.location.href = '/metrics';
+          }
+        } catch (err) {
+          console.log(err);
         }
-      } catch (err) {
-        console.log(err);
-      }
-    }, 1000, active);
+      },
+      1000,
+      active
+    );
   };
 
   function ShutDownBtn() {

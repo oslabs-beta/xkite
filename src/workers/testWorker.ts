@@ -12,8 +12,8 @@
 //   client.request(event.data);
 //   postMessage(client.getData);
 // });
-import { KiteState } from '@../../src/common/kite/constants';
-globalThis.onmessage =  async (event: MessageEvent<boolean>) => {
+import { KiteState } from '@kite/constants';
+globalThis.onmessage = async (event: MessageEvent<boolean>) => {
   try {
     const state = await fetch('/api/kite/getKiteState').then((data) =>
       data.text()
