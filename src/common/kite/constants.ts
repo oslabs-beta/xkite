@@ -22,6 +22,7 @@ export enum KiteState {
   Init = 'Init',
   Configured = 'Configured',
   Running = 'Running',
+  Paused = 'Paused',
   Shutdown = 'Shutdown'
 }
 
