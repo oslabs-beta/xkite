@@ -1,11 +1,19 @@
 import Head from 'next/head';
 import SidebarLayout from '@/layouts/SidebarLayout';
 import PageTitle from '@/components/PageTitle';
-import { useState, SyntheticEvent, CSSProperties, useEffect } from 'react';
+import {
+  useState,
+  SyntheticEvent,
+  CSSProperties,
+  useEffect,
+  useRef,
+  ChangeEvent
+} from 'react';
 import defaultCfg from '@/common/kite/constants';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HashLoader from 'react-spinners/HashLoader';
+
 import axios from 'axios';
 import {
   Container,
@@ -25,6 +33,7 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import ExportConfigBtn from '@/content/Dashboards/Tasks/ExportConfigBtn';
+import { KiteState } from '@../../src/common/kite/constants';
 
 export interface PortsOpen {
   [index: string]: PortOpen;
@@ -46,12 +55,12 @@ const override: CSSProperties = {
 
 const dataSources = [
   {
-    value: 'postgresql',
-    label: 'PostgreSQL'
-  },
-  {
     value: 'ksql',
     label: 'KSQL'
+  },
+  {
+    value: 'postgresql',
+    label: 'PostgreSQL'
   }
 ];
 
@@ -75,32 +84,32 @@ function Forms() {
   const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultCfg);
   const [expanded, setExpanded] = useState<string | false>(false);
   const [loader, setLoader] = useState(0);
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(false);
+  const [shuttingDown, setShuttingDown] = useState(false);
+  const kiteWorkerRef = useRef<Worker>();
 
   useEffect(() => {
-    checkActive();
+    kiteWorkerRef.current = new Worker(
+      new URL('./kiteWorker.ts', import.meta.url)
+    );
+    kiteWorkerRef.current.onmessage = (
+      event: MessageEvent<{
+        state: KiteState;
+        setup: KiteSetup;
+      }>
+    ) => {
+      // console.log(event.data);
+      const { state, setup } = event.data;
+      setActive(state === KiteState.Running);
+    };
+    kiteWorkerRef.current?.postMessage(true);
+    return () => {
+      kiteWorkerRef.current?.terminate();
+    };
   }, []);
 
   const checkActive = async () => {
-    try {
-      const response = await fetch(
-        'http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk',
-        {
-          mode: 'no-cors',
-          headers: {
-            'Access-Control-Allow-Origin': '*'
-          }
-        }
-      );
-      console.log(response.status, 'this is status');
-      if (response.status === 0) {
-        setActive(1);
-      } else {
-        setActive(0);
-      }
-    } catch (err) {
-      console.log(err);
-    }
+    kiteWorkerRef.current?.postMessage(true);
   };
 
   const handleChange =
@@ -138,7 +147,11 @@ function Forms() {
           aria-label="Loading Spinner"
           data-testid="loader"
         />
-        <p>Please stand by while containers are deployed</p>
+        {shuttingDown ? (
+          <p>Please stand by while containers are being removed</p>
+        ) : (
+          <p>Please stand by while containers are deployed</p>
+        )}
       </div>
     );
   };
@@ -146,17 +159,10 @@ function Forms() {
   const queryMetrics = () => {
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(
-          'http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk',
-          {
-            mode: 'no-cors',
-            headers: {
-              'Access-Control-Allow-Origin': '*'
-            }
-          }
-        );
-        console.log(response.status, 'this is status');
-        if (response.status === 0) {
+        const response = await fetch('/api/kite/getKiteState');
+        const data = await response.text();
+        console.log(data);
+        if (data === KiteState.Running) {
           clearInterval(interval);
           window.location.href = '/metrics';
         }
@@ -167,8 +173,6 @@ function Forms() {
   };
 
   function ShutDownBtn() {
-    const [shuttingDown, setShuttingDown] = useState(false);
-
     async function disconnectHandler(event: SyntheticEvent): Promise<void> {
       console.log(event);
       setShuttingDown(true);
@@ -179,7 +183,8 @@ function Forms() {
       } catch (error) {
         console.error('Error occurred during shutdown:', error);
       }
-      setActive(0);
+      setActive(false);
+      setShuttingDown(false);
     }
 
     return (
@@ -228,40 +233,44 @@ function Forms() {
     return isOpen;
   }
 
-  function submitHandler(event: SyntheticEvent) {
-    event.preventDefault();
-    setLoader(1);
-    queryMetrics();
-    // TODO: Prevent state for deleted brokers from being submitted
-    //console.log(kiteConfigRequest)
-    console.log('sending configuration…');
-    //console.log(defaultCfg);
-    fetch('/api/kite/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(kiteConfigRequest)
-    })
-      .then((response) => {
-        console.dir(response);
-      })
-      .catch((error) => {
-        console.error(error.message);
+  async function submitHandler(event: SyntheticEvent) {
+    try {
+      event.preventDefault();
+      setLoader(1);
+      queryMetrics();
+      // TODO: Prevent state for deleted brokers from being submitted
+      //console.log(kiteConfigRequest)
+      console.log('sending configuration…');
+      //console.log(defaultCfg);
+      const response = await fetch('/api/kite/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(kiteConfigRequest)
       });
+      console.dir(response);
+    } catch (error) {
+      console.error(error);
+    }
+    // .then((response) => {
+    //   console.dir(response);
+    // })
+    // .catch((error) => {
+    // });
     // setSubmit(false);
   }
 
-  const handleData = (event) => {
+  const handleData = (event: ChangeEvent<HTMLTextAreaElement>) => {
     updateKiteConfigRequest({
       db: {
-        name: event.target.value
+        name: event.target.value === 'ksql' ? 'ksql' : 'postgresql'
       }
     });
   };
 
-  const handleBrokers = (event) => {
-    const size = event.target.value;
+  const handleBrokers = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    const size = Number(event.target.value);
     if (size <= 0) return;
     const update = {
       kafka: {
@@ -275,8 +284,8 @@ function Forms() {
     updateKiteConfigRequest(update);
   };
 
-  const handleZoo = (event) => {
-    const size = event.target.value;
+  const handleZoo = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    const size = Number(event.target.value);
     if (size <= 0) return;
     const update = {
       kafka: {
@@ -290,10 +299,10 @@ function Forms() {
     updateKiteConfigRequest(update);
   };
 
-  const handleSink = (event) => {
+  const handleSink = (event: ChangeEvent<HTMLTextAreaElement>) => {
     updateKiteConfigRequest({
       sink: {
-        name: event.target.value
+        name: event.target.value === 'jupyter' ? 'jupyter' : 'spark'
       }
     });
   };
@@ -533,8 +542,9 @@ function Forms() {
             </Accordion>
           </Grid>
           <Grid textAlign="center" item xs={12}>
-            {active === 1 && isActive()}
-            {active === 0 && loader === 0 && (
+            {active && shuttingDown && isLoading()}
+            {!shuttingDown && active && isActive()}
+            {!active && loader === 0 && (
               <Button
                 sx={{ margin: 2 }}
                 variant="contained"
@@ -543,7 +553,7 @@ function Forms() {
                 Submit
               </Button>
             )}
-            {active === 0 && loader === 1 && isLoading()}
+            {!active && loader === 1 && isLoading()}
             <Card>
               <Box textAlign="center">
                 <ExportConfigBtn />

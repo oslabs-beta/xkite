@@ -5,7 +5,7 @@ import { spawn } from 'child_process';
 const urls: string[] = [
   `http://localhost:${process.env.PORT1 || 6661}/`,
   `http://localhost:${process.env.PORT1 || 6661}/setup`,
-  `http://localhost:${process.env.PORT2 || 6662}/display`,
+  `http://localhost:${process.env.PORT2 || 6662}/display`
 ];
 
 type Result = {
@@ -18,7 +18,7 @@ export default async function handler(
   res: NextApiResponse<Result>
 ) {
   if (req.method === 'DELETE') {
-    const kite = await Kite.shutdown();
+    await Kite.shutdown();
     // for (const url of urls) {
     //   if (process.platform === 'darwin') {
     //     // For mac

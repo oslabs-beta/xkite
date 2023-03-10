@@ -109,3 +109,7 @@ src/common/kite/download/config/cfg.json
 
 # database file
 src/common/kite/postgres/*
+
+# local files
+src/common/kite/download/kafkaconnect/plugins/*
+

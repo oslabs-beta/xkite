@@ -25,16 +25,22 @@ addEventListener(
         return;
       }
       const port = setup.dBSetup?.port ?? 8088;
-      let url: string = `http://localhost:${port}`;
-      if (event.data.type === 'create') url += '/ksql';
-      else url += '/query-stream';
-
+      let url: string = `http://localhost:${port}/${
+        event.data.type ?? '/query-stream'
+      }`;
+      console.log(url);
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          Accept: 'application/vnd.ksql.v1+json'
+          Accept: 'application/vnd.ksql.v1+json',
+          'Content-Type': 'application/vnd.ksql.v1+json'
         },
-        body: JSON.stringify(event.data)
+        body: JSON.stringify({
+          ksql: event.data.ksql
+          // streamsProperties: {
+          //   'ksql.streams.auto.offset.reset': 'earliest'
+          // }
+        })
       });
       const reader = response.body?.getReader();
       function push() {
