@@ -5,7 +5,17 @@ import {
   ListItemText,
   styled
 } from '@mui/material';
-//import { useRef, useState } from 'react';
+import { KiteState } from '@kite/constants';
+import { KiteConfig, KiteSetup } from '@/common/kite/types';
+
+import {
+  useState,
+  SyntheticEvent,
+  CSSProperties,
+  useEffect,
+  useRef,
+  ChangeEvent
+} from 'react';
 import Link from 'src/components/Link';
 
 
@@ -61,16 +71,42 @@ const ListWrapper = styled(Box)(
 );
 
 function HeaderMenu() {
-  // const ref = useRef<any>(null);
-  // const [isOpen, setOpen] = useState<boolean>(false);
+  const [kiteState, setKiteState] = useState<KiteState>(KiteState.Unknown);
+  const kiteWorkerRef = useRef<Worker>();
+  const [loader, setLoader] = useState(0);
 
-  // const handleOpen = (): void => {
-  //   setOpen(true);
-  // };
-
-  // const handleClose = (): void => {
-  //   setOpen(false);
-  // };
+  useEffect(() => {
+    kiteWorkerRef.current = new Worker(
+      new URL('@/workers/configWorker.ts', import.meta.url)
+    );
+    kiteWorkerRef.current.onmessage = (
+      event: MessageEvent<{
+        state: KiteState;
+        setup: KiteSetup;
+        metricsReady: boolean;
+      }>
+    ) => {
+      // console.log(event.data);
+      const { state, setup, metricsReady } = event.data;
+      console.log(event.data);
+      // const { state, setup } = event.data;
+      if (state !== undefined) setKiteState(state);
+      if (metricsReady) {
+        console.log('redirect?');
+        console.log(loader);
+        if (kiteState === KiteState.Running && loader) {
+          console.log('redirect!');
+          setTimeout(() => {
+            window.location.href = '/metrics';
+          }, 20000);
+        }
+      }
+    };
+    kiteWorkerRef.current?.postMessage(5000);
+    return () => {
+      kiteWorkerRef.current?.terminate();
+    };
+  }, [loader, kiteState]);
 
   return (
     <>
@@ -91,7 +127,7 @@ function HeaderMenu() {
           >
             <ListItemText
               primaryTypographyProps={{ noWrap: true }}
-              primary="Configuration"
+              primary= {`xkite Status: ${kiteState}`}
             />
           </ListItem>
         </List>
