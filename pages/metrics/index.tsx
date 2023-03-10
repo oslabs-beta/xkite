@@ -3,7 +3,7 @@ import SidebarLayout from '@/layouts/SidebarLayout';
 import { ChangeEvent, useState, useEffect } from 'react';
 import PageTitle from '@/components/PageTitle';
 import Footer from '@/components/Footer';
-import { KiteState } from '@../../src/common/kite/constants';
+import { KiteState } from '@/common/kite/constants';
 import {
   Grid,
   Tab,
@@ -17,6 +17,7 @@ import {
   ListItem
 } from '@mui/material';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
+//import React from 'react';
 
 const TabsContainerWrapper = styled(Box)(
   ({ theme }) => `
@@ -565,6 +566,6 @@ function DashboardTasks() {
   );
 }
 
-DashboardTasks.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+DashboardTasks.getLayout = (page:any) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default DashboardTasks;

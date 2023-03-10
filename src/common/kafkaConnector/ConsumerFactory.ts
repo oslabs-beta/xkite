@@ -1,4 +1,5 @@
 import { Consumer, ConsumerSubscribeTopics, EachBatchPayload, Kafka, EachMessagePayload, KafkaConfig, Admin } from 'kafkajs'
+import { KafkaSetup } from './types/kafkaConnector'
 
 export default class ConsumerFactory {
   private kafkaConsumer: Consumer

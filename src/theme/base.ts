@@ -60,6 +60,7 @@ declare module '@mui/material/styles' {
           30: string;
           50: string;
           70: string;
+          80: string;
           100: string;
         };
       };

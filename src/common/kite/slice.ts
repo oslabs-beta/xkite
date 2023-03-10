@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { KiteState, KiteServerState } from '@/common/kite/constants';
+import { KiteState, KiteServerState } from '@kite/constants';
 import defaultCfg, { configFilePath } from './constants';
 import path from 'path';
 import fs from 'fs-extra';
@@ -23,10 +23,28 @@ const kiteSlice = createSlice({
       state.server = action.payload;
       writeConfigToFile(state);
     },
+    setServiceState: (state, action) => {
+      let running = true;
+      if (action.payload.type === 'pause') running = false;
+      const service = action.payload.service;
+      for (let i = 0; i < state.services.length; i++) {
+        if (service.includes(state.services[i]))
+          state.serviceState[i] = running;
+      }
+      if (state.serviceState.every((el: boolean) => el))
+        state.state = KiteState.Running;
+      else state.state = KiteState.Paused;
+      writeConfigToFile(state);
+    },
     setSetup: (state, action) => {
       state.setup = Object.assign(action.payload);
       state.kafkaSetup = Object.assign(action.payload.kafkaSetup ?? {});
       state.dBSetup = Object.assign(action.payload.dataSetup ?? {});
+      state.services = action.payload.docker.services ?? [];
+      state.serviceState = [];
+      for (const i in state.services) {
+        state.serviceState[i] = true;
+      }
       writeConfigToFile(state);
     },
     setState: (state, action) => {
@@ -51,6 +69,7 @@ const {
   setSetup,
   setState,
   setServerState,
+  setServiceState,
   setConfigFile
 } = kiteSlice.actions;
 
@@ -61,6 +80,7 @@ export {
   setSetup,
   setState,
   setServerState,
+  setServiceState,
   setConfigFile
 };
 
@@ -72,6 +92,8 @@ function readConfigFromFile(): any {
     packageBuild: false, //change to make pipeline.zip
     config: defaultCfg, //Promise<KiteConfig> | KiteConfig
     server: 'localhost:6661',
+    services: [''], // list of docker services
+    serviceState: [false], // true means running
     setup: {}, //Promise<KiteSetup> | KiteSetup;
     kafkaSetup: {}, //KafkaSetup
     dBSetup: {}, //dbCfg

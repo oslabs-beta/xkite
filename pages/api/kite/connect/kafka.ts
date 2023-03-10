@@ -13,26 +13,17 @@ export default async function handler(
   res: NextApiResponse<Data | string[]>
 ) {
   if (req.method === 'POST') {
-    /*
-    body = {
-      method: "createTopics" | "sendMessage" | "consumeTBD"
-      topics: ["topic1", 'topic2'],
-      messages: [{value: 'string'}, {value: 'value2'}],
-    }
-    */
     try {
       console.log(`sending data to kafka...\n${JSON.stringify(req.body)}`);
       const { method, topic, messages, clientId } = req.body;
       const kafkaSetup = Kite.getKafkaSetup();
-      // console.log(
-      //   JSON.stringify({ ...kafkaSetup, clientId: clientId ?? 'test' })
-      // );
+
       const producer = await ProducerFactory.create({
         ...kafkaSetup,
         clientId: clientId ?? 'test'
       });
 
-      let topics: string[] = undefined;
+      let topics: string[] | undefined = undefined;
       console.log(method);
 
       switch (method) {

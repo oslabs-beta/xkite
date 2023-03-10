@@ -1,5 +1,22 @@
 import path from 'path';
-import { connect } from 'socket.io-client';
+import {
+  YAMLServicesDefaultSetup,
+  PROMConfig,
+  JMXConfg,
+  KafkaConnectCfg,
+  KafkaBrokerCfg,
+  ZooKeeperCfg,
+  PrometheusConfig,
+  GrafanaCfg,
+  PGConfig,
+  KSQLConfig,
+  BaseCfg,
+  KSQLSchemaCfg,
+  Juypter,
+  SparkCfg,
+  SpringCfg,
+  YAMLConfig
+} from '@kite/ymlgenerator/types';
 
 export const downloadDir = path.join(process.cwd(), 'src/common/kite/download');
 export const network = 'localhost'; //change to 0.0.0.0 to expose ports globally
@@ -15,11 +32,12 @@ export const _ports_: YAMLServicesDefaultSetup = {
   prometheus: { internal: 9090, external: 9099 },
   grafana: { internal: 3000, external: 3050 },
   jupyter: { internal: 8000, external: 8000 },
+  kafkaconnect_src: { internal: 8083, external: 8083 },
+  kafkaconnect_sink: { internal: 8083, external: 8084 },
   zookeeper: {
     client: { internal: 2182, external: 2182 },
     peer: { internal: 2888, external: 3888 } // only internal docker net
   },
-  kafkaconnect: { internal: 8083, external: 8083 },
   kafka: {
     jmx: 9991, // only internal
     broker: { internal: 9092, external: 9092 },
@@ -67,12 +85,15 @@ export const JMX: JMXConfg = {
   depends_on: []
 };
 
-export const KAFKA_CONNECT: KafkaConnectCfg = {
-  image: 'zforesta/kafka-connector:0.1',
-  ports: [`${_ports_.kafkaconnect.external}:${_ports_.kafkaconnect.internal}`],
+//TODO: Make KEY CONVERTER dynamic based off source
+export const KAFKA_CONNECT_SRC: KafkaConnectCfg = {
+  image: 'xkite/kafka-connector:latest',
+  ports: [
+    `${_ports_.kafkaconnect_src.external}:${_ports_.kafkaconnect_src.internal}`
+  ],
   environment: {
     CONNECT_BOOTSTRAP_SERVERS: '', //kafka:9092
-    CONNECT_REST_PORT: _ports_.kafkaconnect.internal,
+    CONNECT_REST_PORT: _ports_.kafkaconnect_src.internal,
     CONNECT_GROUP_ID: 'quickstart',
     CONNECT_CONFIG_STORAGE_TOPIC: 'quickstart-config',
     CONNECT_OFFSET_STORAGE_TOPIC: 'quickstart-offsets',
@@ -88,7 +109,35 @@ export const KAFKA_CONNECT: KafkaConnectCfg = {
       'org.apache.kafka.connect.json.JsonConverter',
     CONNECT_REST_ADVERTISED_HOST_NAME: network
   },
-  container_name: 'kafka-connect',
+  container_name: 'kafka-connect-source',
+  depends_on: []
+};
+
+//TODO: Make KEY CONVERTER dynamic based off sink
+export const KAFKA_CONNECT_SINK: KafkaConnectCfg = {
+  image: 'xkite/kafka-connector:latest',
+  ports: [
+    `${_ports_.kafkaconnect_sink.external}:${_ports_.kafkaconnect_sink.internal}`
+  ],
+  environment: {
+    CONNECT_BOOTSTRAP_SERVERS: '', //kafka:9092
+    CONNECT_REST_PORT: _ports_.kafkaconnect_sink.internal,
+    CONNECT_GROUP_ID: 'quickstart',
+    CONNECT_CONFIG_STORAGE_TOPIC: 'quickstart-config',
+    CONNECT_OFFSET_STORAGE_TOPIC: 'quickstart-offsets',
+    CONNECT_STATUS_STORAGE_TOPIC: 'quickstart-status',
+    CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1,
+    CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1,
+    CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1,
+    CONNECT_KEY_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter',
+    CONNECT_VALUE_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter',
+    CONNECT_INTERNAL_KEY_CONVERTER:
+      'org.apache.kafka.connect.json.JsonConverter',
+    CONNECT_INTERNAL_VALUE_CONVERTER:
+      'org.apache.kafka.connect.json.JsonConverter',
+    CONNECT_REST_ADVERTISED_HOST_NAME: network
+  },
+  container_name: 'kafka-connect-sink',
   depends_on: []
 };
 
@@ -177,7 +226,14 @@ export const POSTGRES: PGConfig = {
     POSTGRES_DB: 'xkiteDB',
     PGDATA: '/data/postgres'
   },
-  volumes: ['postgresql:/var/lib/postgresql/data'],
+  // added init.sql for testing purposes...
+  volumes: [
+    'postgresql:/var/lib/postgresql/data',
+    `${path.join(
+      downloadDir,
+      'postgresql/init.sql'
+    )}:/docker-entrypoint-initdb.d/init.sql`
+  ],
   ports: [`${_ports_.postgresql.internal}:${_ports_.postgresql.internal}`],
   container_name: 'postgresql'
 };
@@ -223,7 +279,7 @@ export const KSQL_CLI: BaseCfg = {
   // EOF`
   // ],
   volumes: [`${path.join(downloadDir, 'ksql/testscript.sql')}:/tmp/test.sql`],
-  tty: 'true'
+  tty: true
 };
 
 // # Schema Registry
