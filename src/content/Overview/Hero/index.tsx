@@ -88,8 +88,8 @@ function Hero() {
       </Grid>
       <img
         alt="500"
-        height={800}
-        src="/static/images/logo/fake.png"/>
+        height={900}
+        src="/static/images/logo/fake2.png"/>
     </Container>
   );
 }
