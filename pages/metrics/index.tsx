@@ -155,7 +155,8 @@ function DashboardTasks() {
     { value: 'taskSearch', label: 'Cluster Health' },
     { value: 'consumer', label: 'Consumer Metrics' },
     { value: 'producer', label: 'Producer Metrics' },
-    { value: 'partitions', label: 'Partition Metrics' }
+    { value: 'partitions', label: 'Partition Metrics' },
+    { value: 'docker', label: 'Docker Metrics' }
   ];
 
   const handleTabsChange = (_event: ChangeEvent<{}>, value: string): void => {
@@ -488,6 +489,64 @@ function DashboardTasks() {
                     <h3 className='metric-header'>Count of Partitions Per Broker</h3>
                     <iframe
                       src={`http://localhost:${grafanaPort}/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk`}
+                      width='600'
+                      height='300'
+                    ></iframe>
+                  </div>
+                    </ListItem>
+                  </Grid>
+                </Grid>
+                </Box>
+                </Box>
+              </Grid>
+            )}
+            {currentTab === 'docker' && (
+              <Grid item xs={12}>
+                <Box p={4}>
+                <Box p={4} alignContent={'center'} justifyContent={'space-evenly'}>
+                <Grid container  rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 3 }} style={{'margin':'auto'}}>
+                  <Grid item xs={6} >
+                    <ListItem>
+                    <div>
+                    <h3 className='metric-header'>Docker containers</h3>
+                    <iframe
+                      src='http://localhost:3050/d/huLqhzaVk/docker?orgId=1&from=1678193575700&to=1678215175701&kiosk'
+                      width='600'
+                      height='300'
+                    ></iframe>
+                  </div>
+                    </ListItem>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <ListItem>
+                    <div>
+                    <h3 className='metric-header'>CPU Load</h3>
+                    <iframe
+                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=619&kiosk'
+                      width='600'
+                      height='300'
+                    ></iframe>
+                  </div>
+                    </ListItem>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <ListItem>
+                    <div>
+                    <h3 className='metric-header'>Partitions Leader Per Broker </h3>
+                    <iframe
+                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=628&kiosk'
+                      width='600'
+                      height='300'
+                    ></iframe>
+                  </div>
+                    </ListItem>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <ListItem>
+                    <div>
+                    <h3 className='metric-header'>Count of Partitions Per Broker</h3>
+                    <iframe
+                      src='http://localhost:3050/d/5nhADrDWk/kafka-metrics?orgId=1&refresh=5s&viewPanel=603&kiosk'
                       width='600'
                       height='300'
                     ></iframe>
