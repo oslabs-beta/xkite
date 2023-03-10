@@ -1,23 +1,16 @@
 import {
   Box,
+  Button,
   List,
   ListItem,
   ListItemText,
   styled
 } from '@mui/material';
 import { KiteState } from '@kite/constants';
-import { KiteConfig, KiteSetup } from '@/common/kite/types';
+import { KiteSetup } from '@/common/kite/types';
 
-import {
-  useState,
-  SyntheticEvent,
-  CSSProperties,
-  useEffect,
-  useRef,
-  ChangeEvent
-} from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'src/components/Link';
-
 
 const ListWrapper = styled(Box)(
   ({ theme }) => `
@@ -71,9 +64,13 @@ const ListWrapper = styled(Box)(
 );
 
 function HeaderMenu() {
+  const FIRST_API_URL = '/api/kite/pause';
+  const SECOND_API_URL = '/api/kite/unpause';
   const [kiteState, setKiteState] = useState<KiteState>(KiteState.Unknown);
   const kiteWorkerRef = useRef<Worker>();
   const [loader, setLoader] = useState(0);
+  const [buttonText, setButtonText] = useState('Pause docker');
+  const [apiURL, setApiURL] = useState(FIRST_API_URL);
 
   useEffect(() => {
     kiteWorkerRef.current = new Worker(
@@ -108,6 +105,54 @@ function HeaderMenu() {
     };
   }, [loader, kiteState]);
 
+  const dockerStatus = async () => {
+    if (apiURL === FIRST_API_URL) {
+      try {
+        const response = await fetch('/api/kite/pause', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json'
+          }
+        });
+        const data = await response.text();
+        setButtonText('Start docker');
+        setApiURL(SECOND_API_URL);
+      } catch (err) {
+        console.log(err);
+      }
+    } else {
+      try {
+        const response = await fetch('/api/kite/unpause', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json'
+          }
+        });
+        const data = await response.text();
+        setButtonText('Pause docker');
+        setApiURL(FIRST_API_URL);
+      } catch (err) {
+        console.log(err);
+      }
+
+    }
+  };
+
+  /*
+  async function shutdownServer() {
+    try {
+      const { server } = store.getState();
+      await fetch(`${server}/api/kite/shutdown`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json'
+        }
+      });
+    } catch (err) {
+      console.error(`Could not shutdown docker instances on server:\n${err}`);
+    }
+  }
+*/
   return (
     <>
       <ListWrapper
@@ -127,8 +172,18 @@ function HeaderMenu() {
           >
             <ListItemText
               primaryTypographyProps={{ noWrap: true }}
-              primary= {`xkite Status: ${kiteState}`}
+              primary={`xkite Status: ${kiteState}`}
             />
+          </ListItem>
+          <ListItem
+            classes={{ root: 'MuiListItem-indicators' }}
+            button
+            component={Link}
+            href="/configuration"
+          >
+            <Button variant="contained" color="primary" onClick={dockerStatus}>
+              {buttonText}
+            </Button>
           </ListItem>
         </List>
       </ListWrapper>
