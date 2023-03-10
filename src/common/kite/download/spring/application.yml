@@ -9,6 +9,7 @@ spring:
       properties:
         spring.json.trusted.packages: '*'
         partition.assignment.strategy: org.apache.kafka.clients.consumer.RoundRobinAssignor
+        allow.auto.create.topics: true
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer

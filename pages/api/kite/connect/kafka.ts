@@ -37,6 +37,7 @@ export default async function handler(
           console.log(topics, 'from post');
           break;
         case 'sendMessage':
+          console.log(messages, topic, 'this is from kafka ts')
           await producer.sendBatch(messages, topic);
           break;
         case 'sendMessages':

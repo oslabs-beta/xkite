@@ -67,10 +67,12 @@ export default class ProducerFactory extends Kafka {
   }
 
   public async sendBatch(messages: Message[], topic: string): Promise<void> {
-    if (!ProducerFactory.topicCache.has(topic)) {
-      await this.createTopics([topic]);
-      return;
-    }
+    //the below was causing issues when sending messages to existing topics -> commented out for now
+    // if (!ProducerFactory.topicCache.has(topic)) {
+    //   await this.createTopics([topic]);
+    //   return;
+    // }
+    console.log(messages, 'from producer')
     await this._producer.sendBatch({
       topicMessages: [
         {

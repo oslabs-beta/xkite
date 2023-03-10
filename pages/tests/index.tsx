@@ -184,20 +184,8 @@ function Tests() {
     e.preventDefault();
     if (connected) {
       if (topic.length) {
-        const topicResponse = await fetch('/api/kite/connect/kafka', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            method: 'createTopics',
-            topic
-          })
-        })
-          .then((data) => data.json())
-          .catch((error) => console.error(error));
-        // console.log(topicResponse);
-        setTopics(topicResponse);
+        //use testWorker to create topic --> conditional will know if the intent is to create a new topic based on key
+        testWorkerRef.current?.postMessage({newTopic: topic});
         setTopic('');
       }
     }
@@ -207,20 +195,8 @@ function Tests() {
     e.preventDefault();
     if (connected) {
       if (message.length) {
-        const messageResponse = await fetch('/api/kite/connect/kafka', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            method: 'sendMessage',
-            messages: [{ value: message }],
-            topic
-          })
-        })
-          .then((data) => data.json())
-          .catch((error) => console.error(error));
-        console.log(messageResponse);
+        //use testWorker to send message --> conditional will know if the intent is to send a message
+        testWorkerRef.current?.postMessage({newMessage: message, topic: topic});
         setTopic('');
         setMessage('');
       }
@@ -409,7 +385,7 @@ function Tests() {
                           </TextField>
                           <TextField
                             id="outlined-number"
-                            label="New Message"
+                            label={`Message`}
                             onChange={(e) => {
                               setMessage(e.target.value);
                             }}
