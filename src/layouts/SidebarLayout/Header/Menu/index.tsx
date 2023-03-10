@@ -8,9 +8,21 @@ import {
 } from '@mui/material';
 import { KiteState } from '@kite/constants';
 import { KiteSetup } from '@/common/kite/types';
-
-import { useState, useEffect, useRef } from 'react';
+import HashLoader from 'react-spinners/HashLoader';
 import Link from 'src/components/Link';
+import {
+  useState,
+  CSSProperties,
+  useEffect,
+  useRef
+} from 'react';
+import React from 'react';
+
+const override: CSSProperties = {
+  display: 'block',
+  margin: '0 auto',
+  borderColor: 'red'
+};
 
 const ListWrapper = styled(Box)(
   ({ theme }) => `
@@ -83,10 +95,8 @@ function HeaderMenu() {
         metricsReady: boolean;
       }>
     ) => {
-      // console.log(event.data);
       const { state, setup, metricsReady } = event.data;
       console.log(event.data);
-      // const { state, setup } = event.data;
       if (state !== undefined) setKiteState(state);
       if (metricsReady) {
         console.log('redirect?');
@@ -106,6 +116,7 @@ function HeaderMenu() {
   }, [loader, kiteState]);
 
   const dockerStatus = async () => {
+    setLoader(1);
     if (apiURL === FIRST_API_URL) {
       try {
         const response = await fetch('/api/kite/pause', {
@@ -117,6 +128,7 @@ function HeaderMenu() {
         const data = await response.text();
         setButtonText('Start docker');
         setApiURL(SECOND_API_URL);
+        setLoader(0);
       } catch (err) {
         console.log(err);
       }
@@ -131,28 +143,26 @@ function HeaderMenu() {
         const data = await response.text();
         setButtonText('Pause docker');
         setApiURL(FIRST_API_URL);
+        setLoader(0);
       } catch (err) {
         console.log(err);
       }
-
     }
   };
 
-  /*
-  async function shutdownServer() {
-    try {
-      const { server } = store.getState();
-      await fetch(`${server}/api/kite/shutdown`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json'
-        }
-      });
-    } catch (err) {
-      console.error(`Could not shutdown docker instances on server:\n${err}`);
-    }
-  }
-*/
+  const isLoading = () => {
+    return (
+      <div className="sweet-loading">
+        <HashLoader
+          color={'#CBB6E6'}
+          cssOverride={override}
+          size={30}
+          aria-label="Loading Spinner"
+          data-testid="loader"
+        />
+      </div>
+    );
+  };
   return (
     <>
       <ListWrapper
@@ -181,9 +191,17 @@ function HeaderMenu() {
             component={Link}
             href="/configuration"
           >
-            <Button variant="contained" color="primary" onClick={dockerStatus}>
-              {buttonText}
-            </Button>
+            {loader === 0 ? (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={dockerStatus}
+              >
+                {buttonText}
+              </Button>
+            ) : (
+              isLoading()
+            )}
           </ListItem>
         </List>
       </ListWrapper>
