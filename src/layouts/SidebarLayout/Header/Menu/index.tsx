@@ -186,10 +186,9 @@ function HeaderMenu() {
             />
           </ListItem>
           <ListItem
-            classes={{ root: 'MuiListItem-indicators' }}
-            button
-            component={Link}
-            href="/configuration"
+            // classes={{ root: 'MuiListItem-indicators' }}
+            // component={Link}
+            // href="/configuration"
           >
             {loader === 0 ? (
               <Button
