@@ -163,7 +163,7 @@ function Forms() {
         ) : (
           <p>Please stand by while containers are deployed</p>
         )}
-        <p>Check your terminal for progress updates</p>
+        <p>Check terminal for progress updates</p>
       </div>
     );
   };
