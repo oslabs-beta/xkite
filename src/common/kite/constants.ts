@@ -19,6 +19,7 @@ const defaultCfg: KiteConfig = {
 };
 
 export enum KiteState {
+  Unknown = 'Unknown',
   Init = 'Init',
   Configured = 'Configured',
   Running = 'Running',
