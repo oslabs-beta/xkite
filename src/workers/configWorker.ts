@@ -38,7 +38,6 @@ globalThis.onmessage = async (event: MessageEvent<number>) => {
             mode: 'no-cors'
           });
           console.log(resp.status);
-          console.log(await resp.text());
           metricsReady = resp.status === 0;
           if (metricsReady) clearInterval(interval);
           postMessage({ metricsReady });

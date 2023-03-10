@@ -86,10 +86,9 @@ function Forms() {
     useState<KiteConfig>(defaultCfg);
   const [expanded, setExpanded] = useState<string | false>(false);
   const [loader, setLoader] = useState(0);
-  const [active, setActive] = useState(false);
+  const [kiteState, setKiteState] = useState<KiteState>(KiteState.Unknown);
   const [shuttingDown, setShuttingDown] = useState(false);
   const kiteWorkerRef = useRef<Worker>();
-  const [isMetricsReady, setIsMetricsReady] = useState(false);
 
   useEffect(() => {
     kiteWorkerRef.current = new Worker(
@@ -106,14 +105,23 @@ function Forms() {
       const { state, setup, metricsReady } = event.data;
       console.log(event.data);
       // const { state, setup } = event.data;
-      if (state !== undefined) setActive(state === KiteState.Running);
-      if (metricsReady !== undefined) setIsMetricsReady(metricsReady);
+      if (state !== undefined) setKiteState(state);
+      if (metricsReady) {
+        console.log('redirect?');
+        console.log(loader);
+        if (kiteState === KiteState.Running && loader) {
+          console.log('redirect!');
+          setTimeout(() => {
+            window.location.href = '/metrics';
+          }, 20000);
+        }
+      }
     };
-    kiteWorkerRef.current?.postMessage(1000);
+    kiteWorkerRef.current?.postMessage(5000);
     return () => {
       kiteWorkerRef.current?.terminate();
     };
-  }, []);
+  }, [loader, kiteState]);
 
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -186,7 +194,7 @@ function Forms() {
       } catch (error) {
         console.error('Error occurred during shutdown:', error);
       }
-      setActive(false);
+      kiteWorkerRef.current?.postMessage(1000);
       setShuttingDown(false);
     }
 
@@ -249,7 +257,7 @@ function Forms() {
         body: JSON.stringify(kiteConfigRequest)
       });
       // queryMetrics(active);
-      kiteWorkerRef.current?.postMessage(true);
+      kiteWorkerRef.current?.postMessage(5000);
 
       console.dir(response);
     } catch (error) {
@@ -417,11 +425,6 @@ function Forms() {
 
   return (
     <>
-      {loader && active && isMetricsReady ? (
-        <>{(window.location.href = '/metrics')} </>
-      ) : (
-        <></>
-      )}
       <Head>
         <title>Configure Your Kafka Cluster</title>
       </Head>
@@ -545,18 +548,25 @@ function Forms() {
             </Accordion>
           </Grid>
           <Grid textAlign="center" item xs={12}>
-            {active && shuttingDown && isLoading()}
-            {!shuttingDown && active && isActive()}
-            {!active && loader === 0 && (
-              <Button
-                sx={{ margin: 2 }}
-                variant="contained"
-                onClick={submitHandler}
-              >
-                Submit
-              </Button>
-            )}
-            {!active && loader === 1 && isLoading()}
+            {kiteState === KiteState.Running && shuttingDown && isLoading()}
+            {!shuttingDown &&
+              kiteState === KiteState.Running &&
+              loader === 0 &&
+              isActive()}
+            {/* {!shuttingDown && (kiteState === KiteState.Paused) && isPaused()} */}
+            {kiteState !== KiteState.Unknown &&
+              kiteState !== KiteState.Running &&
+              kiteState !== KiteState.Paused &&
+              loader === 0 && (
+                <Button
+                  sx={{ margin: 2 }}
+                  variant="contained"
+                  onClick={submitHandler}
+                >
+                  Submit
+                </Button>
+              )}
+            {loader === 1 && isLoading()}
             <Card>
               <Box textAlign="center">
                 <ExportConfigBtn />
