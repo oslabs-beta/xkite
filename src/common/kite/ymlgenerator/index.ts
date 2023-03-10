@@ -1,6 +1,8 @@
 import yaml from 'js-yaml';
 import fs from 'fs-extra';
 import path from 'path';
+import os from 'os';
+
 import {
   YAML,
   SPRING,
@@ -32,6 +34,10 @@ const setup: KiteSetup = {
     ssl: false
   }
 };
+const ipAddress = Object.values(os.networkInterfaces())
+  .flat()
+  .filter(({ family, internal }) => family === 'IPv4' && !internal)
+  .map(({ address }) => address)[0];
 /**
  * creates the pertinent yml configuration for docker
  * based on the input config
@@ -108,6 +114,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       );
 
       PROMCONFIG.scrape_configs[0].static_configs[0].targets = [];
+      PROMCONFIG.scrape_configs[1].static_configs[0].targets = [];
     } catch (error) {
       console.log(error);
     } finally {
@@ -301,6 +308,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
     const springBSServers = [];
     const springDeps = [];
     setup.jmx = { ports: [] };
+    let userIP = '';
     for (let i = 0; i < kafka.brokers.size; i++) {
       const n = i + 1;
       // JMX Config:
@@ -390,6 +398,9 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       PROMCONFIG.scrape_configs[0].static_configs[0].targets.push(
         `${jmxName}:${_ports_.jmx.internal}`
       );
+      PROMCONFIG.scrape_configs[1].static_configs[0].targets.push(
+        `${ipAddress}:${_ports_.docker.internal}`
+      ); //TO DO: IK: configure the port
 
       jmxExporterConfig.hostPort = `kafka${n}:${jmxHostPort}`;
       fs.writeFileSync(
