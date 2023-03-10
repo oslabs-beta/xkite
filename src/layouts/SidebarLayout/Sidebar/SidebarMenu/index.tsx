@@ -239,6 +239,23 @@ function SidebarMenu() {
               </ListItem>
             </List>
           </SubMenuWrapper>
+          <SubMenuWrapper>
+            <List component="div">
+              <ListItem component="div">
+                <NextLink href="/dockerMetrics" passHref>
+                  <Button
+                    className={currentRoute === '/dockerMetrics' ? 'active' : ''}
+                    disableRipple
+                    component="a"
+                    onClick={closeSidebar}
+                    startIcon={<TableChartTwoToneIcon />}
+                  >
+                    Docker Metrics
+                  </Button>
+                </NextLink>
+              </ListItem>
+            </List>
+          </SubMenuWrapper>
         </List>
         <List
           component="div"

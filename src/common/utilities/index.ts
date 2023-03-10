@@ -23,13 +23,16 @@ export function getIPAddress(): Function {
 export default class ReadableString extends Readable {
   private sent = false;
 
-  constructor(private str: string) {
+  constructor(private str: string | Buffer) {
     super();
   }
 
   _read() {
     if (!this.sent) {
-      this.push(Buffer.from(this.str));
+      if (!Buffer.isBuffer(this.str))
+        this.push(Buffer.from(this.str));
+      else 
+        this.push(this.str);
       this.sent = true;
     } else {
       this.push(null);

@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next/types';
 import Kite from '@/common/kite';
-import { spawn } from 'child_process';
+//import { spawn } from 'child_process';
 
-const urls: string[] = [
-  `http://localhost:${process.env.PORT1 || 6661}/`,
-  `http://localhost:${process.env.PORT1 || 6661}/setup`,
-  `http://localhost:${process.env.PORT2 || 6662}/display`
-];
+// const urls: string[] = [
+//   `http://localhost:${process.env.PORT1 || 6661}/`,
+//   `http://localhost:${process.env.PORT1 || 6661}/setup`,
+//   `http://localhost:${process.env.PORT2 || 6662}/display`
+// ];
 
 type Result = {
   result?: string;

@@ -1,4 +1,5 @@
 import path from 'path';
+import { KiteConfig } from './types';
 
 const defaultCfg: KiteConfig = {
   kafka: {
@@ -18,9 +19,11 @@ const defaultCfg: KiteConfig = {
 };
 
 export enum KiteState {
+  Unknown = 'Unknown',
   Init = 'Init',
   Configured = 'Configured',
   Running = 'Running',
+  Paused = 'Paused',
   Shutdown = 'Shutdown'
 }
 
