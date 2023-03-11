@@ -1,7 +1,7 @@
 {
   "name": "xkite",
   "version": "1.0.0",
-  "title": "xKite: Kafka Integrated Testing Environment",
+  "title": "xkite: Kafka Integrated Testing Environment",
   "description": "A comprehensive prototyping, testing, and monitoring toolset built for Apache Kafka.",
   "author": "XKite Team OpenSource Labs",
   "license": "MIT",

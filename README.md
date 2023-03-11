@@ -1,7 +1,7 @@
 <p align="center">
 </p>
 <h1 align="center">
-    <b>xKite: Kafka Integrated Testing Environment</b>
+    <b>xkite: Kafka Integrated Testing Environment</b>
     <br>
     <a href="https://xkite.io/">
         <img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social" />
@@ -13,7 +13,7 @@
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
 
 <p>
-    A comprehensive prototyping, testing, and monitoring toolset built for Apache Kafka. Use xKite to bootstrap your next project, or install our library into an existing project. Built by (and for) developers.
+    A comprehensive prototyping, testing, and monitoring toolset built for Apache Kafka. Use xkite to bootstrap your next project, or install our library into an existing project. Built by (and for) developers.
 </p>
 
 ---
