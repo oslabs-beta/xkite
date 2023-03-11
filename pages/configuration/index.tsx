@@ -90,6 +90,21 @@ function Forms() {
   const [shuttingDown, setShuttingDown] = useState(false);
   const kiteWorkerRef = useRef<Worker>();
 
+  // Initialize config to default or last-used, if present
+  useEffect(() => {
+    fetch('/api/kite/getConfig')
+      .then((data) => data.json())
+      .then((config: KiteConfig) => {
+        // do stuff with the state
+        console.log('is there stuff here? ', config);
+        setKiteConfigRequest(config);
+      });
+
+    // return () => {
+    //
+    // };
+  }, []);
+
   useEffect(() => {
     kiteWorkerRef.current = new Worker(
       new URL('@/workers/configWorker.ts', import.meta.url)
@@ -97,15 +112,14 @@ function Forms() {
     kiteWorkerRef.current.onmessage = (
       event: MessageEvent<{
         state: KiteState;
-        setup: KiteSetup;
         metricsReady: boolean;
       }>
     ) => {
-      // console.log(event.data);
-      const { state, setup, metricsReady } = event.data;
+      const { state, metricsReady } = event.data;
       console.log(event.data);
       // const { state, setup } = event.data;
       if (state !== undefined) setKiteState(state);
+      // if (config !== undefined) setKiteConfigRequest(config); // FIX THIS
       if (metricsReady) {
         console.log('redirect?');
         console.log(loader);
@@ -396,18 +410,24 @@ function Forms() {
                 kiteConfigRequest.kafka.brokers?.ports?.jmx ?? [];
               jmx[i] = +e.target.value;
 
-              const update = {
+              const update = Object.assign({}, kiteConfigRequest, {
                 kafka: {
-                  ...kiteConfigRequest.kafka,
-                  brokers: {
-                    ...kiteConfigRequest.kafka.brokers,
-                    ports: {
-                      ...kiteConfigRequest.kafka.brokers.ports,
-                      jmx
-                    }
-                  }
+                  jmx
                 }
-              };
+              });
+
+              // const update = {
+              //   kafka: {
+              //     ...kiteConfigRequest.kafka,
+              //     brokers: {
+              //       ...kiteConfigRequest.kafka.brokers,
+              //       ports: {
+              //         ...kiteConfigRequest.kafka.brokers.ports,
+              //         jmx
+              //       }
+              //     }
+              //   }
+              // };
               updateKiteConfigRequest(update);
             }}
             value={kiteConfigRequest.kafka.brokers?.ports?.jmx?.[i] || ''}
