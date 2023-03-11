@@ -1,6 +1,6 @@
 import SidebarLayout from '@/layouts/SidebarLayout';
 import PageTitle from '@/components/PageTitle';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactChild, ReactFragment, ReactPortal } from 'react';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import {
   Container,
@@ -172,6 +172,6 @@ function Forms() {
   );
 }
 
-Forms.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+Forms.getLayout = (page: boolean | ReactChild | ReactFragment | ReactPortal) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default Forms;

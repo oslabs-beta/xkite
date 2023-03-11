@@ -117,14 +117,14 @@ function Status500() {
               <Container maxWidth="sm">
                 <Box textAlign="center">
                   <TypographyPrimary variant="h1" sx={{ my: 2 }}>
-                  xKite: Kafka Integrated Testing Environment
+                  xkite: Kafka Integrated Testing Environment
                   </TypographyPrimary>
                   <TypographySecondary
                     variant="h4"
                     fontWeight="normal"
                     sx={{ mb: 4 }}
                   >
-                    A comprehensive prototyping, testing, and monitoring toolset built for Apache Kafka. Use xKite to bootstrap your next project, or install our library into an existing project. Built by (and for) developers.
+                    A comprehensive prototyping, testing, and monitoring toolset built for Apache Kafka. Use xkite to bootstrap your next project, or install our library into an existing project. Built by (and for) developers.
                   </TypographySecondary>
                   <Button href="/" size="large" variant="contained">
                     Overview

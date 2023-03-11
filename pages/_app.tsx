@@ -36,7 +36,7 @@ function xKiteApp(props: xKiteAppProps) {
   return (
     <CacheProvider value={emotionCache}>
       <Head>
-        <title>xKite: Kafka Integrated Testing Environment</title>
+        <title>xkite: Kafka Integrated Testing Environment</title>
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, shrink-to-fit=no"
