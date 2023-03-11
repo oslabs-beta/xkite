@@ -40,7 +40,7 @@ function Logo() {
 
   return (
     <TooltipWrapper
-      title="xKite: Kafka Integrated Testing Environment"
+      title="xkite: Kafka Integrated Testing Environment"
       arrow
     >
       <LogoWrapper href="/">
