@@ -17,6 +17,8 @@ import {
 } from '@mui/material';
 import Footer from 'src/components/Footer';
 import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
+import { keyframes } from '@mui/system';
 
 function Forms() {
   interface Data {
@@ -26,6 +28,24 @@ function Forms() {
     status: string;
     ports: string;
   }
+
+  const blink = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
+  type DivProps = {
+    myColor: string;
+  };
+
+  const BlinkedBox = styled('div')<DivProps>(({ myColor }) => ({
+    backgroundColor: myColor,
+    width: 20,
+    height: 20,
+    animation: `${blink} 1.5s linear infinite`,
+    borderRadius: 25,
+    marginLeft: 10
+  }));
 
   const [data, setData] = useState<Data[]>([]);
   const [inactiveData, setInactiveData] = useState<Data[]>([]);
@@ -98,7 +118,7 @@ function Forms() {
                 >
                   <div>
                     <List>
-                      <label htmlFor=""> Inactive containers</label>
+                      <label htmlFor=""> Inactive containers </label>
                     </List>
                     <Table>
                       <TableHead>
@@ -113,7 +133,7 @@ function Forms() {
                           <TableRow key={row.id}>
                             <TableCell>{row.ports}</TableCell>
                             <TableCell>{row.created}</TableCell>
-                            <TableCell>{row.status}</TableCell>
+                            <TableCell>{row.status} </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -145,6 +165,7 @@ function Forms() {
                           <TableCell>Name</TableCell>
                           <TableCell>Created</TableCell>
                           <TableCell>Status</TableCell>
+                          <TableCell>Notice</TableCell>
                           <TableCell>Ports</TableCell>
                         </TableRow>
                       </TableHead>
@@ -154,6 +175,9 @@ function Forms() {
                             <TableCell>{row.names}</TableCell>
                             <TableCell>{row.created}</TableCell>
                             <TableCell>{row.status}</TableCell>
+                            <TableCell>
+                            <BlinkedBox myColor={row.status.includes('Paused')  ? "red" : "green"}/>
+                            </TableCell>
                             <TableCell>{row.ports}</TableCell>
                           </TableRow>
                         ))}
