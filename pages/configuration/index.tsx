@@ -1,7 +1,8 @@
 import Head from 'next/head';
 import SidebarLayout from '@/layouts/SidebarLayout';
 import PageTitle from '@/components/PageTitle';
-import { KiteConfig, KiteSetup } from '@/common/kite/types';
+import type { KiteState, KiteConfig, KiteSetup } from 'xkite-core';
+import { defaultCfg } from '@/common/constants';
 import {
   useState,
   SyntheticEvent,
@@ -10,11 +11,9 @@ import {
   useRef,
   ChangeEvent
 } from 'react';
-import defaultCfg from '@kite/constants';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HashLoader from 'react-spinners/HashLoader';
-import axios from 'axios';
 import {
   Container,
   Grid,
@@ -33,7 +32,6 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import ExportConfigBtn from '@/content/Dashboards/Tasks/ExportConfigBtn';
-import { KiteState } from '@kite/constants';
 import React from 'react';
 
 export interface PortsOpen {
@@ -86,7 +84,7 @@ function Forms() {
     useState<KiteConfig>(defaultCfg);
   const [expanded, setExpanded] = useState<string | false>(false);
   const [loader, setLoader] = useState(0);
-  const [kiteState, setKiteState] = useState<KiteState>(KiteState.Unknown);
+  const [kiteState, setKiteState] = useState<string>('Unknown');
   const [shuttingDown, setShuttingDown] = useState(false);
   const kiteWorkerRef = useRef<Worker>();
 
@@ -109,7 +107,7 @@ function Forms() {
       if (metricsReady) {
         console.log('redirect?');
         console.log(loader);
-        if (kiteState === KiteState.Running && loader) {
+        if (kiteState === 'Running' && loader) {
           console.log('redirect!');
           setTimeout(() => {
             window.location.href = '/metrics';
@@ -189,7 +187,9 @@ function Forms() {
       setShuttingDown(true);
       console.log('Disconnecting…');
       try {
-        const response = await axios.delete('/api/kite/shutdown');
+        const response = await fetch('/api/kite/shutdown', {
+          method: 'DELETE'
+        });
         console.log(response);
       } catch (error) {
         console.error('Error occurred during shutdown:', error);
@@ -548,15 +548,15 @@ function Forms() {
             </Accordion>
           </Grid>
           <Grid textAlign="center" item xs={12}>
-            {kiteState === KiteState.Running && shuttingDown && isLoading()}
+            {kiteState === 'Running' && shuttingDown && isLoading()}
             {!shuttingDown &&
-              kiteState === KiteState.Running &&
+              kiteState === 'Running' &&
               loader === 0 &&
               isActive()}
-            {/* {!shuttingDown && (kiteState === KiteState.Paused) && isPaused()} */}
-            {kiteState !== KiteState.Unknown &&
-              kiteState !== KiteState.Running &&
-              kiteState !== KiteState.Paused &&
+            {/* {!shuttingDown && (kiteState === "Paused") && isPaused()} */}
+            {kiteState !== 'Unknown' &&
+              kiteState !== 'Running' &&
+              kiteState !== 'Paused' &&
               loader === 0 && (
                 <Button
                   sx={{ margin: 2 }}

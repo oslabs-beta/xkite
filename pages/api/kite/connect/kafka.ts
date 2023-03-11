@@ -1,5 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-import Kite from '@/common/kite';
+let { Kite } = require('xkite-core');
+if (Kite === undefined) {
+  console.log('using secondary import...');
+  Kite = require('xkite-core').default;
+}
 import ProducerFactory from '@/common/kafkaConnector/ProducerFactory';
 // import ConsumerFactory from '@/common/kafkaConnector/ConsumerFactory'; --> potentially will be using to retrieve data on which partitions new messages are assigned to
 

@@ -1,8 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-// import Kite from '@/common/kite';
-// import { Kafka } from 'kafkajs';
-// import { NextResponse } from 'next/server';
-// import type { NextRequest } from 'next/server';
 
 type Data = {
   reply?: string;

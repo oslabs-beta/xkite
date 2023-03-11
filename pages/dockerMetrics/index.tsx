@@ -31,38 +31,38 @@ function Forms() {
   const [inactiveData, setInactiveData] = useState<Data[]>([]);
   const fetchData = () => {
     fetch('/api/docker?containerStatus=active')
-    .then((response) => response.json())
-    .then((data) => {
-      setData(data.containers);
-      console.log('Dataa 1 is:  ', data);
-      console.log(typeof data, 'type of data');
-    });
+      .then((response) => response.json())
+      .then((data) => {
+        setData(data.containers);
+        console.log('Dataa 1 is:  ', data);
+        console.log(typeof data, 'type of data');
+      });
 
-  fetch('/api/docker?containerStatus=inactive')
-    .then((response) => response.json())
-    .then((data) => {
-      setInactiveData(data.containers);
-      console.log('Inactive containers:', data.containers);
-    });
-  }
+    fetch('/api/docker?containerStatus=inactive')
+      .then((response) => response.json())
+      .then((data) => {
+        setInactiveData(data.containers);
+        console.log('Inactive containers:', data.containers);
+      });
+  };
   useEffect(() => {
     fetchData();
     const interval = setInterval(() => {
-        fetchData();
-    //   fetch('/api/docker?containerStatus=active')
-    //     .then((response) => response.json())
-    //     .then((data) => {
-    //       setData(data.containers);
-    //       console.log('Dataa 1 is:  ', data);
-    //       console.log(typeof data, 'type of data');
-    //     });
+      fetchData();
+      //   fetch('/api/docker?containerStatus=active')
+      //     .then((response) => response.json())
+      //     .then((data) => {
+      //       setData(data.containers);
+      //       console.log('Dataa 1 is:  ', data);
+      //       console.log(typeof data, 'type of data');
+      //     });
 
-    //   fetch('/api/docker?containerStatus=inactive')
-    //     .then((response) => response.json())
-    //     .then((data) => {
-    //       setInactiveData(data.containers);
-    //       console.log('Inactive containers:', data.containers);
-    //     });
+      //   fetch('/api/docker?containerStatus=inactive')
+      //     .then((response) => response.json())
+      //     .then((data) => {
+      //       setInactiveData(data.containers);
+      //       console.log('Inactive containers:', data.containers);
+      //     });
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -172,6 +172,6 @@ function Forms() {
   );
 }
 
-Forms.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+Forms.getLayout = (page: any) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default Forms;

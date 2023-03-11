@@ -1,6 +1,10 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-import Kite from '@/common/kite';
+let { Kite } = require('xkite-core');
+if (Kite === undefined) {
+  console.log('using secondary import...');
+  Kite = require('xkite-core').default;
+}
 
 /**
  * Returns a boolean isOpen indicating whether a given port is open
@@ -38,7 +42,7 @@ export default async function handler(
       const response = await fetch(URI, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: '*/*' },
-        body: JSON.stringify(req.body),
+        body: JSON.stringify(req.body)
       });
       return res.status(response.status).send();
     } catch (err) {

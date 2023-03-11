@@ -12,8 +12,7 @@
 //   client.request(event.data);
 //   postMessage(client.getData);
 // });
-import { KiteState } from '@kite/constants';
-import { KiteSetup } from '@kite/types';
+import type { KiteState, KiteSetup } from 'xkite-core';
 
 globalThis.onmessage = async (event: MessageEvent<number>) => {
   queryBackEnd();
@@ -30,7 +29,7 @@ globalThis.onmessage = async (event: MessageEvent<number>) => {
       postMessage({ setup });
 
       let metricsReady = false;
-      if (state === KiteState.Running) {
+      if (state === 'Running') {
         if (setup.jmx !== undefined) {
           console.log(`http://localhost:${setup.jmx.ports[0]}`);
           const resp = await fetch(`http://localhost:${setup.jmx.ports[0]}`, {

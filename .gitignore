@@ -92,24 +92,5 @@ Temporary Items
 ## Webstorm
 .idea
 
-## Application Specific
-src/common/kite/download/jmx/*.yml
-src/common/kite/download/prometheus/*.yml
-src/common/kite/download/docker-compose.yml
-src/common/kite/download/pipeline.zip
-
-# Java generated files
-src/common/springApp/target/*
-
 # vscode
 .vscode
-
-# generated config file
-src/common/kite/download/config/cfg.json
-
-# database file
-src/common/kite/postgres/*
-
-# local files
-src/common/kite/download/kafkaconnect/plugins/*
-

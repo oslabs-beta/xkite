@@ -1,6 +1,10 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-import Kite from '@/common/kite';
+let { Kite } = require('xkite-core');
+if (Kite === undefined) {
+  console.log('using secondary import...');
+  Kite = require('xkite-core').default;
+}
 import ReadableString from '@/common/utilities';
 
 type File = string;
@@ -30,6 +34,6 @@ export default async function handler(
 
 export const config = {
   api: {
-    responseLimit: false,
-  },
+    responseLimit: false
+  }
 };
