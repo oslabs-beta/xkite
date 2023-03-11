@@ -78,11 +78,11 @@ function Hero() {
           <Button
             sx={{ ml: 2 }}
             component="a"
-            href="/connect"
+            href="/tests"
             size="large"
             variant="text"
           >
-            Connect an Existing Project
+            Test a Kafka Implementation
           </Button>
         </Grid>
       </Grid>

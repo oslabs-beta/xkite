@@ -283,7 +283,8 @@ function SidebarMenu() {
             </List>
           </SubMenuWrapper>
         </List>
-        <List
+        {/*Below is left in for future iterations to incorporate connect to existing functionality
+          /* <List
           component="div"
           subheader={
             <ListSubheader component="div" disableSticky>
@@ -308,7 +309,7 @@ function SidebarMenu() {
               </ListItem>
             </List>
           </SubMenuWrapper>
-        </List>
+        </List> */}
       </MenuWrapper>
     </>
   );
