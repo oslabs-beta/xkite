@@ -1,12 +1,11 @@
 import Head from 'next/head';
-import SidebarLayout from '@/layouts/SidebarLayout';
-import PageTitle from '@/components/PageTitle';
-import PageTitleWrapper from '@/components/PageTitleWrapper';
+import SidebarLayout from '../../src/layouts/SidebarLayout';
+import PageTitle from '../../src/components/PageTitle';
+import PageTitleWrapper from '../../src/components/PageTitleWrapper';
 import {Grid} from '@mui/material';
+import React from 'react';
 
 function Forms() {
-//   const [portsOpen, setPortsOpen] = useState<PortsOpen>({});
-//   const [kiteConfigRequest, setKiteConfigRequest] = useState(defaultCfg);
 
   return (
     <>

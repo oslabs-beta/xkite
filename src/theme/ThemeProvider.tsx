@@ -2,6 +2,7 @@ import { FC, useState, createContext, useEffect } from 'react';
 import { ThemeProvider } from '@mui/material';
 import { themeCreator } from './base';
 import { StylesProvider } from '@mui/styles';
+import React from 'react';
 
 export const ThemeContext = createContext((_themeName: string): void => {});
 

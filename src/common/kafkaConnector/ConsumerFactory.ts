@@ -58,7 +58,7 @@ export default class ConsumerFactory {
     }
   }
 
-  public async listTopics(): Promise<string[]> {
+  public async listTopics(): Promise<string[] | void> {
 
     try {
       const topics = await this.admin.listTopics()

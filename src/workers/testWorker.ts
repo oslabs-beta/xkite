@@ -12,7 +12,7 @@
 //   client.request(event.data);
 //   postMessage(client.getData);
 // });
-import { KiteState } from '@kite/constants';
+
 globalThis.onmessage = async (event: MessageEvent) => {
   try {
     const state = await fetch('/api/kite/getKiteState').then((data) =>
@@ -20,7 +20,7 @@ globalThis.onmessage = async (event: MessageEvent) => {
     );
     const setup = await fetch('/api/kite/getSetup').then((data) => data.json());
     //send message to existing topic (commented out version is if you want to access spring endpoint directly)
-    if(event.data.newMessage){
+    if (event.data.newMessage) {
       // await fetch(`http://localhost:${setup.spring.port}/api/kafka/publish`, {
       //   method: 'POST',
       //   headers: {
@@ -30,7 +30,7 @@ globalThis.onmessage = async (event: MessageEvent) => {
       //     timestamp: Date.now.toString(),
       //     message: event.data.newMessage
       //   })
-      // }); 
+      // });
       await fetch('/api/kite/connect/kafka', {
         method: 'POST',
         headers: {
@@ -38,13 +38,13 @@ globalThis.onmessage = async (event: MessageEvent) => {
         },
         body: JSON.stringify({
           method: 'sendMessage',
-          messages: [{value: event.data.newMessage}],
+          messages: [{ value: event.data.newMessage }],
           topic: event.data.topic
         })
       }).then((data) => data.json());
-    } 
+    }
     //creating a new topic
-    else if (event.data.newTopic){
+    else if (event.data.newTopic) {
       await fetch('/api/kite/connect/kafka', {
         method: 'POST',
         headers: {
@@ -56,7 +56,7 @@ globalThis.onmessage = async (event: MessageEvent) => {
         })
       }).then((data) => data.json());
     }
-    
+
     const topics = await fetch('/api/kite/connect/kafka', {
       method: 'POST',
       headers: {

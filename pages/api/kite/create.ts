@@ -1,13 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-import Kite from '@/common/kite';
-import { KiteConfig } from '@/common/kite/types';
+import Kite from '../../../src/common/kite';
+import { KiteConfig } from '../../../src/common/kite/types';
 
 type Data = {
   reply?: string;
   err?: unknown;
 };
-
-//const kiteHost = 'localhost:6661';
 
 export default async function handler(
   req: NextApiRequest,
@@ -24,8 +22,6 @@ export default async function handler(
     await Kite.deploy();
 
     res.status(200).json({ reply: 'success' });
-    //TO DO: uncomment when you connecting to the front-end
-    // res.redirect('/display');
   } else {
     res.status(405).send({ reply: 'Method Not Allowed' });
   }

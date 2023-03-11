@@ -1,6 +1,7 @@
 import { FC, ReactNode } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Container, styled } from '@mui/material';
+import React from 'react';
 
 const PageTitle = styled(Box)(
   ({ theme }) => `

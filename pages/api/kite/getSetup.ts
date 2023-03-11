@@ -1,7 +1,6 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-import Kite from '@/common/kite';
-import { KiteSetup } from '@/common/kite/types';
+import Kite from '../../../src/common/kite';
+import { KiteSetup } from '../../../src/common/kite/types';
 
 type Setup = KiteSetup;
 

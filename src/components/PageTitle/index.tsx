@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import PropTypes from 'prop-types';
 import { Typography, Grid } from '@mui/material';
+import React from 'react';
 
 interface PageTitleProps {
   heading?: string;

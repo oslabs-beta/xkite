@@ -12,8 +12,8 @@
 //   client.request(event.data);
 //   postMessage(client.getData);
 // });
-import { KiteState } from '@kite/constants';
-import { KiteSetup } from '@kite/types';
+import { KiteState } from '../../src/common/kite/constants';
+import { KiteSetup } from '../../src/common/kite/types';
 
 globalThis.onmessage = async (event: MessageEvent<number>) => {
   queryBackEnd();

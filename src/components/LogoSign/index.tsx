@@ -6,7 +6,8 @@ import {
   styled,
   useTheme
 } from '@mui/material';
-import Link from 'src/components/Link';
+import Link from '../../../src/components/Link';
+import React from 'react';
 
 const LogoWrapper = styled(Link)(
   ({ theme }) => `

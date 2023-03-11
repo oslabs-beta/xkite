@@ -7,7 +7,8 @@ import {
   styled
 } from '@mui/material';
 
-import Link from 'src/components/Link';
+import Link from '../../../../src/components/Link';
+import React from 'react';
 
 const TypographyH1 = styled(Typography)(
   ({ theme }) => `

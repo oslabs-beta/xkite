@@ -1,7 +1,7 @@
 import Head from 'next/head';
-import SidebarLayout from '@/layouts/SidebarLayout';
-import PageTitle from '@/components/PageTitle';
-import PageTitleWrapper from '@/components/PageTitleWrapper';
+import SidebarLayout from '../../../src/layouts/SidebarLayout';
+import PageTitle from '../../../src/components/PageTitle';
+import PageTitleWrapper from '../../../src/components/PageTitleWrapper';
 import {
   Button,
   Container,
@@ -12,9 +12,10 @@ import {
   CardContent,
   Divider
 } from '@mui/material';
-import Footer from 'src/components/Footer';
+import Footer from '../../../src/components/Footer';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import React from 'react';
 
 function Buttons() {
   return (

@@ -6,13 +6,14 @@ import Head from 'next/head';
 import Router from 'next/router';
 import nProgress from 'nprogress';
 import 'nprogress/nprogress.css';
-import ThemeProvider from 'src/theme/ThemeProvider';
+import ThemeProvider from '../src/theme/ThemeProvider';
 import CssBaseline from '@mui/material/CssBaseline';
 import { CacheProvider, EmotionCache } from '@emotion/react';
-import createEmotionCache from 'src/createEmotionCache';
-import { SidebarProvider } from 'src/contexts/SidebarContext';
+import createEmotionCache from '../src/createEmotionCache';
+import { SidebarProvider } from '../src/contexts/SidebarContext';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import React from 'react';
 
 const clientSideEmotionCache = createEmotionCache();
 

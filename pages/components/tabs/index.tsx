@@ -1,7 +1,7 @@
 import Head from 'next/head';
-import SidebarLayout from '@/layouts/SidebarLayout';
-import PageTitle from '@/components/PageTitle';
-import PageTitleWrapper from '@/components/PageTitleWrapper';
+import SidebarLayout from '../../../src/layouts/SidebarLayout';
+import PageTitle from '../../../src/components/PageTitle';
+import PageTitleWrapper from '../../../src/components/PageTitleWrapper';
 import {
   Container,
   Grid,
@@ -11,12 +11,12 @@ import {
   Divider
 } from '@mui/material';
 import { useState, SyntheticEvent } from 'react';
-
+import React from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Footer from 'src/components/Footer';
+import Footer from '../../../src/components/Footer';
 
 interface TabPanelProps {
   children?: React.ReactNode;

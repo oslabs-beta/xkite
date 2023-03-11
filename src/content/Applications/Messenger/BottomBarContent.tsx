@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import AttachFileTwoToneIcon from '@mui/icons-material/AttachFileTwoTone';
 import SendTwoToneIcon from '@mui/icons-material/SendTwoTone';
+import React from 'react';
 
 const MessageInputWrapper = styled(InputBase)(
   ({ theme }) => `

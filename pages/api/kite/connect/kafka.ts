@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-import Kite from '@/common/kite';
-import ProducerFactory from '@/common/kafkaConnector/ProducerFactory';
-// import ConsumerFactory from '@/common/kafkaConnector/ConsumerFactory'; --> potentially will be using to retrieve data on which partitions new messages are assigned to
+import Kite from '../../../../src/common/kite';
+import ProducerFactory from '../../../../src/common/kafkaConnector/ProducerFactory';
 
 type Data = {
   reply?: string;
@@ -37,7 +36,6 @@ export default async function handler(
           console.log(topics, 'from post');
           break;
         case 'sendMessage':
-          //console.log(messages, topic, 'this is from kafka ts')
           await producer.sendBatch(messages, topic);
           break;
         case 'sendMessages':
@@ -56,9 +54,6 @@ export default async function handler(
       } else {
         res.status(200).json({ reply: 'success' });
       }
-
-      //TO DO: uncomment when you connecting to the front-end
-      // res.redirect('/display');
     } catch (err) {
       console.log(err);
       res.status(500).json({ reply: 'Error in /api/kite/connect/kafka POST' });

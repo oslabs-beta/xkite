@@ -1,7 +1,7 @@
 import Head from 'next/head';
-import SidebarLayout from '@/layouts/SidebarLayout';
-import PageTitle from '@/components/PageTitle';
-import { KiteConfig, KiteSetup } from '@/common/kite/types';
+import SidebarLayout from '../../src/layouts/SidebarLayout';
+import PageTitle from '../../src/components/PageTitle';
+import { KiteConfig, KiteSetup } from '../../src/common/kite/types';
 import {
   useState,
   SyntheticEvent,
@@ -10,8 +10,8 @@ import {
   useRef,
   ChangeEvent
 } from 'react';
-import defaultCfg from '@kite/constants';
-import PageTitleWrapper from '@/components/PageTitleWrapper';
+import defaultCfg from '../../src/common/kite/constants';
+import PageTitleWrapper from '../../src/components/PageTitleWrapper';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HashLoader from 'react-spinners/HashLoader';
 import axios from 'axios';
@@ -28,12 +28,12 @@ import {
   AccordionSummary,
   Typography
 } from '@mui/material';
-import Footer from '@/components/Footer';
+import Footer from '../../src/components/Footer';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import ExportConfigBtn from '@/content/Dashboards/Tasks/ExportConfigBtn';
-import { KiteState } from '@kite/constants';
+import ExportConfigBtn from '../../src/content/Dashboards/Tasks/ExportConfigBtn';
+import { KiteState } from '../../src/common/kite/constants';
 import React from 'react';
 
 export interface PortsOpen {
@@ -166,22 +166,6 @@ function Forms() {
       </div>
     );
   };
-
-  // const queryMetrics = (active: boolean) => {
-  //   const interval = setInterval(
-  //     () => {
-  //       console.log(active, '158');
-  //       try {
-  //         kiteWorkerRef.current?.postMessage(true);
-
-  //       } catch (err) {
-  //         console.log(err);
-  //       }
-  //     },
-  //     1000,
-  //     active
-  //   );
-  // };
 
   function ShutDownBtn() {
     async function disconnectHandler(event: SyntheticEvent): Promise<void> {

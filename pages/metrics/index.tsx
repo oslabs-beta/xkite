@@ -1,9 +1,9 @@
 import Head from 'next/head';
-import SidebarLayout from '@/layouts/SidebarLayout';
+import SidebarLayout from '../../src/layouts/SidebarLayout';
 import { ChangeEvent, useState, useEffect } from 'react';
-import PageTitle from '@/components/PageTitle';
-import Footer from '@/components/Footer';
-import { KiteState } from '@/common/kite/constants';
+import PageTitle from '../../src/components/PageTitle';
+import Footer from '../../src/components/Footer';
+import { KiteState } from '../../src/common/kite/constants';
 import {
   Grid,
   Tab,
@@ -16,8 +16,10 @@ import {
   styled,
   ListItem
 } from '@mui/material';
-import PageTitleWrapper from '@/components/PageTitleWrapper';
-//import React from 'react';
+import PageTitleWrapper from '../../src/components/PageTitleWrapper';
+import React from 'react';
+import {DarkSpacesTheme} from '../../src/theme/schemes/DarkSpacesTheme';
+//const darkTheme = DarkSpacesTheme();
 
 const TabsContainerWrapper = styled(Box)(
   ({ theme }) => `
@@ -48,7 +50,7 @@ const TabsContainerWrapper = styled(Box)(
             width: 28px;
             content: ' ';
             margin-left: -14px;
-            background: ${theme.colors.primary.main};
+            background: ${DarkSpacesTheme.colors.primary.main};
             border-radius: inherit;
             height: 100%;
           }

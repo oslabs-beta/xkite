@@ -1,7 +1,6 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-import Kite from '@/common/kite';
-import ReadableString from '@/common/utilities';
+import Kite from '../../../src/common/kite';
+import ReadableString from '../../../src/common/utilities';
 
 type File = string;
 
@@ -30,6 +29,6 @@ export default async function handler(
 
 export const config = {
   api: {
-    responseLimit: false,
-  },
+    responseLimit: false
+  }
 };

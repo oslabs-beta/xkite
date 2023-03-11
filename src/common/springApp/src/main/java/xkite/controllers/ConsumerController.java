@@ -17,7 +17,6 @@ public class ConsumerController {
 
     public ConsumerController(KafkaConsumer kafkaConsumer){this.kafkaConsumer = kafkaConsumer;}
     
-//    @KafkaListener(topics = "httpTopic", groupId = "http")
     @CrossOrigin
     @GetMapping("/data")
     public ResponseEntity<String> data(@RequestParam("topic") String topic) {

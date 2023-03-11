@@ -1,7 +1,7 @@
 import Head from 'next/head';
-import SidebarLayout from '@/layouts/SidebarLayout';
-import PageTitle from '@/components/PageTitle';
-import PageTitleWrapper from '@/components/PageTitleWrapper';
+import SidebarLayout from '../../../src/layouts/SidebarLayout';
+import PageTitle from '../../../src/components/PageTitle';
+import PageTitleWrapper from '../../../src/components/PageTitleWrapper';
 import {
   Container,
   Grid,
@@ -10,13 +10,14 @@ import {
   CardContent,
   Divider
 } from '@mui/material';
-import Footer from 'src/components/Footer';
+import Footer from '../../../src/components/Footer';
 import Avatar from '@mui/material/Avatar';
 import Stack from '@mui/material/Stack';
 import { deepOrange, deepPurple, green, pink } from '@mui/material/colors';
 import FolderIcon from '@mui/icons-material/Folder';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import React from 'react';
 
 function stringToColor(string: string) {
   let hash = 0;

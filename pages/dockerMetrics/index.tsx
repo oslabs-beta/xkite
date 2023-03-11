@@ -1,7 +1,7 @@
-import SidebarLayout from '@/layouts/SidebarLayout';
-import PageTitle from '@/components/PageTitle';
+import SidebarLayout from '../../src/layouts/SidebarLayout';
+import PageTitle from '../../src/components/PageTitle';
 import { useState, useEffect, ReactChild, ReactFragment, ReactPortal } from 'react';
-import PageTitleWrapper from '@/components/PageTitleWrapper';
+import PageTitleWrapper from '../../src/components/PageTitleWrapper';
 import {
   Container,
   Grid,
@@ -15,8 +15,9 @@ import {
   TableCell,
   TableBody
 } from '@mui/material';
-import Footer from 'src/components/Footer';
+import Footer from '../../src/components/Footer';
 import Box from '@mui/material/Box';
+import React from 'react';
 
 function Forms() {
   interface Data {
@@ -49,20 +50,6 @@ function Forms() {
     fetchData();
     const interval = setInterval(() => {
         fetchData();
-    //   fetch('/api/docker?containerStatus=active')
-    //     .then((response) => response.json())
-    //     .then((data) => {
-    //       setData(data.containers);
-    //       console.log('Dataa 1 is:  ', data);
-    //       console.log(typeof data, 'type of data');
-    //     });
-
-    //   fetch('/api/docker?containerStatus=inactive')
-    //     .then((response) => response.json())
-    //     .then((data) => {
-    //       setInactiveData(data.containers);
-    //       console.log('Inactive containers:', data.containers);
-    //     });
     }, 5000);
     return () => clearInterval(interval);
   }, []);

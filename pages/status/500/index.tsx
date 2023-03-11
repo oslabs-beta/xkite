@@ -9,8 +9,8 @@ import {
   styled
 } from '@mui/material';
 import type { ReactElement } from 'react';
-import BaseLayout from 'src/layouts/BaseLayout';
-
+import BaseLayout from '../../../src/layouts/BaseLayout';
+import React from 'react';
 import Head from 'next/head';
 import RefreshTwoToneIcon from '@mui/icons-material/RefreshTwoTone';
 import LoadingButton from '@mui/lab/LoadingButton';

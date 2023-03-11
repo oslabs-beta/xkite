@@ -6,10 +6,10 @@ import {
   ListItemText,
   styled
 } from '@mui/material';
-import { KiteState } from '@kite/constants';
-import { KiteSetup } from '@/common/kite/types';
+import { KiteState } from '../../../../../src/common/kite/constants';
+import { KiteSetup } from '../../../../../src/common/kite/types';
 import HashLoader from 'react-spinners/HashLoader';
-import Link from 'src/components/Link';
+import Link from '../../../../../src/components/Link';
 import {
   useState,
   CSSProperties,

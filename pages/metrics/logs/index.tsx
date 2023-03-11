@@ -1,7 +1,7 @@
 import Head from 'next/head';
-import SidebarLayout from '@/layouts/SidebarLayout';
+import SidebarLayout from '../../../src/layouts/SidebarLayout';
 import { ChangeEvent, useState, useEffect } from 'react';
-import Footer from '@/components/Footer';
+import Footer from '../../../src/components/Footer';
 import {
   Grid,
   Tab,
@@ -12,8 +12,8 @@ import {
   styled,
   ListItem
 } from '@mui/material';
-import SocketIOClient from "socket.io-client";
-import PageTitleWrapper from '@/components/PageTitleWrapper';
+import PageTitleWrapper from '../../../src/components/PageTitleWrapper';
+import React from 'react';
 
 
 const TabsContainerWrapper = styled(Box)(
@@ -116,25 +116,6 @@ function DashboardTasks() {
   };
 
   useEffect(() => {
-
-    // const socket = SocketIOClient.connect(window.location.host, {
-    //   path: "/api/socket",
-    //   });
-
-    // // log socket connection
-    //   socket.on("connect", () => {
-    //   console.log("SOCKET CONNECTED!");
-        
-    // });
-
-    // // update chat on new message dispatched
-    //   socket.on("message", (message: string) => {
-    //   if (message) {
-    //     console.log(message)
-    //     }
-    // });
-
-
   }, []);
 
   return (

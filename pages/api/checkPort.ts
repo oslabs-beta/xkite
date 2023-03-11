@@ -1,4 +1,3 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next/types';
 import getPort from 'get-port';
 
@@ -22,7 +21,6 @@ export default async function handler(
       const openPort = await getPort({ port: requestedPort });
 
       const isOpen = requestedPort == openPort;
-      //console.log(isOpen)
       res.status(200).json({ isOpen });
     } catch (err) {
       console.log(err);

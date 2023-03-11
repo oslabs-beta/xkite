@@ -4,8 +4,6 @@ import {
   Message,
   Producer,
   Admin,
-  IResourceConfigEntry,
-  ProducerBatch,
   Partitioners,
   TopicMessages,
 } from 'kafkajs';
@@ -47,7 +45,7 @@ export default class ProducerFactory extends Kafka {
     }
   }
 
-  public async listTopics(): Promise<string[]> {
+  public async listTopics(): Promise<string[] | undefined> {
     try {
       if (!this.isAdminConnected) {
         await this._admin.connect();
@@ -128,7 +126,12 @@ export default class ProducerFactory extends Kafka {
       await this._admin.connect();
       this.isAdminConnected = true;
     }
-    const topics = [];
+    interface Topic {
+      topic: string;
+      replicationFactor: number;
+    }
+    
+    const topics: Topic[] = [];
     for (const topic of inTopics) {
       topics.push({
         topic,

@@ -25,13 +25,12 @@ import {
   TextField
 } from '@mui/material';
 import Head from 'next/head';
-import SidebarLayout from '@/layouts/SidebarLayout';
-import PageTitleWrapper from '@/components/PageTitleWrapper';
-import PageTitle from '@/components/PageTitle';
-import { KiteState } from '@kite/constants';
-import { KiteSetup } from '@kite/types';
-import Footer from '@/components/Footer';
-//import SocketIOClient from "socket.io-client"; TBD: remove if final version does not use sockets
+import SidebarLayout from '../../src/layouts/SidebarLayout';
+import PageTitleWrapper from '../../src/components/PageTitleWrapper';
+import PageTitle from '../../src/components/PageTitle';
+import { KiteState } from '../../src/common/kite/constants';
+import { KiteSetup } from '../../src/common/kite/types';
+import Footer from '../../src/components/Footer';
 
 const TabsContainerWrapper = styled(Box)(
   ({ theme }) => `

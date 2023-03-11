@@ -1,6 +1,5 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-import Kite from '@/common/kite';
+import Kite from '../../../src/common/kite';
 
 /**
  * Returns a boolean isOpen indicating whether a given port is open
@@ -13,20 +12,6 @@ export default async function handler(
 ) {
   if (req.method === 'GET') {
     return res.status(405).send();
-    //TBD ...
-    // try {
-    //   const {spring} = await Kite.getSetup();
-    //   let URI = `localhost:${spring.port}/api/kafka/data`;
-    //   const response = await fetch(URI, {
-    //     method: 'GET',
-    //     headers: {'Content-Type': 'application/json'},
-    //     body: JSON.stringify(req.body),
-    //   });
-    //   return res.status(response.status).;
-    // } catch (err) {
-    //   console.log(err);
-    //   res.status(500);
-    // }
   } else if (req.method === 'POST') {
     try {
       const { spring } = await Kite.getSetup();

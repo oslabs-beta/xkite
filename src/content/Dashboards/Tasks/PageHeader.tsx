@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import DocumentScannerTwoToneIcon from '@mui/icons-material/DocumentScannerTwoTone';
 import AddAlertTwoToneIcon from '@mui/icons-material/AddAlertTwoTone';
+import React from 'react';
 
 const AvatarPageTitle = styled(Avatar)(
   ({ theme }) => `
