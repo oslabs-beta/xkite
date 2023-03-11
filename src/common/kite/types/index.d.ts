@@ -23,11 +23,18 @@ export interface dbCfg {
   ksql?: {
     schema_port: number;
   };
+  kafkaconnect?: {
+    port: number;
+  };
 }
 
 export interface sinkCfg {
   name: 'jupyter' | 'spark';
   port?: number;
+  rpc_port?: number;
+  kafkaconnect?: {
+    port: number;
+  };
 }
 
 interface grafanaCfg {
@@ -59,7 +66,7 @@ export interface KiteKafkaCfg {
         internal: number; // 2888
         external: number; // 3888
       };
-      client: number[]; // [2181, 2182] //external
+      client?: number[]; // [2181, 2182] //external
     };
   };
   jmx?: {
@@ -79,7 +86,7 @@ export interface KiteSetup {
   zookeeper?: { ports: number[] };
   jmx?: { ports: number[] };
   jupyter?: { port: number };
-  spark?: { port: number };
+  spark?: { port: number[] };
   docker?: { services: string[] };
 }
 

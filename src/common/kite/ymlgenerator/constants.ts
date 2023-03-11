@@ -61,19 +61,19 @@ export const PROMCONFIG: PROMConfig = {
       job_name: 'xkite',
       static_configs: [
         {
-          targets: [],
-        },
-      ],
+          targets: []
+        }
+      ]
     },
     {
       job_name: 'docker',
       static_configs: [
         {
-          targets: [],
-        },
-      ],
-    },
-  ],
+          targets: []
+        }
+      ]
+    }
+  ]
 };
 
 export const JMX: JMXConfg = {
