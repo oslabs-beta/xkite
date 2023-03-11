@@ -39,15 +39,18 @@ export const _ports_: YAMLServicesDefaultSetup = {
     peer: { internal: 2888, external: 3888 } // only internal docker net
   },
   kafka: {
-    jmx: 9991, // only internal
+    jmx: 9991,
     broker: { internal: 9092, external: 9092 },
-    spring: 9095, // only internal
-    metrics: 29092, // only internal
-    ksql: 9096, // only internal
+    spring: 9095,
+    metrics: 29092,
+    ksql: 9096,
     connect: 9097
   },
   jmx: { internal: 5556, external: 5566 },
-  // docker: { internal: 9323, external: 9323 }
+  docker: {
+    internal: 0,
+    external: 0
+  }
 };
 export const PROMCONFIG: PROMConfig = {
   global: {
@@ -65,14 +68,14 @@ export const PROMCONFIG: PROMConfig = {
         },
       ],
     },
-    // {
-    //   job_name: 'docker',
-    //   static_configs: [
-    //     {
-    //       targets: [],
-    //     },
-    //   ],
-    // },
+    {
+      job_name: 'docker',
+      static_configs: [
+        {
+          targets: [],
+        },
+      ],
+    },
   ],
 };
 

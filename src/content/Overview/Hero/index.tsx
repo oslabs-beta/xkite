@@ -21,6 +21,12 @@ const TypographyH12 = styled(Typography)(
 `
 );
 
+const TypographyH13 = styled(Typography)(
+  ({ theme }) => `
+    font-size: ${theme.typography.pxToRem(85)};
+`
+);
+
 const TypographyH2 = styled(Typography)(
   ({ theme }) => `
     font-size: ${theme.typography.pxToRem(22)};
@@ -67,7 +73,7 @@ function Hero() {
             A comprehensive prototyping, testing, and monitoring toolset built for Apache Kafka. Use xKite to bootstrap your next project, or install
             our library into an existing project. Built by (and for) developers.
           </TypographyH2>
-          <Button
+          {/* <Button
             component={Link}
             href="/configuration"
             size="large"
@@ -83,13 +89,17 @@ function Hero() {
             variant="text"
           >
             Test a Kafka Implementation
-          </Button>
+          </Button> */}
+          
         </Grid>
       </Grid>
       <img
         alt="500"
-        height={900}
+        height={500}
         src="/static/images/logo/fake2.png"/>
+        <TypographyH13 sx={{ mb: 2 }} variant="h1">
+            COMING SOON
+          </TypographyH13>
     </Container>
   );
 }

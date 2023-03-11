@@ -45,10 +45,10 @@ function Logo() {
     >
       <LogoWrapper href="/">
         <Badge>
-          <img
+          {/* <img
         alt="500"
         height={'125'}
-        src="/static/images/logo/fake2.png"/>
+        src="/static/images/logo/fake2.png"/> */}
         </Badge>
       </LogoWrapper>
     </TooltipWrapper>
