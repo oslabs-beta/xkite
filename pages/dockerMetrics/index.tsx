@@ -19,7 +19,6 @@ import Footer from 'src/components/Footer';
 import Box from '@mui/material/Box';
 
 function Forms() {
-
   interface Data {
     id: string;
     names: string;
@@ -30,28 +29,52 @@ function Forms() {
 
   const [data, setData] = useState<Data[]>([]);
   const [inactiveData, setInactiveData] = useState<Data[]>([]);
-  useEffect(() => {
+  const fetchData = () => {
     fetch('/api/docker?containerStatus=active')
-      .then((response) => response.json())
-      .then((data) => {
-        setData(data.containers);
-        console.log('Dataa 1 is:  ', data);
-        console.log(typeof data, 'type of data');
-      });
+    .then((response) => response.json())
+    .then((data) => {
+      setData(data.containers);
+      console.log('Dataa 1 is:  ', data);
+      console.log(typeof data, 'type of data');
+    });
 
-      fetch('/api/docker?containerStatus=inactive')
-      .then((response) => response.json())
-      .then((data) => {
-        setInactiveData(data.containers);
-        console.log('Inactive containers:', data.containers);
-      });
+  fetch('/api/docker?containerStatus=inactive')
+    .then((response) => response.json())
+    .then((data) => {
+      setInactiveData(data.containers);
+      console.log('Inactive containers:', data.containers);
+    });
+  }
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(() => {
+        fetchData();
+    //   fetch('/api/docker?containerStatus=active')
+    //     .then((response) => response.json())
+    //     .then((data) => {
+    //       setData(data.containers);
+    //       console.log('Dataa 1 is:  ', data);
+    //       console.log(typeof data, 'type of data');
+    //     });
+
+    //   fetch('/api/docker?containerStatus=inactive')
+    //     .then((response) => response.json())
+    //     .then((data) => {
+    //       setInactiveData(data.containers);
+    //       console.log('Inactive containers:', data.containers);
+    //     });
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
     <>
       <PageTitleWrapper>
         <PageTitle heading="Docker metrics" />
-        <p>Please review any inactive conatiners since they may cause issues with the application functionality.</p>
+        <p>
+          Please review any inactive conatiners since they may cause issues with
+          the application functionality.
+        </p>
       </PageTitleWrapper>
       <Container maxWidth="lg">
         <Grid
