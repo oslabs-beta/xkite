@@ -35,6 +35,8 @@ import MenuItem from '@mui/material/MenuItem';
 import ExportConfigBtn from '@/content/Dashboards/Tasks/ExportConfigBtn';
 import { KiteState } from '@kite/constants';
 import React from 'react';
+import { margin } from '@mui/system';
+import { Kafka } from 'kafkajs';
 
 export interface PortsOpen {
   [index: string]: PortOpen;
@@ -290,13 +292,29 @@ function Forms() {
 
   const handleBrokers = (event: ChangeEvent<HTMLTextAreaElement>) => {
     const size = Number(event.target.value);
-    if (size <= 0) return;
+    // if (size <= 0) return;
     const update = {
       kafka: {
         ...kiteConfigRequest.kafka,
         brokers: {
           ...kiteConfigRequest.kafka.brokers,
           size
+        }
+      }
+    };
+    updateKiteConfigRequest(update);
+  };
+
+  const handleReplicas = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    const replicas = Number(event.target.value);
+    const numberOfBrokers = kiteConfigRequest.kafka.brokers.size;
+    // if (replicas <= 0) return;
+    const update = {
+      kafka: {
+        ...kiteConfigRequest.kafka,
+        brokers: {
+          ...kiteConfigRequest.kafka.brokers,
+          replicas
         }
       }
     };
@@ -327,120 +345,261 @@ function Forms() {
   };
 
   const renderAdvanced = () => {
+    // Array to be returned with all fo the Advanced Configuration elements
     const res: JSX.Element[] = [];
+
+    // Kafka Section
+    res.push(<h2>Kafka</h2>);
+
+    // Kafka > JMX
+    res.push(<h3>JMX</h3>);
+    for (let i = 0; i < 2; i++) {
+      res.push(
+        <TextField
+          label={`Port ${i + 1}`}
+          id="filled-number"
+          type="number"
+          InputLabelProps={{ shrink: true }}
+          variant="filled"
+          value={kiteConfigRequest.kafka.jmx.ports[i]}
+          onChange={(e) => {
+            const ports: number[] = kiteConfigRequest.kafka.jmx.ports;
+            ports[i] = +e.target.value;
+            const update = {
+              kafka: {
+                ...kiteConfigRequest.kafka,
+                jmx: {
+                  ...kiteConfigRequest.kafka.jmx,
+                  ports
+                }
+              }
+            };
+            updateKiteConfigRequest(update);
+          }}
+        />
+      );
+    }
+
+    // Kafka > Spring
+    res.push(
+      <div>
+        <h3>Spring</h3>
+        {/* Port */}
+        <TextField
+          label="Port"
+          id="filled-number"
+          type="number"
+          InputLabelProps={{ shrink: true }}
+          variant="filled"
+          value={kiteConfigRequest.kafka.spring.port}
+          onChange={(e) => {
+            const port = +e.target.value;
+            const update = Object.assign({}, kiteConfigRequest, {
+              kafka: {
+                spring: {
+                  port
+                }
+              }
+            });
+            updateKiteConfigRequest(update);
+          }}
+        />
+      </div>
+    );
+
+    // Kafka > Brokers
+    res.push(<h3>Broker Ports</h3>);
+    // As many broker configuration boxes as needed
     for (let i = 0; i < kiteConfigRequest.kafka.brokers.size; i++) {
       res.push(
         <div key={i}>
-          <p>Broker {i + 1}</p>
-          <TextField
-            id="filled-number"
-            label="ID"
-            type="number"
-            placeholder={(DEFAULT_BROKER_ID + i).toString()}
-            value={kiteConfigRequest.kafka.brokers?.id?.[i] || ''}
-            InputLabelProps={{
-              shrink: true
-            }}
-            variant="filled"
-            onChange={(e) => {
-              if (+e.target.value <= 0) return;
-              const id: number[] = kiteConfigRequest.kafka.brokers.id ?? [];
-              id[i] = +e.target.value;
+          {/* <h3>Broker {i + 1}</h3> */}
+          <Box
+          // sx={{
+          //   display: 'grid',
+          //   gridTemplateColumns: 'repeat(3, 1fr)'
+          //   // margin: '0 2rem 0 0'
+          // }}
+          >
+            {/* <TextField
+              label="ID"
+              // sx={{ width: 300 }}
+              id="filled-number"
+              type="number"
+              placeholder={(DEFAULT_BROKER_ID + i).toString()}
+              value={kiteConfigRequest.kafka.brokers?.id?.[i] || ''}
+              InputLabelProps={{
+                shrink: true
+              }}
+              variant="filled"
+              onChange={(e) => {
+                if (+e.target.value <= 0) return;
+                const id: number[] = kiteConfigRequest.kafka.brokers.id ?? [];
+                id[i] = +e.target.value;
 
-              const update = {
-                kafka: {
-                  ...kiteConfigRequest.kafka,
-                  brokers: {
-                    ...kiteConfigRequest.kafka.brokers,
-                    id
-                  }
-                }
-              };
-              updateKiteConfigRequest(update);
-            }}
-          />
-          <TextField
-            id="filled-number"
-            placeholder={(DEFAULT_BROKER_PORT + i).toString()}
-            onChange={(e) => {
-              if (+e.target.value <= 0) return;
-
-              const brokers: number[] =
-                kiteConfigRequest.kafka.brokers.ports?.brokers ?? [];
-              brokers[i] = +e.target.value;
-
-              const update = {
-                kafka: {
-                  ...kiteConfigRequest.kafka,
-                  brokers: {
-                    ...kiteConfigRequest.kafka.brokers,
-                    ports: {
-                      ...kiteConfigRequest.kafka.brokers.ports,
-                      brokers
+                const update = {
+                  kafka: {
+                    ...kiteConfigRequest.kafka,
+                    brokers: {
+                      ...kiteConfigRequest.kafka.brokers,
+                      id
                     }
                   }
-                }
-              };
-              updateKiteConfigRequest(update);
-            }}
-            value={kiteConfigRequest.kafka.brokers?.ports?.brokers?.[i] || ''}
-            label="Port"
-            type="number"
-            InputLabelProps={{
-              shrink: true
-            }}
-            error={
-              portsOpen
-                ? portsOpen[`broker-${i}`]
-                  ? !portsOpen[`broker-${i}`].port
+                };
+                updateKiteConfigRequest(update);
+              }}
+            /> */}
+            <TextField
+              label={`Broker ${i + 1}`}
+              id="filled-number"
+              placeholder={(DEFAULT_BROKER_PORT + i).toString()}
+              onChange={(e) => {
+                if (+e.target.value <= 0) return;
+
+                const brokers: number[] =
+                  kiteConfigRequest.kafka.brokers.ports?.brokers ?? [];
+                brokers[i] = +e.target.value;
+
+                const update = {
+                  kafka: {
+                    ...kiteConfigRequest.kafka,
+                    brokers: {
+                      ...kiteConfigRequest.kafka.brokers,
+                      ports: {
+                        ...kiteConfigRequest.kafka.brokers.ports,
+                        brokers
+                      }
+                    }
+                  }
+                };
+                updateKiteConfigRequest(update);
+              }}
+              value={kiteConfigRequest.kafka.brokers?.ports?.brokers?.[i] || ''}
+              type="number"
+              InputLabelProps={{
+                shrink: true
+              }}
+              error={
+                portsOpen
+                  ? portsOpen[`broker-${i}`]
+                    ? !portsOpen[`broker-${i}`].port
+                    : false
                   : false
-                : false
-            }
-            onBlur={(e) =>
-              checkPortOpen(`broker-${i}`, 'port', Number(e.target.value))
-            }
-            variant="filled"
-          />
-          <TextField
-            id="filled-number"
-            placeholder={(DEFAULT_JMX_PORT + i).toString()}
-            onChange={(e) => {
-              if (+e.target.value <= 0) return;
-              const jmx: number[] =
-                kiteConfigRequest.kafka.brokers?.ports?.jmx ?? [];
-              jmx[i] = +e.target.value;
+              }
+              onBlur={(e) =>
+                checkPortOpen(`broker-${i}`, 'port', Number(e.target.value))
+              }
+              variant="filled"
+            />
+            {/* <TextField
+              id="filled-number"
+              placeholder={(DEFAULT_JMX_PORT + i).toString()}
+              onChange={(e) => {
+                if (+e.target.value <= 0) return;
+                const jmx: number[] =
+                  kiteConfigRequest.kafka.brokers?.ports?.jmx ?? [];
+                jmx[i] = +e.target.value;
 
-              const update = Object.assign({}, kiteConfigRequest, {
-                kafka: {
-                  jmx
-                }
-              });
-
-              // const update = {
-              //   kafka: {
-              //     ...kiteConfigRequest.kafka,
-              //     brokers: {
-              //       ...kiteConfigRequest.kafka.brokers,
-              //       ports: {
-              //         ...kiteConfigRequest.kafka.brokers.ports,
-              //         jmx
-              //       }
-              //     }
-              //   }
-              // };
-              updateKiteConfigRequest(update);
-            }}
-            value={kiteConfigRequest.kafka.brokers?.ports?.jmx?.[i] || ''}
-            label="JMX Port"
-            type="number"
-            InputLabelProps={{
-              shrink: true
-            }}
-            variant="filled"
-          />
+                const update = Object.assign({}, kiteConfigRequest, {
+                  kafka: {
+                    jmx
+                  }
+                });
+                updateKiteConfigRequest(update);
+              }}
+              value={kiteConfigRequest.kafka.brokers?.ports?.jmx?.[i] || ''}
+              label="JMX Port"
+              type="number"
+              InputLabelProps={{
+                shrink: true
+              }}
+              variant="filled"
+            /> */}
+          </Box>
         </div>
       );
     }
+
+    // TODO: As many Zookeeper ports as needed
+
+    // Grafana Configuration
+    res.push(
+      <div>
+        <h2>Grafana</h2>
+        {/* Port */}
+        <TextField
+          label="Port"
+          id="filled-number"
+          type="number"
+          InputLabelProps={{ shrink: true }}
+          variant="filled"
+          value={kiteConfigRequest.grafana.port}
+          onChange={(e) => {
+            const port = +e.target.value;
+            const update = Object.assign({}, kiteConfigRequest, {
+              grafana: { port }
+            });
+            updateKiteConfigRequest(update);
+          }}
+        />
+      </div>
+    );
+
+    // Prometheus
+    res.push(
+      <div>
+        <h2>Prometheus</h2>
+        {/* Prometheus: Scrape Interval */}
+        <TextField
+          label="Scrape Interval"
+          id="filled-number"
+          type="number"
+          InputLabelProps={{ shrink: true }}
+          variant="filled"
+          value={kiteConfigRequest.prometheus.scrape_interval}
+          onChange={(e) => {
+            const scrape_interval = +e.target.value;
+            const update = Object.assign({}, kiteConfigRequest, {
+              prometheus: { scrape_interval }
+            });
+            updateKiteConfigRequest(update);
+          }}
+        />
+        {/* Prometheus: Evaluation Interval */}
+        <TextField
+          label="Evaluation Interval"
+          id="filled-number"
+          type="number"
+          InputLabelProps={{ shrink: true }}
+          variant="filled"
+          value={kiteConfigRequest.prometheus.evaluation_interval}
+          onChange={(e) => {
+            const evaluation_interval = +e.target.value;
+            const update = Object.assign({}, kiteConfigRequest, {
+              prometheus: { evaluation_interval }
+            });
+            updateKiteConfigRequest(update);
+          }}
+        />
+        {/* Prometheus: Port*/}
+        <TextField
+          label="Port"
+          id="filled-number"
+          type="number"
+          InputLabelProps={{ shrink: true }}
+          variant="filled"
+          value={kiteConfigRequest.prometheus.port}
+          onChange={(e) => {
+            const port = +e.target.value;
+            const update = Object.assign({}, kiteConfigRequest, {
+              prometheus: { port }
+            });
+            updateKiteConfigRequest(update);
+          }}
+        />
+      </div>
+    );
+
     return res;
   };
 
@@ -485,6 +644,17 @@ function Forms() {
                       // defaultValue="2"
                       onChange={handleBrokers}
                       value={kiteConfigRequest.kafka.brokers.size}
+                      InputLabelProps={{
+                        shrink: true
+                      }}
+                    />
+                    <TextField
+                      label="Replicas"
+                      id="outlined-number"
+                      type="number"
+                      // defaultValue="2"
+                      onChange={handleReplicas}
+                      value={kiteConfigRequest.kafka.brokers.replicas}
                       InputLabelProps={{
                         shrink: true
                       }}
