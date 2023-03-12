@@ -1,6 +1,7 @@
 {
   "name": "xkite",
   "version": "1.0.0",
+  "homepage": "https://oslabs-beta.github.io/xkite/",
   "title": "xkite: Kafka Integrated Testing Environment",
   "description": "A comprehensive prototyping, testing, and monitoring toolset built for Apache Kafka.",
   "author": "xkite Team- OpenSource Labs",
@@ -10,6 +11,8 @@
     "url": "https://github.com/oslabs-beta/xkite"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "spring": "mvn -f ./src/common/springApp/pom.xml spring-boot:run",
     "build-spring": "mvn -f ./src/common/springApp clean package && mv ./src/common/springApp/target/*.jar ./src/common/kite/download/spring/app.jar",
     "next-dev": "next dev",
@@ -88,6 +91,7 @@
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-prettier": "4.0.0",
     "fs-extra": "^11.1.0",
+    "gh-pages": "^5.0.0",
     "http2": "^3.3.7",
     "js-yaml": "^4.1.0",
     "kafkajs": "^2.2.3",
