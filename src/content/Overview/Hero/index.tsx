@@ -95,7 +95,8 @@ function Hero() {
       </Grid>
       <img
         alt="500"
-        height={500}
+        height={400}
+        style={{alignContent: "center"}}
         src="/static/images/logo/fake2.png"/>
         <TypographyH13 sx={{ mb: 2 }} variant="h1">
             COMING SOON
