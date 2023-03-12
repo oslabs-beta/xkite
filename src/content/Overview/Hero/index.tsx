@@ -23,7 +23,7 @@ const TypographyH12 = styled(Typography)(
 
 const TypographyH13 = styled(Typography)(
   ({ theme }) => `
-    font-size: ${theme.typography.pxToRem(85)};
+    font-size: ${theme.typography.pxToRem(65)};
 `
 );
 
@@ -95,7 +95,7 @@ function Hero() {
       </Grid>
       <img
         alt="500"
-        height={400}
+        height={300}
         style={{alignContent: "center"}}
         src="/static/images/logo/fake2.png"/>
         <TypographyH13 sx={{ mb: 2 }} variant="h1">
