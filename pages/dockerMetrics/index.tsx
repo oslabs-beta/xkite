@@ -1,6 +1,6 @@
 import SidebarLayout from '@/layouts/SidebarLayout';
 import PageTitle from '@/components/PageTitle';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactChild, ReactFragment, ReactPortal } from 'react';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import {
   Container,
@@ -17,9 +17,10 @@ import {
 } from '@mui/material';
 import Footer from 'src/components/Footer';
 import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
+import { keyframes } from '@mui/system';
 
 function Forms() {
-
   interface Data {
     id: string;
     names: string;
@@ -28,30 +29,72 @@ function Forms() {
     ports: string;
   }
 
+  const blink = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
+  type DivProps = {
+    myColor: string;
+  };
+
+  const BlinkedBox = styled('div')<DivProps>(({ myColor }) => ({
+    backgroundColor: myColor,
+    width: 20,
+    height: 20,
+    animation: `${blink} 1.5s linear infinite`,
+    borderRadius: 25,
+    marginLeft: 10
+  }));
+
   const [data, setData] = useState<Data[]>([]);
   const [inactiveData, setInactiveData] = useState<Data[]>([]);
-  useEffect(() => {
+  const fetchData = () => {
     fetch('/api/docker?containerStatus=active')
-      .then((response) => response.json())
-      .then((data) => {
-        setData(data.containers);
-        console.log('Dataa 1 is:  ', data);
-        console.log(typeof data, 'type of data');
-      });
+    .then((response) => response.json())
+    .then((data) => {
+      setData(data.containers);
+      console.log('Dataa 1 is:  ', data);
+      console.log(typeof data, 'type of data');
+    });
 
-      fetch('/api/docker?containerStatus=inactive')
-      .then((response) => response.json())
-      .then((data) => {
-        setInactiveData(data.containers);
-        console.log('Inactive containers:', data.containers);
-      });
+  fetch('/api/docker?containerStatus=inactive')
+    .then((response) => response.json())
+    .then((data) => {
+      setInactiveData(data.containers);
+      console.log('Inactive containers:', data.containers);
+    });
+  }
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(() => {
+        fetchData();
+    //   fetch('/api/docker?containerStatus=active')
+    //     .then((response) => response.json())
+    //     .then((data) => {
+    //       setData(data.containers);
+    //       console.log('Dataa 1 is:  ', data);
+    //       console.log(typeof data, 'type of data');
+    //     });
+
+    //   fetch('/api/docker?containerStatus=inactive')
+    //     .then((response) => response.json())
+    //     .then((data) => {
+    //       setInactiveData(data.containers);
+    //       console.log('Inactive containers:', data.containers);
+    //     });
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
     <>
       <PageTitleWrapper>
         <PageTitle heading="Docker metrics" />
-        <p>Please review any inactive conatiners since they may cause issues with the application functionality.</p>
+        <p>
+          Please review any inactive conatiners since they may cause issues with
+          the application functionality.
+        </p>
       </PageTitleWrapper>
       <Container maxWidth="lg">
         <Grid
@@ -75,7 +118,7 @@ function Forms() {
                 >
                   <div>
                     <List>
-                      <label htmlFor=""> Inactive containers</label>
+                      <label htmlFor=""> Inactive containers </label>
                     </List>
                     <Table>
                       <TableHead>
@@ -90,7 +133,7 @@ function Forms() {
                           <TableRow key={row.id}>
                             <TableCell>{row.ports}</TableCell>
                             <TableCell>{row.created}</TableCell>
-                            <TableCell>{row.status}</TableCell>
+                            <TableCell>{row.status} </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -122,6 +165,7 @@ function Forms() {
                           <TableCell>Name</TableCell>
                           <TableCell>Created</TableCell>
                           <TableCell>Status</TableCell>
+                          <TableCell>Notice</TableCell>
                           <TableCell>Ports</TableCell>
                         </TableRow>
                       </TableHead>
@@ -131,6 +175,9 @@ function Forms() {
                             <TableCell>{row.names}</TableCell>
                             <TableCell>{row.created}</TableCell>
                             <TableCell>{row.status}</TableCell>
+                            <TableCell>
+                            <BlinkedBox myColor={row.status.includes('Paused')  ? "red" : "green"}/>
+                            </TableCell>
                             <TableCell>{row.ports}</TableCell>
                           </TableRow>
                         ))}
@@ -149,6 +196,6 @@ function Forms() {
   );
 }
 
-Forms.getLayout = (page) => <SidebarLayout>{page}</SidebarLayout>;
+Forms.getLayout = (page: boolean | ReactChild | ReactFragment | ReactPortal) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default Forms;

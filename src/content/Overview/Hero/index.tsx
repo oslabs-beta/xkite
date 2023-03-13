@@ -53,7 +53,7 @@ function Hero() {
         <Grid item md={10} lg={8} mx="auto">
           <LabelWrapper color="success">Version 1.0.0</LabelWrapper>
           <TypographyH1 sx={{ mb: 2 }} variant="h1">
-            xKite: 
+            xkite: 
           </TypographyH1>
           <TypographyH12 sx={{ mb: 2 }} variant="h1">
             Kafka Integrated Testing Environment
@@ -78,11 +78,11 @@ function Hero() {
           <Button
             sx={{ ml: 2 }}
             component="a"
-            href="/connect"
+            href="/tests"
             size="large"
             variant="text"
           >
-            Connect an Existing Project
+            Test a Kafka Implementation
           </Button>
         </Grid>
       </Grid>
