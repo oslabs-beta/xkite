@@ -60,7 +60,7 @@ interface YAMLServicesDefaultSetup {
     connect: number;
   };
   jmx: PortForward;
-  docker: PortForward;
+  // docker: PortForward;
 }
 type PortForward = {
   internal: number;
@@ -91,10 +91,10 @@ interface PROMConfig {
       job_name: string;
       static_configs: [{ targets: Array<string> }];
     },
-    {
-      job_name: string;
-      static_configs: [{ targets: Array<string> }];
-    }
+    // {
+    //   job_name: string;
+    //   static_configs: [{ targets: Array<string> }];
+    // }
   ];
 }
 
