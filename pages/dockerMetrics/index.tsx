@@ -26,6 +26,8 @@ import Footer from 'src/components/Footer';
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import { keyframes } from '@mui/system';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
 
 function Forms() {
   interface Data {
@@ -173,6 +175,7 @@ function Forms() {
                           <TableCell>Created</TableCell>
                           <TableCell>Status</TableCell>
                           <TableCell>Notice</TableCell>
+                          <TableCell>Action</TableCell>
                           <TableCell>Ports</TableCell>
                         </TableRow>
                       </TableHead>
@@ -190,6 +193,10 @@ function Forms() {
                                     : 'green'
                                 }
                               />
+                            </TableCell>
+                            <TableCell>
+                              <PlayArrowIcon />
+                              <PauseIcon />
                             </TableCell>
                             <TableCell>{row.ports}</TableCell>
                           </TableRow>
