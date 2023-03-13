@@ -43,7 +43,7 @@ const ListWrapper = styled(Box)(
                             transition: all .2s;
                             border-radius: ${theme.general.borderRadiusLg};
                             content: "";
-                            background: ${theme.colors.primary.main};
+                            background: ${theme.colors.primary.dark};
                         }
                     }
                 }
@@ -111,7 +111,7 @@ function HeaderMenu() {
 
   const dockerStatus = async () => {
     setLoader(1);
-    if (apiURL === FIRST_API_URL) {
+    if (kiteState !== 'Paused') {
       try {
         const response = await fetch('/api/kite/pause', {
           method: 'POST',
@@ -179,13 +179,10 @@ function HeaderMenu() {
               primary={`xkite Status: ${kiteState}`}
             />
           </ListItem>
-          <ListItem
-          // classes={{ root: 'MuiListItem-indicators' }}
-          // component={Link}
-          // href="/configuration"
-          >
+          <ListItem>
             {loader === 0 ? (
               <Button
+                disabled={kiteState !== 'Running' && kiteState !== 'Paused'}
                 variant="contained"
                 color="primary"
                 onClick={dockerStatus}
