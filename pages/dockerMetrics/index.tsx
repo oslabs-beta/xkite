@@ -1,6 +1,12 @@
 import SidebarLayout from '@/layouts/SidebarLayout';
 import PageTitle from '@/components/PageTitle';
-import { useState, useEffect, ReactChild, ReactFragment, ReactPortal } from 'react';
+import {
+  useState,
+  useEffect,
+  ReactChild,
+  ReactFragment,
+  ReactPortal
+} from 'react';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import {
   Container,
@@ -31,38 +37,33 @@ function Forms() {
   const [inactiveData, setInactiveData] = useState<Data[]>([]);
   const fetchData = () => {
     fetch('/api/docker?containerStatus=active')
-    .then((response) => response.json())
-    .then((data) => {
-      setData(data.containers);
-      console.log('Dataa 1 is:  ', data);
-      console.log(typeof data, 'type of data');
-    });
+      .then((response) => response.json())
+      .then((data) => {
+        data.containers.forEach(
+          (element: { names?: string; ports: string }) => {
+            console.log('name is: ', element.names);
+            if (!element.names) {
+              console.log('Got inside');
+              element.names = element.ports;
+              element.ports = 'N/A';
+              console.log('New data is: ', element);
+            }
+          }
+        );
+        setData(data.containers);
+      });
 
-  fetch('/api/docker?containerStatus=inactive')
-    .then((response) => response.json())
-    .then((data) => {
-      setInactiveData(data.containers);
-      console.log('Inactive containers:', data.containers);
-    });
-  }
+    fetch('/api/docker?containerStatus=inactive')
+      .then((response) => response.json())
+      .then((data) => {
+        setInactiveData(data.containers);
+        console.log('Inactive containers:', data.containers);
+      });
+  };
   useEffect(() => {
     fetchData();
     const interval = setInterval(() => {
-        fetchData();
-    //   fetch('/api/docker?containerStatus=active')
-    //     .then((response) => response.json())
-    //     .then((data) => {
-    //       setData(data.containers);
-    //       console.log('Dataa 1 is:  ', data);
-    //       console.log(typeof data, 'type of data');
-    //     });
-
-    //   fetch('/api/docker?containerStatus=inactive')
-    //     .then((response) => response.json())
-    //     .then((data) => {
-    //       setInactiveData(data.containers);
-    //       console.log('Inactive containers:', data.containers);
-    //     });
+      fetchData();
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -172,6 +173,8 @@ function Forms() {
   );
 }
 
-Forms.getLayout = (page: boolean | ReactChild | ReactFragment | ReactPortal) => <SidebarLayout>{page}</SidebarLayout>;
+Forms.getLayout = (
+  page: boolean | ReactChild | ReactFragment | ReactPortal
+) => <SidebarLayout>{page}</SidebarLayout>;
 
 export default Forms;

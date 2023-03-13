@@ -46,8 +46,8 @@ export const _ports_: YAMLServicesDefaultSetup = {
     ksql: 9096, // only internal
     connect: 9097
   },
-  jmx: { internal: 5556, external: 5566 },
-  docker: { internal: 9323, external: 9323 }
+  jmx: { internal: 5556, external: 5566 }
+  // docker: { internal: 9323, external: 9323 }
 };
 export const PROMCONFIG: PROMConfig = {
   global: {
@@ -65,14 +65,14 @@ export const PROMCONFIG: PROMConfig = {
         }
       ]
     },
-    {
-      job_name: 'docker',
-      static_configs: [
-        {
-          targets: []
-        }
-      ]
-    }
+    // {
+    //   job_name: 'docker',
+    //   static_configs: [
+    //     {
+    //       targets: []
+    //     }
+    //   ]
+    // }
   ]
 };
 

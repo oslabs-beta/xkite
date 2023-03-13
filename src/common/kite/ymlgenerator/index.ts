@@ -34,10 +34,10 @@ const setup: KiteSetup = {
     ssl: false
   }
 };
-const ipAddress = Object.values(os.networkInterfaces())
-  .flat()
-  .filter(({ family, internal }) => family === 'IPv4' && !internal)
-  .map(({ address }) => address)[0];
+// const ipAddress = Object.values(os.networkInterfaces())
+//   .flat()
+//   .filter(({ family, internal }) => family === 'IPv4' && !internal)
+//   .map(({ address }) => address)[0];
 /**
  * creates the pertinent yml configuration for docker
  * based on the input config
@@ -114,7 +114,7 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       );
 
       PROMCONFIG.scrape_configs[0].static_configs[0].targets = [];
-      PROMCONFIG.scrape_configs[1].static_configs[0].targets = [];
+      // PROMCONFIG.scrape_configs[1].static_configs[0].targets = [];
     } catch (error) {
       console.log(error);
     } finally {
@@ -398,9 +398,9 @@ const ymlGenerator: () => (c: KiteConfig) => KiteSetup = () => {
       PROMCONFIG.scrape_configs[0].static_configs[0].targets.push(
         `${jmxName}:${_ports_.jmx.internal}`
       );
-      PROMCONFIG.scrape_configs[1].static_configs[0].targets.push(
-        `${ipAddress}:${_ports_.docker.internal}`
-      ); //TO DO: IK: configure the port
+      // PROMCONFIG.scrape_configs[1].static_configs[0].targets.push(
+      //   `${ipAddress}:${_ports_.docker.internal}`
+      // ); //TO DO: IK: configure the port
 
       jmxExporterConfig.hostPort = `kafka${n}:${jmxHostPort}`;
       fs.writeFileSync(
