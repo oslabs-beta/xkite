@@ -8,7 +8,8 @@ import {
   CSSProperties,
   useEffect,
   useRef,
-  ChangeEvent
+  ChangeEvent,
+  FocusEventHandler
 } from 'react';
 import defaultCfg from '@kite/constants';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
@@ -37,6 +38,7 @@ import { KiteState } from '@kite/constants';
 import React from 'react';
 import { margin } from '@mui/system';
 import { Kafka } from 'kafkajs';
+import { _ports_ } from '@/common/kite/ymlgenerator/constants';
 
 export interface PortsOpen {
   [index: string]: PortOpen;
@@ -91,20 +93,21 @@ function Forms() {
   const [kiteState, setKiteState] = useState<KiteState>(KiteState.Unknown);
   const [shuttingDown, setShuttingDown] = useState(false);
   const kiteWorkerRef = useRef<Worker>();
+  const [replicas, setReplicas] = useState(
+    String(defaultCfg.kafka.brokers.replicas)
+  ); // for display only
+  const [brokers, setBrokers] = useState(String(defaultCfg.kafka.brokers.size)); // for display only
+  const [zookeepers, setZookeepers] = useState(
+    String(defaultCfg.kafka.zookeepers.size)
+  ); // for display only
 
   // Initialize config to default or last-used, if present
   useEffect(() => {
     fetch('/api/kite/getConfig')
       .then((data) => data.json())
       .then((config: KiteConfig) => {
-        // do stuff with the state
-        console.log('is there stuff here? ', config);
         setKiteConfigRequest(config);
       });
-
-    // return () => {
-    //
-    // };
   }, []);
 
   useEffect(() => {
@@ -118,7 +121,7 @@ function Forms() {
       }>
     ) => {
       const { state, metricsReady } = event.data;
-      console.log(event.data);
+      // console.log(event.data);
       // const { state, setup } = event.data;
       if (state !== undefined) setKiteState(state);
       // if (config !== undefined) setKiteConfigRequest(config); // FIX THIS
@@ -290,50 +293,142 @@ function Forms() {
     });
   };
 
+  const handleOnBlurBrokers: FocusEventHandler<HTMLTextAreaElement> = (
+    event
+  ) => {
+    const size = Number(event.target.value);
+    if (size <= 0 || size > 500) {
+      setBrokers(String(kiteConfigRequest.kafka.brokers.size));
+      return;
+    }
+    setKiteConfigRequest((kiteConfigRequest) => {
+      // const oldSize = kiteConfigRequesters.size;
+      let brokers = [];
+      if (size > 0) {
+        // push new array and update size:
+        const set = new Set(kiteConfigRequest.kafka.brokers.ports.brokers);
+        const portArr = new Array(size).fill(_ports_.kafka.broker.external);
+        brokers = portArr.map((el, idx) => {
+          if (kiteConfigRequest.kafka.brokers.ports.brokers[idx] !== undefined)
+            return kiteConfigRequest.kafka.brokers.ports.brokers[idx];
+          else {
+            let j = idx;
+            while (set.has(portArr.at(0) + j)) {
+              j++;
+            }
+            return portArr.at(0) + j;
+          }
+        });
+      }
+      const replicas = Math.min(size, kiteConfigRequest.kafka.brokers.replicas);
+      // console.log(brokers);
+
+      return {
+        ...kiteConfigRequest,
+        kafka: {
+          ...kiteConfigRequest.kafka,
+          brokers: {
+            ...kiteConfigRequest.kafka.brokers,
+            size,
+            replicas,
+            ports: {
+              // ...kiteConfigRequest.kafka.brokers.ports,
+              brokers
+            }
+          }
+        }
+      };
+    });
+    setReplicas((prev) => String(Math.min(size, Number(prev))));
+    setBrokers(() => String(size));
+  };
+
   const handleBrokers = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    const size = Number(event.target.value);
-    // if (size <= 0) return;
-    const update = {
-      kafka: {
-        ...kiteConfigRequest.kafka,
-        brokers: {
-          ...kiteConfigRequest.kafka.brokers,
-          size
-        }
-      }
-    };
-    updateKiteConfigRequest(update);
+    setBrokers(event.target.value);
   };
 
-  const handleReplicas = (event: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleOnChangeReplicas = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    const replicas = event.target.value;
+    setReplicas(replicas);
+  };
+
+  const handleReplicasOnBlur: FocusEventHandler<HTMLTextAreaElement> = (
+    event
+  ) => {
     const replicas = Number(event.target.value);
-    const numberOfBrokers = kiteConfigRequest.kafka.brokers.size;
-    // if (replicas <= 0) return;
-    const update = {
-      kafka: {
-        ...kiteConfigRequest.kafka,
-        brokers: {
-          ...kiteConfigRequest.kafka.brokers,
-          replicas
+    if (replicas <= 0) {
+      setReplicas(String(kiteConfigRequest.kafka.brokers.replicas));
+      return;
+    }
+    setKiteConfigRequest((kiteConfigRequest) => {
+      // const numberOfBrokers = kiteConfigRequest.kafka.brokers.size;
+      if (replicas > kiteConfigRequest.kafka.brokers.size)
+        return kiteConfigRequest;
+      const update = {
+        kafka: {
+          ...kiteConfigRequest.kafka,
+          brokers: {
+            ...kiteConfigRequest.kafka.brokers,
+            replicas
+          }
         }
-      }
-    };
-    updateKiteConfigRequest(update);
+      };
+      return {
+        ...kiteConfigRequest,
+        ...update
+      };
+    });
+    setReplicas((prev) => {
+      if (replicas > kiteConfigRequest.kafka.brokers.size)
+        return String(kiteConfigRequest.kafka.brokers.replicas);
+      else return String(replicas);
+    });
   };
 
-  const handleZoo = (event: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleOnBlurZookeeper: FocusEventHandler<HTMLTextAreaElement> = (
+    event
+  ) => {
     const size = Number(event.target.value);
-    if (size <= 0) return;
+    if (size <= 0 || size > 500) {
+      setZookeepers(String(kiteConfigRequest.kafka.zookeepers.size));
+      return;
+    }
+    let zkPorts = [];
+    if (size > 0) {
+      // push new array and update size:
+      const set = new Set(kiteConfigRequest.kafka.zookeepers.ports.client);
+      const portArr = new Array(size).fill(_ports_.zookeeper.client.external);
+      zkPorts = portArr.map((el, idx) => {
+        if (kiteConfigRequest.kafka.zookeepers.ports.client[idx] !== undefined)
+          return kiteConfigRequest.kafka.zookeepers.ports.client[idx];
+        else {
+          let j = idx;
+          while (set.has(portArr.at(0) + j)) {
+            j++;
+          }
+          return portArr.at(0) + j;
+        }
+      });
+    }
     const update = {
       kafka: {
         ...kiteConfigRequest.kafka,
         zookeepers: {
           ...kiteConfigRequest.kafka.zookeepers,
-          size
+          size,
+          ports: {
+            ...kiteConfigRequest.kafka.zookeepers.ports,
+            client: zkPorts
+          }
         }
       }
     };
     updateKiteConfigRequest(update);
+    setZookeepers(String(size));
+  };
+
+  const handleZoo = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    setZookeepers(event.target.value);
   };
 
   const handleSink = (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -412,7 +507,7 @@ function Forms() {
     // As many broker configuration boxes as needed
     for (let i = 0; i < kiteConfigRequest.kafka.brokers.size; i++) {
       res.push(
-        <div key={i}>
+        <div key={`broker-port-${i}`}>
           {/* <h3>Broker {i + 1}</h3> */}
           <Box
           // sx={{
@@ -520,9 +615,59 @@ function Forms() {
       );
     }
 
-    // TODO: As many Zookeeper ports as needed
+    // Kafka > Brokers
+    res.push(<h3>Zookeeper Ports</h3>);
+    // As many broker configuration boxes as needed
+    for (let i = 0; i < kiteConfigRequest.kafka.zookeepers.size; i++) {
+      res.push(
+        <div key={`zookeeper-port-${i}`}>
+          {/* <h3>Broker {i + 1}</h3> */}
+          <TextField
+            label={`Zookeeper ${i + 1}`}
+            id="filled-number"
+            placeholder={(DEFAULT_BROKER_PORT + i).toString()}
+            onChange={(e) => {
+              if (+e.target.value <= 0) return;
 
-    // Grafana Configuration
+              const client: number[] =
+                kiteConfigRequest.kafka.zookeepers.ports.client;
+
+              client[i] = +e.target.value;
+
+              const update = {
+                kafka: {
+                  ...kiteConfigRequest.kafka,
+                  zookeepers: {
+                    ...kiteConfigRequest.kafka.zookeepers,
+                    ports: {
+                      ...kiteConfigRequest.kafka.zookeepers.ports,
+                      client
+                    }
+                  }
+                }
+              };
+              updateKiteConfigRequest(update);
+            }}
+            value={kiteConfigRequest.kafka.zookeepers?.ports?.client?.[i] || ''}
+            type="number"
+            InputLabelProps={{
+              shrink: true
+            }}
+            error={
+              portsOpen
+                ? portsOpen[`broker-${i}`]
+                  ? !portsOpen[`broker-${i}`].port
+                  : false
+                : false
+            }
+            onBlur={(e) =>
+              checkPortOpen(`broker-${i}`, 'port', Number(e.target.value))
+            }
+            variant="filled"
+          />
+        </div>
+      );
+    } // Grafana Configuration
     res.push(
       <div>
         <h2>Grafana</h2>
@@ -642,8 +787,10 @@ function Forms() {
                       label="Brokers"
                       type="number"
                       // defaultValue="2"
+                      onBlur={handleOnBlurBrokers}
                       onChange={handleBrokers}
-                      value={kiteConfigRequest.kafka.brokers.size}
+                      // value={kiteConfigRequest.kafka.brokers.size}
+                      value={brokers}
                       InputLabelProps={{
                         shrink: true
                       }}
@@ -653,8 +800,9 @@ function Forms() {
                       id="outlined-number"
                       type="number"
                       // defaultValue="2"
-                      onChange={handleReplicas}
-                      value={kiteConfigRequest.kafka.brokers.replicas}
+                      onChange={handleOnChangeReplicas}
+                      onBlur={handleReplicasOnBlur}
+                      value={replicas}
                       InputLabelProps={{
                         shrink: true
                       }}
@@ -664,8 +812,10 @@ function Forms() {
                       // defaultValue="2"
                       label="Zookeepers"
                       type="number"
+                      onBlur={handleOnBlurZookeeper}
                       onChange={handleZoo}
-                      value={kiteConfigRequest.kafka.zookeepers.size}
+                      // value={kiteConfigRequest.kafka.zookeepers.size}
+                      value={zookeepers}
                       InputLabelProps={{
                         shrink: true
                       }}
