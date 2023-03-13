@@ -5,7 +5,8 @@ import {
   useEffect,
   ReactChild,
   ReactFragment,
-  ReactPortal
+  ReactPortal,
+  MouseEvent
 } from 'react';
 
 import PageTitleWrapper from '@/components/PageTitleWrapper';
@@ -63,16 +64,44 @@ function Forms() {
       .then((response) => response.json())
       .then((data) => {
         setData(data.containers);
-        console.log('Dataa 1 is:  ', data);
-        console.log(typeof data, 'type of data');
+        // console.log('Dataa 1 is:  ', data);
+        // console.log(typeof data, 'type of data');
       });
 
     fetch('/api/docker?containerStatus=inactive')
       .then((response) => response.json())
       .then((data) => {
         setInactiveData(data.containers);
-        console.log('Inactive containers:', data.containers);
+        // console.log('Inactive containers:', data.containers);
       });
+  };
+  const commandAction = (type: 'pause' | 'unpause', service: string) => {
+    // console.log(service);
+    fetch(`/api/kite/${type}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify({ service: [service] })
+    });
+    const newData: Data[] = data.map((datum: Data, i: number) => {
+      if (datum.names === service) {
+        return {
+          ...datum,
+          status: type === 'pause' ? `Pausing...` : `Unpausing...`
+        };
+      } else {
+        return datum;
+      }
+    });
+    setData(newData);
+  };
+  const handleOnClickPlay = (service: string) => {
+    commandAction('unpause', service);
+  };
+  const handleOnClickPause = (service: string) => {
+    commandAction('pause', service);
   };
   useEffect(() => {
     fetchData();
@@ -127,7 +156,7 @@ function Forms() {
                 >
                   <div>
                     <List>
-                      <label htmlFor=""> Inactive containers </label>
+                      <label htmlFor=""> Inactive containers</label>
                     </List>
                     <Table>
                       <TableHead>
@@ -142,7 +171,7 @@ function Forms() {
                           <TableRow key={row.id}>
                             <TableCell>{row.ports}</TableCell>
                             <TableCell>{row.created}</TableCell>
-                            <TableCell>{row.status} </TableCell>
+                            <TableCell>{row.status}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -190,13 +219,26 @@ function Forms() {
                                 myColor={
                                   row.status.includes('Paused')
                                     ? 'red'
-                                    : 'green'
+                                    : row.status.includes('Up')
+                                    ? 'green'
+                                    : 'yellow'
                                 }
                               />
                             </TableCell>
                             <TableCell>
-                              <PlayArrowIcon />
-                              <PauseIcon />
+                              {row.status.includes('Paused') ? (
+                                <div
+                                  onClick={() => handleOnClickPlay(row.names)}
+                                >
+                                  <PlayArrowIcon />
+                                </div>
+                              ) : (
+                                <div
+                                  onClick={() => handleOnClickPause(row.names)}
+                                >
+                                  <PauseIcon />
+                                </div>
+                              )}
                             </TableCell>
                             <TableCell>{row.ports}</TableCell>
                           </TableRow>
