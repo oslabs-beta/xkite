@@ -12,10 +12,11 @@
 //   client.request(event.data);
 //   postMessage(client.getData);
 // });
-import type { KiteState, KiteSetup } from 'xkite-core';
+import type { KiteState, KiteSetup, KiteConfig } from 'xkite-core';
 
 globalThis.onmessage = async (event: MessageEvent<number>) => {
   queryBackEnd();
+
   const interval = setInterval(queryBackEnd, event.data);
   async function queryBackEnd() {
     try {
@@ -23,19 +24,21 @@ globalThis.onmessage = async (event: MessageEvent<number>) => {
         data.text()
       );
       postMessage({ state });
-      const setup: KiteSetup = await fetch('/api/kite/getSetup').then((data) =>
-        data.json()
+      const config: KiteConfig = await fetch('/api/kite/getConfig').then(
+        (data) => data.json()
       );
-      postMessage({ setup });
 
       let metricsReady = false;
       if (state === 'Running') {
-        if (setup.jmx !== undefined) {
-          console.log(`http://localhost:${setup.jmx.ports[0]}`);
-          const resp = await fetch(`http://localhost:${setup.jmx.ports[0]}`, {
-            method: 'GET',
-            mode: 'no-cors'
-          });
+        if (config.kafka.jmx?.ports !== undefined) {
+          console.log(`http://localhost:${config.kafka.jmx.ports[0]}`);
+          const resp = await fetch(
+            `http://localhost:${config.kafka.jmx.ports[0]}`,
+            {
+              method: 'GET',
+              mode: 'no-cors'
+            }
+          );
           console.log(resp.status);
           metricsReady = resp.status === 0;
           if (metricsReady) clearInterval(interval);

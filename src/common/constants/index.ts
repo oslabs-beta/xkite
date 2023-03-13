@@ -23,7 +23,8 @@ export const _ports_: YAMLServicesDefaultSetup = {
     spring: 9095, // only internal
     metrics: 29092, // only internal
     ksql: 9096, // only internal
-    connect: 9097
+    connect_src: 9097,
+    connect_sink: 9098
   },
   jmx: { internal: 5556, external: 5566 },
   docker: { internal: 9323, external: 9323 }
@@ -60,8 +61,8 @@ export const defaultCfg: KiteConfig = {
     port: _ports_.grafana.external
   },
   prometheus: {
-    scrape_interval: 5,
-    evaluation_interval: 2,
+    scrape_interval: 20,
+    evaluation_interval: 10,
     port: _ports_.prometheus.external
   }
 };
