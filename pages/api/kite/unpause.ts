@@ -13,7 +13,7 @@ export default async function handler(
   if (req.method === 'POST') {
     if (req.body.service !== undefined) await Kite.unpause(req.body.service);
     else await Kite.unpause();
-    return res.status(200).json({});
+    res.status(200).json({});
   } else {
     res.status(405).send('Method Not Allowed');
   }
