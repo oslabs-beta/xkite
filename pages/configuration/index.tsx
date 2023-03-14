@@ -76,8 +76,8 @@ const dataSinks = [
   }
 ];
 
-const DEFAULT_BROKER_ID = 101;
-const DEFAULT_JMX_PORT = 9991;
+//const DEFAULT_BROKER_ID = 101;
+//const DEFAULT_JMX_PORT = 9991;
 const DEFAULT_BROKER_PORT = 9091;
 
 function Forms() {
@@ -179,10 +179,10 @@ function Forms() {
         {shuttingDown ? (
           <p>Please stand by while containers are being removed</p>
         ) : (
-          <>
+          <div key={`deployMessage`}>
             <p>Please stand by while containers are deployed</p>
             <p>This may take several minutes to download the images.</p>
-          </>
+          </div>
         )}
         {/* <p>Check terminal for progress updates</p> */}
       </div>
@@ -458,13 +458,14 @@ function Forms() {
     const res: JSX.Element[] = [];
 
     // Kafka Section
-    res.push(<h2>Kafka</h2>);
+    //res.push(<h2 key="kafka-h2" >Kafka</h2>);
 
     // Kafka > JMX
-    res.push(<h3>JMX</h3>);
+    //res.push(<h3 key="jmx-h3">JMX</h3>);
     for (let i = 0; i < 2; i++) {
       res.push(
         <TextField
+          key={i}
           label={`Port ${i + 1}`}
           id="filled-number"
           type="number"
@@ -491,7 +492,7 @@ function Forms() {
 
     // Kafka > Spring
     res.push(
-      <div>
+      <div key={`spring`}>
         <h3>Spring</h3>
         {/* Port */}
         <TextField
@@ -517,13 +518,14 @@ function Forms() {
     );
 
     // Kafka > Brokers
-    res.push(<h3>Broker Ports</h3>);
+    res.push(<h3 key="broker-ports-h3">Broker Ports</h3>);
     // As many broker configuration boxes as needed
     for (let i = 0; i < kiteConfigRequest.kafka.brokers.size; i++) {
       res.push(
         <div key={`broker-port-${i}`}>
           {/* <h3>Broker {i + 1}</h3> */}
           <Box
+          key={`broker-box-${i}`}
           // sx={{
           //   display: 'grid',
           //   gridTemplateColumns: 'repeat(3, 1fr)'
@@ -630,7 +632,7 @@ function Forms() {
     }
 
     // Kafka > Brokers
-    res.push(<h3>Zookeeper Ports</h3>);
+    res.push(<h3 key="zoo-ports-h3">Zookeeper Ports</h3>);
     // As many broker configuration boxes as needed
     for (let i = 0; i < kiteConfigRequest.kafka.zookeepers.size; i++) {
       res.push(
@@ -683,7 +685,7 @@ function Forms() {
       );
     } // Grafana Configuration
     res.push(
-      <div>
+      <div key={`grafana`}>
         <h2>Grafana</h2>
         {/* Port */}
         <TextField
@@ -706,7 +708,7 @@ function Forms() {
 
     // Prometheus
     res.push(
-      <div>
+      <div key={`prometheus`}>
         <h2>Prometheus</h2>
         {/* Prometheus: Scrape Interval */}
         <TextField
@@ -788,6 +790,7 @@ function Forms() {
               <Divider />
               <CardContent>
                 <Box
+                  key={`form-box`}
                   component="form"
                   sx={{
                     '& .MuiTextField-root': { m: 2, width: '30ch' }
@@ -795,7 +798,7 @@ function Forms() {
                   noValidate
                   autoComplete="off"
                 >
-                  <div>
+                  <div key={`required`}>
                     <TextField
                       id="outlined-number"
                       label="Brokers"
@@ -888,6 +891,7 @@ function Forms() {
                   <Divider />
                   <CardContent>
                     <Box
+                      key={`second-form-box`}
                       component="form"
                       sx={{
                         '& .MuiTextField-root': { m: 1, width: '42ch' }
@@ -895,6 +899,8 @@ function Forms() {
                       noValidate
                       autoComplete="off"
                     >
+                      <h2 key="kafka-h2" >Kafka</h2>
+                      <h3 key="jmx-h3">JMX</h3>
                       {renderAdvanced()}
                     </Box>
                   </CardContent>
@@ -923,7 +929,7 @@ function Forms() {
               )}
             {loader === 1 && isLoading()}
             <Card>
-              <Box textAlign="center">
+              <Box  key={`config-box`} textAlign="center">
                 <ExportConfigBtn />
                 {ShutDownBtn()}
               </Box>
