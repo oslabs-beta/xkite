@@ -319,7 +319,6 @@ function Tests() {
                           <TextField
                             id="outlined-number"
                             label="New Topic"
-                            defaultValue="2"
                             onChange={(e) => {
                               setTopic(e.target.value);
                               // console.log(topic);
