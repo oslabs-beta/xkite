@@ -95,7 +95,7 @@
     "prettier-eslint": "^15.0.1",
     "sass": "^1.58.3",
     "web-worker": "^1.2.0",
-    "xkite-core": "^1.0.24",
+    "xkite-core": "^1.0.25",
     "zip-local": "^0.3.5"
   },
   "browser": {

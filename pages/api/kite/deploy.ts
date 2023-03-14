@@ -6,10 +6,13 @@ if (Kite === undefined) {
   Kite = require('xkite-core').default;
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<string>
+) {
   if (req.method === 'GET') {
-    Kite.deploy();
-    res.status(200);
+    await Kite.deploy();
+    res.status(200).send('success');
   } else {
     res.status(405).send('Method Not Allowed');
   }
