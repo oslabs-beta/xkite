@@ -12,8 +12,7 @@
 //   client.request(event.data);
 //   postMessage(client.getData);
 // });
-import { KiteState } from '@kite/constants';
-import { KiteConfig, KiteSetup } from '@kite/types';
+import type { KiteState, KiteSetup, KiteConfig } from 'xkite-core';
 
 globalThis.onmessage = async (event: MessageEvent<number>) => {
   queryBackEnd();
@@ -30,8 +29,8 @@ globalThis.onmessage = async (event: MessageEvent<number>) => {
       );
 
       let metricsReady = false;
-      if (state === KiteState.Running) {
-        if (config.kafka.jmx !== undefined) {
+      if (state === 'Running') {
+        if (config.kafka.jmx?.ports !== undefined) {
           console.log(`http://localhost:${config.kafka.jmx.ports[0]}`);
           const resp = await fetch(
             `http://localhost:${config.kafka.jmx.ports[0]}`,

@@ -6,8 +6,7 @@ import {
   ListItemText,
   styled
 } from '@mui/material';
-import { KiteState } from '@kite/constants';
-import { KiteSetup } from '@/common/kite/types';
+import type { KiteSetup, KiteState } from 'xkite-core';
 import HashLoader from 'react-spinners/HashLoader';
 import Link from 'src/components/Link';
 import { useState, CSSProperties, useEffect, useRef } from 'react';
@@ -73,7 +72,7 @@ const ListWrapper = styled(Box)(
 function HeaderMenu() {
   const FIRST_API_URL = '/api/kite/pause';
   const SECOND_API_URL = '/api/kite/unpause';
-  const [kiteState, setKiteState] = useState<KiteState>(KiteState.Unknown);
+  const [kiteState, setKiteState] = useState<KiteState>('Unknown');
   const kiteWorkerRef = useRef<Worker>();
   const [loader, setLoader] = useState(0);
   const [buttonText, setButtonText] = useState('Pause docker');
@@ -96,7 +95,7 @@ function HeaderMenu() {
       if (metricsReady) {
         console.log('redirect?');
         console.log(loader);
-        if (kiteState === KiteState.Running && loader) {
+        if (kiteState === 'Running' && loader) {
           console.log('redirect!');
           setTimeout(() => {
             window.location.href = '/metrics';

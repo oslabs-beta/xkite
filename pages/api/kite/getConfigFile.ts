@@ -1,7 +1,11 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-import Kite from '@/common/kite';
-import { KiteConfigFile } from '@/common/kite/types';
+let { Kite } = require('xkite-core');
+if (Kite === undefined) {
+  console.log('using secondary import...');
+  Kite = require('xkite-core').default;
+}
+import type { KiteConfigFile } from 'xkite-core';
 
 type ConfigFile = KiteConfigFile;
 

@@ -1,6 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-import Kite from '@/common/kite';
-import { KiteConfig } from '@/common/kite/types';
+
+import type { KiteConfig } from 'xkite-core';
+let { Kite } = require('xkite-core');
+if (Kite === undefined) {
+  console.log('using secondary import...');
+  Kite = require('xkite-core').default;
+}
 
 type Data = {
   reply?: string;
@@ -15,6 +20,7 @@ export default async function handler(
 ) {
   if (req.method === 'POST') {
     console.log('configuring kite...');
+
     const config: KiteConfig = req.body
       ? { ...Kite.defaultCfg, ...req.body }
       : Kite.defaultCfg;

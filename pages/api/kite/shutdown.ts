@@ -1,5 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-import Kite from '@/common/kite';
+let { Kite } = require('xkite-core');
+if (Kite === undefined) {
+  console.log('using secondary import...');
+  Kite = require('xkite-core').default;
+}
+
 //import { spawn } from 'child_process';
 
 // const urls: string[] = [

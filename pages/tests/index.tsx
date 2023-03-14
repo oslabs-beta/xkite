@@ -28,8 +28,7 @@ import Head from 'next/head';
 import SidebarLayout from '@/layouts/SidebarLayout';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import PageTitle from '@/components/PageTitle';
-import { KiteState } from '@kite/constants';
-import { KiteSetup } from '@kite/types';
+import type { KiteState, KiteSetup } from 'xkite-core';
 import Footer from '@/components/Footer';
 //import SocketIOClient from "socket.io-client"; TBD: remove if final version does not use sockets
 
@@ -141,13 +140,15 @@ function Tests() {
     ) => {
       // console.log(event.data);
       const { state, setup, topics } = event.data;
-      setConnected(state === KiteState.Running);
+      setConnected(state === 'Running');
       setTopics(topics);
-      if(setup.grafana){
+      if (setup.grafana) {
         setGrafanaPort(setup.grafana.port.toString());
       }
     };
-    ksqlWorkerRef.current = new Worker(new URL('@/workers/ksqlWorker.ts', import.meta.url));
+    ksqlWorkerRef.current = new Worker(
+      new URL('@/workers/ksqlWorker.ts', import.meta.url)
+    );
     ksqlWorkerRef.current.onmessage = (event: MessageEvent<string>) => {
       // console.log(event.data);
       setQResults((prev) =>
@@ -185,7 +186,7 @@ function Tests() {
     if (connected) {
       if (topic.length) {
         //use testWorker to create topic --> conditional will know if the intent is to create a new topic based on key
-        testWorkerRef.current?.postMessage({newTopic: topic});
+        testWorkerRef.current?.postMessage({ newTopic: topic });
         setTopic('');
       }
     }
@@ -196,7 +197,10 @@ function Tests() {
     if (connected) {
       if (message.length) {
         //use testWorker to send message --> conditional will know if the intent is to send a message
-        testWorkerRef.current?.postMessage({newMessage: message, topic: topic});
+        testWorkerRef.current?.postMessage({
+          newMessage: message,
+          topic: topic
+        });
         setTopic('');
         setMessage('');
       }

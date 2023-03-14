@@ -1,5 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next/types';
-import Kite from '@/common/kite';
+let { Kite } = require('xkite-core');
+if (Kite === undefined) {
+  console.log('using secondary import...');
+  Kite = require('xkite-core').default;
+}
 import ProducerFactory from '@/common/kafkaConnector/ProducerFactory';
 // import ConsumerFactory from '@/common/kafkaConnector/ConsumerFactory'; --> potentially will be using to retrieve data on which partitions new messages are assigned to
 
@@ -17,12 +21,17 @@ export default async function handler(
       console.log(`sending data to kafka...\n${JSON.stringify(req.body)}`);
       const { method, topic, messages, clientId } = req.body;
       const kafkaSetup = Kite.getKafkaSetup();
-
+      // console.log(JSON.stringify(kafkaSetup));
+      const _clientId =
+        kafkaSetup.clientId !== '' && kafkaSetup.clientId !== undefined
+          ? kafkaSetup.clientId
+          : 'xkite';
+      // + String(Math.round(Math.random() * 100000));
+      // console.log('clientId = ', _clientId);
       const producer = await ProducerFactory.create({
         ...kafkaSetup,
-        clientId: clientId ?? 'test'
+        clientId: _clientId
       });
-
       let topics: string[] | undefined = undefined;
       console.log(method);
 

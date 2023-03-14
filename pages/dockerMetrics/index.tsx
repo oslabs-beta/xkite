@@ -5,8 +5,10 @@ import {
   useEffect,
   ReactChild,
   ReactFragment,
-  ReactPortal
+  ReactPortal,
+  MouseEvent
 } from 'react';
+
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import {
   Container,
@@ -25,6 +27,8 @@ import Footer from 'src/components/Footer';
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import { keyframes } from '@mui/system';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
 
 function Forms() {
   interface Data {
@@ -77,8 +81,36 @@ function Forms() {
       .then((response) => response.json())
       .then((data) => {
         setInactiveData(data.containers);
-        console.log('Inactive containers:', data.containers);
+        // console.log('Inactive containers:', data.containers);
       });
+  };
+  const commandAction = (type: 'pause' | 'unpause', service: string) => {
+    // console.log(service);
+    fetch(`/api/kite/${type}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify({ service: [service] })
+    });
+    const newData: Data[] = data.map((datum: Data, i: number) => {
+      if (datum.names === service) {
+        return {
+          ...datum,
+          status: type === 'pause' ? `Pausing...` : `Unpausing...`
+        };
+      } else {
+        return datum;
+      }
+    });
+    setData(newData);
+  };
+  const handleOnClickPlay = (service: string) => {
+    commandAction('unpause', service);
+  };
+  const handleOnClickPause = (service: string) => {
+    commandAction('pause', service);
   };
   useEffect(() => {
     fetchData();
@@ -119,7 +151,7 @@ function Forms() {
                 >
                   <div>
                     <List>
-                      <label htmlFor=""> Inactive containers </label>
+                      <label htmlFor=""> Inactive containers</label>
                     </List>
                     <Table>
                       <TableHead>
@@ -134,7 +166,7 @@ function Forms() {
                           <TableRow key={row.id}>
                             <TableCell>{row.ports}</TableCell>
                             <TableCell>{row.created}</TableCell>
-                            <TableCell>{row.status} </TableCell>
+                            <TableCell>{row.status}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -167,6 +199,7 @@ function Forms() {
                           <TableCell>Created</TableCell>
                           <TableCell>Status</TableCell>
                           <TableCell>Notice</TableCell>
+                          <TableCell>Action</TableCell>
                           <TableCell>Ports</TableCell>
                         </TableRow>
                       </TableHead>
@@ -177,7 +210,30 @@ function Forms() {
                             <TableCell>{row.created}</TableCell>
                             <TableCell>{row.status}</TableCell>
                             <TableCell>
-                            <BlinkedBox myColor={row.status.includes('Paused')  ? "red" : "green"}/>
+                              <BlinkedBox
+                                myColor={
+                                  row.status.includes('Paused')
+                                    ? 'red'
+                                    : row.status.includes('Up')
+                                    ? 'green'
+                                    : 'yellow'
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              {row.status.includes('Paused') ? (
+                                <div
+                                  onClick={() => handleOnClickPlay(row.names)}
+                                >
+                                  <PlayArrowIcon />
+                                </div>
+                              ) : (
+                                <div
+                                  onClick={() => handleOnClickPause(row.names)}
+                                >
+                                  <PauseIcon />
+                                </div>
+                              )}
                             </TableCell>
                             <TableCell>{row.ports}</TableCell>
                           </TableRow>

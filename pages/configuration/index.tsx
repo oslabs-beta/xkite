@@ -1,7 +1,8 @@
 import Head from 'next/head';
 import SidebarLayout from '@/layouts/SidebarLayout';
 import PageTitle from '@/components/PageTitle';
-import { KiteConfig, KiteSetup } from '@/common/kite/types';
+import type { KiteState, KiteConfig } from 'xkite-core';
+import { defaultCfg } from '@/common/constants';
 import {
   useState,
   SyntheticEvent,
@@ -11,11 +12,9 @@ import {
   ChangeEvent,
   FocusEventHandler
 } from 'react';
-import defaultCfg from '@kite/constants';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HashLoader from 'react-spinners/HashLoader';
-import axios from 'axios';
 import {
   Container,
   Grid,
@@ -34,11 +33,8 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import ExportConfigBtn from '@/content/Dashboards/Tasks/ExportConfigBtn';
-import { KiteState } from '@kite/constants';
 import React from 'react';
-import { margin } from '@mui/system';
-import { Kafka } from 'kafkajs';
-import { _ports_ } from '@/common/kite/ymlgenerator/constants';
+import { _ports_ } from '@/common/constants';
 
 export interface PortsOpen {
   [index: string]: PortOpen;
@@ -90,7 +86,7 @@ function Forms() {
     useState<KiteConfig>(defaultCfg);
   const [expanded, setExpanded] = useState<string | false>(false);
   const [loader, setLoader] = useState(0);
-  const [kiteState, setKiteState] = useState<KiteState>(KiteState.Unknown);
+  const [kiteState, setKiteState] = useState<string>('Unknown');
   const [shuttingDown, setShuttingDown] = useState(false);
   const kiteWorkerRef = useRef<Worker>();
   const [replicas, setReplicas] = useState(
@@ -107,6 +103,9 @@ function Forms() {
       .then((data) => data.json())
       .then((config: KiteConfig) => {
         setKiteConfigRequest(config);
+        setReplicas(String(config.kafka.brokers.replicas));
+        setBrokers(String(config.kafka.brokers.size));
+        setZookeepers(String(config.kafka.zookeepers.size));
       });
   }, []);
 
@@ -128,7 +127,7 @@ function Forms() {
       if (metricsReady) {
         console.log('redirect?');
         console.log(loader);
-        if (kiteState === KiteState.Running && loader) {
+        if (kiteState === 'Running' && loader) {
           console.log('redirect!');
           setTimeout(() => {
             window.location.href = '/metrics';
@@ -180,9 +179,12 @@ function Forms() {
         {shuttingDown ? (
           <p>Please stand by while containers are being removed</p>
         ) : (
-          <p>Please stand by while containers are deployed</p>
+          <>
+            <p>Please stand by while containers are deployed</p>
+            <p>This may take several minutes to download the images.</p>
+          </>
         )}
-        <p>Check terminal for progress updates</p>
+        {/* <p>Check terminal for progress updates</p> */}
       </div>
     );
   };
@@ -209,7 +211,9 @@ function Forms() {
       setShuttingDown(true);
       console.log('Disconnecting…');
       try {
-        const response = await axios.delete('/api/kite/shutdown');
+        const response = await fetch('/api/kite/shutdown', {
+          method: 'DELETE'
+        });
         console.log(response);
       } catch (error) {
         console.error('Error occurred during shutdown:', error);
@@ -306,14 +310,19 @@ function Forms() {
       let brokers = [];
       if (size > 0) {
         // push new array and update size:
-        const set = new Set(kiteConfigRequest.kafka.brokers.ports.brokers);
+        let set: Set<number>;
+        if (kiteConfigRequest.kafka.brokers.ports?.brokers !== undefined)
+          set = new Set(kiteConfigRequest.kafka.brokers.ports.brokers);
         const portArr = new Array(size).fill(_ports_.kafka.broker.external);
         brokers = portArr.map((el, idx) => {
-          if (kiteConfigRequest.kafka.brokers.ports.brokers[idx] !== undefined)
+          if (
+            kiteConfigRequest.kafka.brokers.ports?.brokers !== undefined &&
+            idx < kiteConfigRequest.kafka.brokers.size
+          )
             return kiteConfigRequest.kafka.brokers.ports.brokers[idx];
           else {
             let j = idx;
-            while (set.has(portArr.at(0) + j)) {
+            while (set !== undefined && set.has(portArr.at(0) + j)) {
               j++;
             }
             return portArr.at(0) + j;
@@ -396,14 +405,19 @@ function Forms() {
     let zkPorts = [];
     if (size > 0) {
       // push new array and update size:
-      const set = new Set(kiteConfigRequest.kafka.zookeepers.ports.client);
+      let set: Set<number>;
+      if (kiteConfigRequest.kafka.zookeepers.ports?.client !== undefined)
+        set = new Set(kiteConfigRequest.kafka.zookeepers.ports?.client);
       const portArr = new Array(size).fill(_ports_.zookeeper.client.external);
       zkPorts = portArr.map((el, idx) => {
-        if (kiteConfigRequest.kafka.zookeepers.ports.client[idx] !== undefined)
+        if (
+          kiteConfigRequest.kafka.zookeepers.ports?.client !== undefined &&
+          idx < kiteConfigRequest.kafka.zookeepers.size
+        )
           return kiteConfigRequest.kafka.zookeepers.ports.client[idx];
         else {
           let j = idx;
-          while (set.has(portArr.at(0) + j)) {
+          while (set !== undefined && set.has(portArr.at(0) + j)) {
             j++;
           }
           return portArr.at(0) + j;
@@ -889,15 +903,15 @@ function Forms() {
             </Accordion>
           </Grid>
           <Grid textAlign="center" item xs={12}>
-            {kiteState === KiteState.Running && shuttingDown && isLoading()}
+            {kiteState === 'Running' && shuttingDown && isLoading()}
             {!shuttingDown &&
-              kiteState === KiteState.Running &&
+              kiteState === 'Running' &&
               loader === 0 &&
               isActive()}
-            {/* {!shuttingDown && (kiteState === KiteState.Paused) && isPaused()} */}
-            {kiteState !== KiteState.Unknown &&
-              kiteState !== KiteState.Running &&
-              kiteState !== KiteState.Paused &&
+            {/* {!shuttingDown && (kiteState === "Paused") && isPaused()} */}
+            {kiteState !== 'Unknown' &&
+              kiteState !== 'Running' &&
+              kiteState !== 'Paused' &&
               loader === 0 && (
                 <Button
                   sx={{ margin: 2 }}
