@@ -5,7 +5,7 @@ if (Kite === undefined) {
   console.log('using secondary import...');
   Kite = require('xkite-core').default;
 }
-import { KiteConfigFile } from 'xkite-core/lib/cjs/types';
+import type { KiteConfigFile } from 'xkite-core';
 
 type ConfigFile = KiteConfigFile;
 
