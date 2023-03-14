@@ -7,9 +7,8 @@ import {
   IResourceConfigEntry,
   ProducerBatch,
   Partitioners,
-  TopicMessages,
+  TopicMessages
 } from 'kafkajs';
-
 
 export default class ProducerFactory extends Kafka {
   private static instance: ProducerFactory;
@@ -28,7 +27,7 @@ export default class ProducerFactory extends Kafka {
     this._producer = super.producer({
       createPartitioner: Partitioners.LegacyPartitioner, //TODO: investigate
       allowAutoTopicCreation: true,
-      retry: { maxRetryTime: 100, retries: 1 }, //TODO: remove limit the number of spam requests
+      retry: { maxRetryTime: 100, retries: 1 } //TODO: remove limit the number of spam requests
     });
     this.isConnected = false;
     this.isAdminConnected = false;
@@ -53,11 +52,11 @@ export default class ProducerFactory extends Kafka {
         await this._admin.connect();
         this.isAdminConnected = true;
       }
-      const topics = await this._admin.listTopics()
+      const topics = await this._admin.listTopics();
       //console.log(topics)
-      return topics
+      return topics;
     } catch (error) {
-      console.log('Error: ', error)
+      console.log('Error: ', error);
     }
   }
 
@@ -72,14 +71,14 @@ export default class ProducerFactory extends Kafka {
     //   await this.createTopics([topic]);
     //   return;
     // }
-    console.log(messages, 'from producer')
+    console.log(messages, 'from producer');
     await this._producer.sendBatch({
       topicMessages: [
         {
           topic,
-          messages,
-        },
-      ],
+          messages
+        }
+      ]
     });
     if (!ProducerFactory.topicCache.get(topic)) {
       // set post to topic to true
@@ -132,7 +131,7 @@ export default class ProducerFactory extends Kafka {
     for (const topic of inTopics) {
       topics.push({
         topic,
-        replicationFactor: this.replication,
+        replicationFactor: this.replication
       });
     }
     await this._admin.createTopics({ topics });
@@ -144,6 +143,7 @@ export default class ProducerFactory extends Kafka {
   public static async create(config: KafkaConfig): Promise<ProducerFactory> {
     if (ProducerFactory.instance === undefined) {
       ProducerFactory.instance = new ProducerFactory(config);
+      console.log(JSON.stringify(config));
       console.log('producer created');
     } else if (!ProducerFactory.instance.isConnected) {
       await ProducerFactory.instance.start();

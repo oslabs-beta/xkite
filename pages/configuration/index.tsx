@@ -179,7 +179,10 @@ function Forms() {
         {shuttingDown ? (
           <p>Please stand by while containers are being removed</p>
         ) : (
-          <p>Please stand by while containers are deployed</p>
+          <>
+            <p>Please stand by while containers are deployed</p>
+            <p>This may take several minutes to download the images.</p>
+          </>
         )}
         {/* <p>Check terminal for progress updates</p> */}
       </div>

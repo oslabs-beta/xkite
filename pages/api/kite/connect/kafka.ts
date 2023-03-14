@@ -21,12 +21,17 @@ export default async function handler(
       console.log(`sending data to kafka...\n${JSON.stringify(req.body)}`);
       const { method, topic, messages, clientId } = req.body;
       const kafkaSetup = Kite.getKafkaSetup();
-
+      // console.log(JSON.stringify(kafkaSetup));
+      const _clientId =
+        kafkaSetup.clientId !== '' && kafkaSetup.clientId !== undefined
+          ? kafkaSetup.clientId
+          : 'xkite';
+      // + String(Math.round(Math.random() * 100000));
+      // console.log('clientId = ', _clientId);
       const producer = await ProducerFactory.create({
         ...kafkaSetup,
-        clientId: clientId ?? 'test'
+        clientId: _clientId
       });
-
       let topics: string[] | undefined = undefined;
       console.log(method);
 
