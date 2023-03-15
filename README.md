@@ -1,8 +1,30 @@
-# xkite ![version](https://img.shields.io/badge/version-1.0.0-blue.svg) ![license](https://img.shields.io/badge/license-MIT-blue.svg) <a href="https://xkite.io/"><img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social" /></a>
+![xkite GUI](./public/banner_800x450.png)
 
-A Graphical User Interface (GUI) for Kafka Integrated Testing Environment (KITE)
+<div align='center'>
+  
+<a href='https://github.com/oslabs-beta/xkite/releases'>
+  
+<img src='https://img.shields.io/github/v/release/oslabs-beta/xkite?color=%a3f7bf&label=version&style=for-the-badge'>
+  
+</a>
+  
+<a href='https://github.com/oslabs-beta/xkite/blob/main/LICENSE'>
+  
+<img src='https://img.shields.io/github/license/oslabs-beta/xkite?style=for-the-badge'>
+  
+</a>
+<a href="https://xkite.io/"><img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social" /></a>
+</div>
 
-The xkite GUI supports comprehensive prototyping, testing, and monitoring toolset built for Apache Kafka. It is built upon xkite-core library which provides the underpinning functionality for configuring a YAML file, managing docker containers (configure, run, pause, and shutdown), interfacing with remote xkite servers, and providing configuration settings for users to easily connect to their Kafka instances for development purposes. Use xkite to bootstrap your next project, or install our library into an existing project. Built by (and for) developers.
+<br />
+
+A Graphical User Interface (GUI) for Kafka Integrated Testing Environment (<b>KITE</b>)
+
+The xkite GUI supports comprehensive prototyping, testing, and monitoring toolset built for Apache Kafka.
+
+Built upon <b><a href="https://github.com/oslabs-beta/xkite-core">xkite-core library</a></b>, xkite GUI provides functionality to configuring a YAML file, managing docker containers (configure, run, pause, and shutdown), interfacing with a remote xkite servers, and exporting their configuration to deploy their docker ecosystem to the cloud.
+
+Use xkite to bootstrap your next project, or install our library into an existing project. Built by (and for) developers.
 
 # Dependencies
 
@@ -13,7 +35,7 @@ The xkite GUI supports comprehensive prototyping, testing, and monitoring toolse
 
 # Quick Start
 
-To install the <code>xkite</code> GUI run the following command:
+To install/run the <code>xkite</code> GUI please use the following command:
 
 ```sh
   $ npx create-xkite <directory-name>
@@ -28,6 +50,6 @@ After the installation is complete, you can start the server by following the st
    $ npm run dev
    ```
 
-A browser window will open on http://localhost:3000 where you'll see the live preview.
+A browser window will open on http://localhost:3000 where you'll see the live preview of the application.
 
 Note: If the port 3000 is not available the server will start on the closest available port after 3000.

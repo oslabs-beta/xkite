@@ -94,3 +94,5 @@ Temporary Items
 
 # vscode
 .vscode
+
+package-lock.json
