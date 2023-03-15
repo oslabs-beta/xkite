@@ -30,6 +30,7 @@ Use xkite to bootstrap your next project, or install our library into an existin
 
 - Latest stable versions of Node.js and NPM installed
 - Latest stable version of <a href="https://docs.docker.com/compose/install/">docker-compose</a> installed.
+- Docker daemon is running for reference: <a href="https://docs.docker.com/get-started/overview/">Docker Getting Started</a>
 - Clone repository: <code>git clone https://github.com/oslabs-beta/xkite.git</code>
 - Install dependencies: Run <code>npm install</code> inside the project folder
 
@@ -76,11 +77,13 @@ When you first navigate to the Configuration Page, you will be presented with th
    a. <b>Note</b>: Data Source integration other than KSQL is not yet supported.
 5. Choose either Juypter Notebook or Spark as your Data Sink.
    a. <b>Note</b>: Data Sink integration is not yet supported.
-6. [Advanced Settings Menu](#advanced-settings-menu)
+6. See [Advanced Settings Menu](#advanced-settings-menu) for details on options.
 
 ![config base](./images/ConfigPage_Base.png)
 
 ## Advanced Settings Menu
+
+The Advanced Settings Menu offers the user the ability to customize their port configuration
 
 ![config base](./images/ConfigPage_Advanced.png)
 
