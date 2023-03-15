@@ -1,32 +1,33 @@
-<p align="center">
-</p>
-<h1 align="center">
-    <b>xkite: Kafka Integrated Testing Environment</b>
-    <br>
-    <a href="https://xkite.io/">
-        <img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social" />
-    </a>
-</h1>
-<div align="center">
+# xkite ![version](https://img.shields.io/badge/version-1.0.0-blue.svg) ![license](https://img.shields.io/badge/license-MIT-blue.svg) <a href="https://xkite.io/"><img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social" /></a>
 
-![version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![license](https://img.shields.io/badge/license-MIT-blue.svg)
+A Graphical User Interface (GUI) for Kafka Integrated Testing Environment (KITE)
 
-<p>
-    A comprehensive prototyping, testing, and monitoring toolset built for Apache Kafka. Use xkite to bootstrap your next project, or install our library into an existing project. Built by (and for) developers.
-</p>
+The xkite GUI supports comprehensive prototyping, testing, and monitoring toolset built for Apache Kafka. It is built upon xkite-core library which provides the underpinning functionality for configuring a YAML file, managing docker containers (configure, run, pause, and shutdown), interfacing with remote xkite servers, and providing configuration settings for users to easily connect to their Kafka instances for development purposes. Use xkite to bootstrap your next project, or install our library into an existing project. Built by (and for) developers.
 
----
+# Dependencies
 
-<h2>
-    Quick Start
-</h2>
-<ol>
-    <li>Make sure you have the latest stable versions for Node.js and NPM installed</li>
-    <li>Make sure you have Docker installed locally </li>
-    <li>Clone repository: <code>git clone https://github.com/oslabs-beta/xkite.git</code></li>
-    <li>Install dependencies: Run <code>npm install</code> inside the project folder</li>
-    <li>Start dev server: After the install finishes, run <code>yarn dev</code>. A browser window will open on http://localhost:3000 where you''ll see the live preview</li>
-</ol>
+- Latest stable versions of Node.js and NPM installed
+- Latest stable version of <a href="https://docs.docker.com/compose/install/">docker-compose</a> installed.
+- Clone repository: <code>git clone https://github.com/oslabs-beta/xkite.git</code>
+- Install dependencies: Run <code>npm install</code> inside the project folder
 
+# Quick Start
 
+To install the <code>xkite</code> GUI run the following command:
+
+```sh
+  $ npx create-xkite <directory-name>
+```
+
+After the installation is complete, you can start the server by following the steps below:
+
+1. ```sh
+   $ cd <directory-name>
+   ```
+2. ```sh
+   $ npm run dev
+   ```
+
+A browser window will open on http://localhost:3000 where you'll see the live preview.
+
+Note: If the port 3000 is not available the server will start on the closest available port after 3000.
