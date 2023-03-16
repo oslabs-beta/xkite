@@ -47,8 +47,8 @@ export const defaultCfg: KiteConfig = {
     }
   },
   db: {
-    name: 'postgresql',
-    port: _ports_.postgresql.external,
+    name: 'ksql',
+    port: _ports_.ksql.external,
     kafkaconnect: { port: _ports_.kafkaconnect_src.external }
   },
   sink: {
