@@ -144,9 +144,34 @@ Users will find a `Tests` tab in their left-hand navigation. This feature allows
 
 The following is an overview of the features available on this page:
 
-1. KSQL Streams: test KSQL query streaming
+1. KSQL Streams: test KSQL query streaming (explained separately below)
 2. Topics: view existing topics, or create and add new clients to a configuration
 3. Messages: send messages to existing topics and view messages in/second in real time
+
+<details><summary><b>KSQL Streams</b></summary>
+
+If a user has configured their xkite setup to include KSQL as their data source of choice, they will be presented with the option to create streams using the KSQL REST API on the `Tests` page. 
+
+Here we'll highlight the exact steps users should follow to confirm and test their environment:
+
+1. Open up Docker dashboard into the "Containers" tab, and navigate to the ksql_cli image
+2. Open up the ksql_cli terminal, and enter the following to create the users table with some preconfigured entries:
+```sh
+$ ksql http://8088 <<EOF
+> RUN SCRIPT /tmp/test.sql;
+> exit
+> EOF
+```
+3. Navigate back to the xkite test page within the "KSQL Streams" tab
+4. Simply enter commands into the SQL Query field - here's are some example:
+```sh
+SELECT * FROM users EMIT CHANGES;
+```
+5. Below is an example of how this works:
+
+![ksql streams](./images/ksql_stream.gif)
+
+</details>
 
 ![config base](./images/testing.gif)
 
