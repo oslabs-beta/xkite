@@ -61,6 +61,26 @@ Note: If the port 3000 is not available the server will start on the closest ava
 
 - Users must have Docker daemon active and running to initiate an xkite local deployment.
 
+## Built With
+
+<div align='center'>
+
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![Redux](https://img.shields.io/badge/redux-%23593d88.svg?style=for-the-badge&logo=redux&logoColor=white)
+![Next JS](https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white)
+![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
+![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=java&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-000?style=for-the-badge&logo=apachekafka)
+![Grafana](https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=Prometheus&logoColor=white)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![MUI](https://img.shields.io/badge/MUI-%230081CB.svg?style=for-the-badge&logo=mui&logoColor=white)
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![xkite-core](/images/xkite-core-banner_28h.png)
+
+</div>
+
 # Overview
 
 The overiew page is the main page when visiting the xkite GUI website. The user is presented with two options:
@@ -205,7 +225,11 @@ Our team is excited about the massive potential at hand to extend xkite’s flex
 
 ## A Re-build in Spring Boot
 
-Our team considered the idea of building our application natively within the Spring Boot framework (our Spring app is already built this way). This would eliminate reliance on a Node.js client, and offer a more direct interface with producer/consumer functionality.
+Our team considered the idea of building our application natively within the Spring Boot framework (our Spring app is already built this way). This would eliminate reliance on a Node.js client, and offer a more direct interface with producer/consumer functionality. This build could be ported to a WASM format that could be used in the KafkaConnector Class as a replacement to KafkaJS.
+
+## Extend Spring App Flexibility
+
+xkite's current Spring implementation has producer functionality but it has static topic message schemas. Future iterations could extend logic within the Spring app to provide an API to create and delete topics/schemas dynamically. 
 
 ## Connectivity for Cloud Deployments
 
@@ -214,6 +238,30 @@ While xkite is currently designed to facilitate local prototyping, testing, and 
 ## Additional Data Source + Sink Configurations
 
 While xkite currently offers PostgreSQL and KSQL as data source options, and Jupyter Notebook and Apache Spark as sink options, additional flexibility around both the data source and sink could accommodate a larger array of potential use-cases and development teams.
+
+## Add Configurable Broker Assignment Strategy for Spring
+
+Spring and KafkaJS must be inline with each other. Right now they are set to a round-robin assignment strategy (which is a naive approach). Future iterations should optimize for customizable assignment strategies to allow for more user flexibility.
+
+## Integrate NoSQL Support
+
+xkite v1 accommodates two relational databases out of the box. Future iterations should accommodate a larger potential user base by extending support to integrate NoSQL databases.
+
+## Allow Users to Configure SSL for Docker Images
+
+Another future iteration should provide the option to secure login setup for docker instances.
+
+## OAuth Sign-In Support
+
+Future iterations might also include an OAuth sign-in option to xkite to save settings for relevant user sessions.
+
+## Kubernetes Cluster Packaging
+
+To support flexibility around larger xkite configurations, future versions might also include support for Kubernetes to package Docker containers.
+
+## Finish Kafka-Connector Support
+
+xkite currently includes the framework to make connections to/from the Kafka cluster using the kafka-connector-sink/src docker images. It would be a great value add to have these connectors configurable via user actions on front end automatically so they can connect their data source/sink directly to the Kafka cluster to facilitate message and topic creation and consumption.
 
 # Want to Contribute?
 
