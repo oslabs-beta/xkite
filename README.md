@@ -44,7 +44,7 @@ To install/run the <code>xkite</code> GUI please use the following command:
   $ npx create-xkite <directory-name>
 ```
 
-After the installation is complete, you can start the server by following the steps below:
+After the installation is complete, users can start the server by following the steps below:
 
 1. ```sh
    $ cd <directory-name>
@@ -53,13 +53,13 @@ After the installation is complete, you can start the server by following the st
    $ npm run dev
    ```
 
-A browser window will open on http://localhost:3000 where you'll see the live preview of the application.
+A browser window will open on http://localhost:3000 where users will see the live preview of the application.
 
 Note: If the port 3000 is not available the server will start on the closest available port after 3000.
 
 ## Note
 
-- You must have Docker daemon active and running to initiate an xkite local deployment.
+- Users must have Docker daemon active and running to initiate an xkite local deployment.
 
 # Overview
 
@@ -75,14 +75,14 @@ The overiew page is the main page when visiting the xkite GUI website. The user 
 
 <details><summary><b>Configuring A Cluster</b></summary>
 
-When you first navigate to the Configuration Page, you will be presented with the options to:
+When users first navigate to the Configuration Page, users will be presented with the options to:
 
 1. Choose the number of Kafka Brokers
 2. Choose the number of Replicas for Kafka Broker
 3. Choose the number of Zookeepers
-4. Choose a database of either KSQL or Postgresql as your Data Source.
+4. Choose a database of either KSQL or Postgresql as the Data Source.
    a. <b>Note</b>: Data Source integration other than KSQL is not yet supported.
-5. Choose either Juypter Notebook or Spark as your Data Sink.
+5. Choose either Juypter Notebook or Spark as the Data Sink.
    a. <b>Note</b>: Data Sink integration is not yet supported.
 6. See [Advanced Settings Menu](#advanced-settings-menu) for details on options.
 
@@ -102,12 +102,12 @@ The Advanced Settings Menu offers the user the ability to customize their port c
 
 <details><summary><b>Deploying A Cluster</b></summary>
 
-After you've made your desired settings using the steps above, you're ready to deploy your xkite configuration. Select the "Submit" button in bright green. This will engage the following processeses:
+After users have made their desired settings using the steps above, they're ready to deploy a xkite configuration. Select the "Submit" button in bright green. This will engage the following processeses:
 
-1. xkite communicates with your running Docker daemon on your machine to begin building your containers
-2. Docker will download the images required to run your setup (this may take several minutes if it's your first time running xkite)
-3. The xkite interface will wait until all of the containers in your configuration are ready such that each connecting data pipeline is active
-4. The xkite interface will automatically navigate you to the "Metrics" tab where you can begin viewing Kafka metrics relevant to your configuration
+1. xkite communicates with a running Docker daemon on the user's machine to begin building the required containers
+2. Docker will download the images required to run setup (this may take several minutes if it's a user's first time running xkite)
+3. The xkite interface will wait until all of the containers in a configuration are ready such that each connecting data pipeline is active
+4. The xkite interface will automatically navigate the user to the "Metrics" tab where they can begin viewing Kafka metrics relevant to their configuration
 
 </details>
 
@@ -145,7 +145,7 @@ Users will find a `Tests` tab in their left-hand navigation. This feature allows
 The following is an overview of the features available on this page:
 
 1. KSQL Streams: test KSQL query streaming
-2. Topics: view existing topics, or create and add new clients to your configuration
+2. Topics: view existing topics, or create and add new clients to a configuration
 3. Messages: send messages to existing topics and view messages in/second in real time
 
 ![config base](./images/testing.gif)
@@ -164,7 +164,7 @@ Once users have tested their xkite configuration and they're ready to port their
 
 <details><summary><b>Disconnecting from xkite</b></summary>
 
-Users can spin down their Docker containers once you're done monitoring and testing your configuration! Here are the following steps to do so:
+Users can spin down their Docker containers once they're done monitoring and testing their configuration. Here are the following steps to do so:
 
 1. Navigate back to the "Create Data Pipeline" tab
 2. Click the "Disconnect" button
