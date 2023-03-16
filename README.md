@@ -26,6 +26,8 @@ Built upon <b><a href="https://github.com/oslabs-beta/xkite-core">xkite-core lib
 
 Use xkite to bootstrap your next project, or install our library into an existing project. Built by (and for) developers.
 
+Note: xkite is also available without the full graphical user interface using our <b><a href="https://github.com/oslabs-beta/xkite-cli">xkite-cli</a></b>.
+
 # Dependencies
 
 - Latest stable versions of Node.js and NPM installed
@@ -172,7 +174,7 @@ Users can spin down their Docker containers once you're done monitoring and test
 
 ![config base](./images/export-disconnect.gif)
 
-# Connect
+# What Lies Ahead for xkite
 
 Our team is excited about the massive potential at hand to extend xkite’s flexibility and developer experience even further in future iterations and feature releases, and you should be too! Some of these ideas include:
 
