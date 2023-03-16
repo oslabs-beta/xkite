@@ -47,8 +47,8 @@ function Logo() {
         <Badge>
           <img
         alt="500"
-        height={'125'}
-        src="/static/images/logo/fake2.png"/>
+        height={'50'}
+        src="/static/images/logo/xkite-logo.png"/>
         </Badge>
       </LogoWrapper>
     </TooltipWrapper>

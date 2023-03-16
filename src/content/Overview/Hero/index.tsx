@@ -87,9 +87,9 @@ function Hero() {
         </Grid>
       </Grid>
       <img
-        alt="500"
-        height={900}
-        src="/static/images/logo/fake2.png"/>
+        alt="xkite-logo"
+        height={500}
+        src="/static/images/logo/xkite-logo.png"/>
     </Container>
   );
 }
