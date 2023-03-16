@@ -169,7 +169,7 @@ SELECT * FROM users EMIT CHANGES;
 ```
 5. Below is an example of how this works:
 
-![ksql streams](./images/ksql_stream.gif)
+![ksql streams](./images/KSQL_Stream.gif)
 
 </details>
 
