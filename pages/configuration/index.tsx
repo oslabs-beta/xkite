@@ -2,6 +2,7 @@ import Footer from '@/components/Footer';
 import PageTitle from '@/components/PageTitle';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import SidebarLayout from '@/layouts/SidebarLayout';
+import { TextField } from '@mui/material';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -10,9 +11,35 @@ import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Head from 'next/head';
+import { Controller, useForm } from 'react-hook-form';
+import { KiteConfig } from 'xkite-core';
+
+interface FormData {
+  brokers: number;
+}
+
+const fetchAndSetFormDefaults = async (): Promise<FormData> => {
+  const initialState: KiteConfig = await fetch('/api/kite/getConfig').then(
+    (data) => data.json()
+  );
+
+  return {
+    brokers: initialState.kafka.brokers.size
+  };
+};
 
 function Forms() {
-  // stuff
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors }
+  } = useForm({
+    defaultValues: fetchAndSetFormDefaults
+  });
+  const onSubmit = (data: any) => console.log(data);
+
   return (
     <>
       <Head>
@@ -26,17 +53,19 @@ function Forms() {
         />
       </PageTitleWrapper>
       {/* Main Form Area */}
-      <Container maxWidth="lg">
-        <Grid
-          container
-          direction="row"
-          justifyContent="center"
-          alignItems="stretch"
-          spacing={3}
-        >
-          <Card>
-            <CardHeader>
-              <Divider>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Container maxWidth="lg">
+          <Grid
+            container
+            direction="row"
+            justifyContent="center"
+            alignItems="stretch"
+            spacing={3}
+          >
+            <Grid item xs={12}>
+              <Card>
+                <CardHeader title="Required Settings" />
+                <Divider />
                 <CardContent>
                   <Box
                     key={`form-box`}
@@ -46,13 +75,41 @@ function Forms() {
                     }}
                     noValidate
                     autoComplete="off"
-                  />
+                  >
+                    <div key={`required`}>
+                      <Controller
+                        name={'brokers'}
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            label="Brokers"
+                            {...field}
+                            InputLabelProps={{
+                              shrink: true
+                            }}
+                          />
+                        )}
+                      ></Controller>
+                      <Controller
+                        name={'textValue'}
+                        control={control}
+                        render={({ field: { onChange, value } }) => (
+                          <TextField
+                            onChange={onChange}
+                            value={value}
+                            label={'Text Value'}
+                          />
+                        )}
+                      />
+                    </div>
+                  </Box>
                 </CardContent>
-              </Divider>
-            </CardHeader>
-          </Card>
-        </Grid>
-      </Container>
+              </Card>
+            </Grid>
+          </Grid>
+        </Container>
+        <input type="submit" />
+      </form>
       <Footer />
     </>
   );
