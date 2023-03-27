@@ -825,9 +825,9 @@ function Forms() {
                       }}
                     />
                     <TextField
+                      label="Zookeepers"
                       id="outlined-number"
                       // defaultValue="2"
-                      label="Zookeepers"
                       type="number"
                       onBlur={handleOnBlurZookeeper}
                       onChange={handleZoo}
