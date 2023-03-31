@@ -17,10 +17,16 @@ import { useEffect, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { KiteConfig } from 'xkite-core';
+import { KiteConfig } from 'xkite-core/lib/cjs/types';
 
 const FormSchema = z.object({
-  brokers: z.number().min(1, { message: 'At least one broker is required' }),
+  brokers: z
+    .number({
+      required_error: 'Please specify the number of brokers',
+      invalid_type_error: 'At least one broker is required' // catches empty input showing up as NaN
+    })
+    .min(1, { message: 'At least one broker is required' })
+    .max(50, { message: 'No more than 50 brokers allowed' }),
   brokersAdvanced: z.array(z.object({ port: z.number() }))
 });
 
@@ -54,7 +60,11 @@ function Forms() {
     defaultValues,
     resolver: zodResolver(FormSchema)
   });
-  const { fields, append, remove } = useFieldArray({
+  const {
+    fields: fieldsBrokersAdvanced,
+    append: appendBrokersAdvanced,
+    remove: removeBrokersAdvanced
+  } = useFieldArray({
     name: 'brokersAdvanced',
     control
   });
@@ -75,7 +85,7 @@ function Forms() {
   const numberOfBrokers = watch('brokers');
   useEffect(() => {
     const newVal = numberOfBrokers || 0;
-    const oldVal = fields.length;
+    const oldVal = fieldsBrokersAdvanced.length;
     if (newVal > oldVal) {
       // append broker configs to field array
       for (let i = oldVal; i < newVal; i++) {
@@ -83,16 +93,15 @@ function Forms() {
         const port =
           kiteConfig?.kafka.brokers.ports?.brokers?.[i] ??
           _ports_.kafka.broker.external + i;
-        append({ port });
+        appendBrokersAdvanced({ port });
       }
     } else {
       // remove as needed
       for (let i = oldVal; i > newVal; i--) {
-        remove(i - 1);
+        removeBrokersAdvanced(i - 1);
       }
     }
   }, [numberOfBrokers]);
-  console.log(kiteConfig);
 
   const onSubmit = (data: any) => console.log(data);
 
@@ -136,17 +145,6 @@ function Forms() {
                     <Controller
                       name={'brokers'}
                       control={control}
-                      rules={{
-                        required: 'Please specify the number of brokers',
-                        min: {
-                          value: 1,
-                          message: 'At least one broker is required'
-                        },
-                        max: {
-                          value: 50,
-                          message: '50 is the maximum'
-                        }
-                      }}
                       render={({ field }) => (
                         <TextField
                           label="Brokers"
@@ -154,6 +152,9 @@ function Forms() {
                           helperText={errors.brokers?.message ?? ''}
                           type={'number'}
                           {...field}
+                          onChange={(event) =>
+                            field.onChange(parseInt(event.target.value))
+                          }
                           InputLabelProps={{
                             shrink: true
                           }}
@@ -167,7 +168,7 @@ function Forms() {
           </Grid>
         </Grid>
       </Container>
-      {fields.map((item, index) => (
+      {fieldsBrokersAdvanced.map((item, index) => (
         <div key={item.id}>
           <Controller
             name={`brokersAdvanced.${index}.port`}
