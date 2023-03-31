@@ -2,9 +2,7 @@ import Footer from '@/components/Footer';
 import PageTitle from '@/components/PageTitle';
 import PageTitleWrapper from '@/components/PageTitleWrapper';
 import SidebarLayout from '@/layouts/SidebarLayout';
-// import { defaultCfg } from '@/common/constants';
 import { _ports_ } from '@/common/constants';
-import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -14,12 +12,7 @@ import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
-import {
-  Controller,
-  useFieldArray,
-  useForm,
-  FormProvider
-} from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { KiteConfig } from 'xkite-core/lib/cjs/types';
 import BasicNumberInput from '@/components/configuration/BasicNumberInput';
@@ -37,17 +30,6 @@ const defaultValues: FormSchemaType = {
   brokersAdvanced: []
 };
 
-// const fetchAndSetFormDefaults = async (): Promise<FormSchema> => {
-//   const initialState: KiteConfig = await fetch('/api/kite/getConfig').then(
-//     (data) => data.json()
-//   );
-
-//   return {
-//     brokers: initialState.kafka.brokers.size,
-//     brokersAdvanced: [{ port: 5000 }]
-//   };
-// };
-
 function Forms() {
   const [kiteConfig, setKiteConfig] = useState<KiteConfig | undefined>();
   // get all the methods as an object to be passed into FormProvider
@@ -64,7 +46,7 @@ function Forms() {
     // formState: { errors }
   } = methods;
 
-  // This will solve the type error that the name fields are nevers, but it makes the loading ugly
+  // load the initial state into the form
   useEffect(() => {
     fetch('/api/kite/getConfig')
       .then((data) => data.json())
